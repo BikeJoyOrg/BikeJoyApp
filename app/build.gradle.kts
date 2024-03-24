@@ -1,10 +1,16 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
+
+
 android {
     namespace = "com.example.bikejoyapp"
+
 
     defaultConfig {
         applicationId = "com.example.bikejoyapp"
@@ -17,12 +23,20 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        debug {
+            resValue(
+                "string",
+                "google_maps_key",
+                gradleLocalProperties(rootDir).getProperty("apiKey")
+            )
         }
     }
     kotlinOptions {
@@ -91,4 +105,10 @@ dependencies {
     implementation (libs.kotlinx.coroutines.play.services)
 
     implementation (libs.android.maps.utils)
+}
+
+fun gradleLocalProperties(rootDir: File): Properties {
+    val localProperties = Properties()
+    localProperties.load(File(rootDir, "local.properties").inputStream())
+    return localProperties
 }
