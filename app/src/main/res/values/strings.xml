@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BikeJoyApp</string>
+
+    <string name="map">Map</string>
+    <string name="routes">Routes</string>
+    <string name="home">Home</string>
+    <string name="social">Social</string>
+    <string name="shop">Shop</string>
+    <string name="account">Account</string>
+</resources>
