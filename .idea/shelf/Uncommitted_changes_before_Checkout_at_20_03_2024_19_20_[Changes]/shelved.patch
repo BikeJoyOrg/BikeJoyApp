@@ -1,0 +1,160 @@
+Index: app/src/main/java/com/example/bikejoyapp/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.bikejoyapp\r\n\r\nimport android.os.Bundle\r\nimport androidx.activity.ComponentActivity\r\nimport androidx.activity.compose.setContent\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.foundation.layout.Row\r\nimport androidx.compose.foundation.layout.fillMaxSize\r\nimport androidx.compose.foundation.layout.fillMaxWidth\r\nimport androidx.compose.foundation.layout.padding\r\nimport androidx.compose.material3.ExperimentalMaterial3Api\r\nimport androidx.compose.material3.Icon\r\nimport androidx.compose.material3.NavigationBar\r\nimport androidx.compose.material3.NavigationBarItem\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.runtime.remember\r\nimport androidx.compose.ui.Modifier\r\nimport androidx.compose.ui.res.stringResource\r\nimport androidx.navigation.NavHostController\r\nimport androidx.navigation.compose.NavHost\r\nimport androidx.navigation.compose.composable\r\nimport androidx.navigation.compose.currentBackStackEntryAsState\r\nimport androidx.navigation.compose.rememberNavController\r\nimport com.example.bikejoyapp.ui.AccountScreen\r\nimport com.example.bikejoyapp.ui.HomeScreen\r\nimport com.example.bikejoyapp.ui.MapScreen\r\nimport com.example.bikejoyapp.ui.SocialScreen\r\nimport com.example.bikejoyapp.ui.ShopScreen\r\nimport com.example.bikejoyapp.ui.RoutesScreen\r\nimport com.example.bikejoyapp.ui.theme.BikeJoyAppTheme\r\n\r\nimport androidx.compose.material3.Scaffold\r\nimport androidx.compose.material3.TopAppBar\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.material3.IconButton\r\nimport androidx.compose.material.icons.Icons\r\nimport androidx.compose.material.icons.filled.AccountCircle\r\nimport androidx.compose.ui.unit.dp\r\nimport com.example.bikejoyapp.data.MyAppRoute\r\nimport com.example.bikejoyapp.data.MyAppTopLevelDestination\r\n\r\n\r\n\r\nclass MainActivity : ComponentActivity() {\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        setContent {\r\n            BikeJoyAppTheme {\r\n                val navController = rememberNavController()\r\n                val navigateAction = remember(navController) {\r\n                    MyAppNavigationActions(navController)\r\n                }\r\n                val navBackStackEntry by navController.currentBackStackEntryAsState()\r\n                val selectedDestination = navBackStackEntry?.destination?.route ?: MyAppRoute.HOME\r\n\r\n                MyAppContent(\r\n                    navController = navController,\r\n                    selectedDestination = selectedDestination,\r\n                    navigateTopLevelDestination = navigateAction::navigateTo\r\n                )\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@OptIn(ExperimentalMaterial3Api::class)\r\n@Composable\r\nfun MyAppContent(\r\n    modifier: Modifier = Modifier,\r\n    navController: NavHostController,\r\n    selectedDestination: String,\r\n    navigateTopLevelDestination: (MyAppTopLevelDestination) -> Unit\r\n) {\r\n    Scaffold(\r\n        topBar = {\r\n            TopAppBar(\r\n                title = {\r\n                    Row(\r\n                        modifier = modifier\r\n                            .fillMaxWidth()\r\n                            .padding(horizontal = 24.dp),\r\n                        horizontalArrangement = Arrangement.Center\r\n                    ) {\r\n                        Text(text = stringResource(id = R.string.app_name))\r\n                    }\r\n                },\r\n                navigationIcon = {\r\n                    IconButton(onClick = { navController.navigate(MyAppRoute.ACCOUNT) }) {\r\n                        Icon(Icons.Default.AccountCircle, contentDescription = \"Account\")\r\n                    }\r\n                }\r\n            )\r\n        },\r\n        bottomBar = {\r\n            MyAppBottomNavigation(\r\n                selectedDestination = selectedDestination,\r\n                navigateTopLevelDestination = navigateTopLevelDestination\r\n            )\r\n        }\r\n    ) { innerPadding ->\r\n        Column(modifier = modifier.padding(innerPadding).fillMaxSize()) {\r\n            NavHost(\r\n                navController = navController,\r\n                startDestination = MyAppRoute.HOME\r\n            ) {\r\n                composable(MyAppRoute.MAP) {\r\n                    MapScreen()\r\n                }\r\n                composable(MyAppRoute.ROUTES) {\r\n                    RoutesScreen()\r\n                }\r\n                composable(MyAppRoute.HOME) {\r\n                    HomeScreen()\r\n                }\r\n                composable(MyAppRoute.SOCIAL) {\r\n                    SocialScreen()\r\n                }\r\n                composable(MyAppRoute.SHOP) {\r\n                    ShopScreen()\r\n                }\r\n                composable(MyAppRoute.ACCOUNT) {\r\n                    AccountScreen()\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Composable\r\nfun MyAppBottomNavigation(\r\n    selectedDestination: String,\r\n    navigateTopLevelDestination: (MyAppTopLevelDestination) -> Unit\r\n) {\r\n    NavigationBar(modifier = Modifier.fillMaxWidth()) {\r\n        TOP_LEVEL_DESTINATIONS.forEach { destinations ->\r\n            NavigationBarItem(\r\n                selected = selectedDestination == destinations.route,\r\n                onClick = { navigateTopLevelDestination(destinations) },\r\n                icon = {\r\n                    Icon(\r\n                        imageVector = destinations.selectedIcon,\r\n                        contentDescription = stringResource(id = destinations.iconTextId)\r\n                    )\r\n                }\r\n            )\r\n        }\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/bikejoyapp/MainActivity.kt b/app/src/main/java/com/example/bikejoyapp/MainActivity.kt
+--- a/app/src/main/java/com/example/bikejoyapp/MainActivity.kt	
++++ b/app/src/main/java/com/example/bikejoyapp/MainActivity.kt	
+@@ -9,39 +9,39 @@
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.AccountCircle
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.Icon
++import androidx.compose.material3.IconButton
+ import androidx.compose.material3.NavigationBar
+ import androidx.compose.material3.NavigationBarItem
++import androidx.compose.material3.Scaffold
++import androidx.compose.material3.Text
++import androidx.compose.material3.TopAppBar
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.remember
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
+ import androidx.navigation.NavHostController
+ import androidx.navigation.compose.NavHost
+ import androidx.navigation.compose.composable
+ import androidx.navigation.compose.currentBackStackEntryAsState
+ import androidx.navigation.compose.rememberNavController
++import com.example.bikejoyapp.data.MyAppRoute
++import com.example.bikejoyapp.data.MyAppTopLevelDestination
+ import com.example.bikejoyapp.ui.AccountScreen
+ import com.example.bikejoyapp.ui.HomeScreen
++import com.example.bikejoyapp.ui.InfoPetScreen
+ import com.example.bikejoyapp.ui.MapScreen
+-import com.example.bikejoyapp.ui.SocialScreen
+-import com.example.bikejoyapp.ui.ShopScreen
++import com.example.bikejoyapp.ui.PetScreen
+ import com.example.bikejoyapp.ui.RoutesScreen
++import com.example.bikejoyapp.ui.ShopScreen
++import com.example.bikejoyapp.ui.SocialScreen
+ import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
+ 
+-import androidx.compose.material3.Scaffold
+-import androidx.compose.material3.TopAppBar
+-import androidx.compose.material3.Text
+-import androidx.compose.material3.IconButton
+-import androidx.compose.material.icons.Icons
+-import androidx.compose.material.icons.filled.AccountCircle
+-import androidx.compose.ui.unit.dp
+-import com.example.bikejoyapp.data.MyAppRoute
+-import com.example.bikejoyapp.data.MyAppTopLevelDestination
+-
+-
+ 
+ class MainActivity : ComponentActivity() {
+     override fun onCreate(savedInstanceState: Bundle?) {
+@@ -100,7 +100,9 @@
+             )
+         }
+     ) { innerPadding ->
+-        Column(modifier = modifier.padding(innerPadding).fillMaxSize()) {
++        Column(modifier = modifier
++            .padding(innerPadding)
++            .fillMaxSize()) {
+             NavHost(
+                 navController = navController,
+                 startDestination = MyAppRoute.HOME
+@@ -112,7 +114,7 @@
+                     RoutesScreen()
+                 }
+                 composable(MyAppRoute.HOME) {
+-                    HomeScreen()
++                    HomeScreen(navController)
+                 }
+                 composable(MyAppRoute.SOCIAL) {
+                     SocialScreen()
+@@ -123,6 +125,12 @@
+                 composable(MyAppRoute.ACCOUNT) {
+                     AccountScreen()
+                 }
++                composable(MyAppRoute.MASCOTA) {
++                    PetScreen(navController)
++                }
++                composable(MyAppRoute.INFOMASCOTA) {
++                    InfoPetScreen()
++                }
+             }
+         }
+     }
+Index: app/src/main/java/com/example/bikejoyapp/ui/HomeScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.bikejoyapp.ui\r\n\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.foundation.layout.fillMaxSize\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.Modifier\r\n\r\n@Composable\r\nfun HomeScreen() {\r\n    Column(\r\n        modifier = Modifier.fillMaxSize(),\r\n        verticalArrangement = Arrangement.Center,\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Text(text = \"Home\")\r\n    }\r\n}\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/bikejoyapp/ui/HomeScreen.kt b/app/src/main/java/com/example/bikejoyapp/ui/HomeScreen.kt
+--- a/app/src/main/java/com/example/bikejoyapp/ui/HomeScreen.kt	
++++ b/app/src/main/java/com/example/bikejoyapp/ui/HomeScreen.kt	
+@@ -3,19 +3,36 @@
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.filled.AccountCircle
++import androidx.compose.material3.Icon
++import androidx.compose.material3.IconButton
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
++import androidx.navigation.NavHostController
++import com.example.bikejoyapp.data.MyAppRoute
++
+ 
+ @Composable
+-fun HomeScreen() {
++
++fun HomeScreen(
++    navController: NavHostController
++) {
++
+     Column(
+         modifier = Modifier.fillMaxSize(),
+         verticalArrangement = Arrangement.Center,
+         horizontalAlignment = Alignment.CenterHorizontally
+     ) {
+         Text(text = "Home")
++
++        IconButton(onClick = { navController.navigate(MyAppRoute.MASCOTA) }) {
++            Icon(Icons.Default.AccountCircle, contentDescription = "Mascotes")
++        }
++
+     }
+ }
++
+ 
+Index: app/src/main/java/com/example/bikejoyapp/data/MyAppRoute.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.bikejoyapp.data\r\n\r\nobject MyAppRoute {\r\n    const val MAP = \"map\"\r\n    const val ROUTES = \"routes\"\r\n    const val HOME = \"home\"\r\n    const val SOCIAL = \"social\"\r\n    const val SHOP = \"shop\"\r\n    const val ACCOUNT = \"account\"\r\n}
+===================================================================
+diff --git a/app/src/main/java/com/example/bikejoyapp/data/MyAppRoute.kt b/app/src/main/java/com/example/bikejoyapp/data/MyAppRoute.kt
+--- a/app/src/main/java/com/example/bikejoyapp/data/MyAppRoute.kt	
++++ b/app/src/main/java/com/example/bikejoyapp/data/MyAppRoute.kt	
+@@ -7,4 +7,6 @@
+     const val SOCIAL = "social"
+     const val SHOP = "shop"
+     const val ACCOUNT = "account"
++    const val MASCOTA = "mascota"
++    const val INFOMASCOTA = "infomascota"
+ }
+\ No newline at end of file
