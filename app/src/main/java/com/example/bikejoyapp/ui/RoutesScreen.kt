@@ -26,45 +26,150 @@ import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.Route
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 
 
 @Composable
 fun RoutesScreen(rutesviewModel: RoutesViewModel,mainViewModel: MainViewModel) {
     val routes by rutesviewModel.routes.observeAsState(initial = emptyList())
+    val searchQuery by rutesviewModel.searchQuery.observeAsState("")
+    val activeFilters by rutesviewModel.activeFilters
+    val possibleFilters = rutesviewModel.possibleFilters
+
     Column(modifier = Modifier
         .fillMaxSize()
     ) {
         AddRouteForm(rutesviewModel,mainViewModel)
-        SearchBar(modifier = Modifier.fillMaxWidth())
+        SearchBar(searchQuery = searchQuery,
+            onSearchQueryChanged = { query -> rutesviewModel.onSearchQueryChanged(query) },
+            onPerformSearch = { rutesviewModel.performSearch() }
+        )
+        FilterForm(possibleFilters = possibleFilters,
+            activeFilters = activeFilters,
+            onFilterChanged = { filter, isSelected ->
+                rutesviewModel.onFilterChanged(filter, isSelected)
+            },
+            onApplyFilters = {
+                rutesviewModel.performSearchWithFilters()
+            }
+
+        )
         RoutesList(modifier = Modifier.weight(1f), routes = routes)
 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(modifier: Modifier) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+fun SearchBar(searchQuery: String,
+              onSearchQueryChanged: (String) -> Unit,
+              onPerformSearch: () -> Unit
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    TextField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChanged,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp) // Consistencia en el padding con AddRouteForm
-    ) {
-        var search by remember { mutableStateOf("") }
-        TextField(
-            value = search,
-            onValueChange = {search = it},
-            label = { Text("\uD83D\uDD0E Search BikeJoy routes") },
-            modifier = Modifier
-                .weight(1f) // Ocupa el espacio disponible igual que en AddRouteForm
-                .padding(end = 8.dp) // Consistencia en el padding con AddRouteForm
+            .padding(16.dp)
+            .fillMaxWidth(),
+        placeholder = { Text("Search", color = Color(0xFF000000)) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Search
+        ),
+        keyboardActions = KeyboardActions(onSearch = {
+            onPerformSearch()
+            keyboardController?.hide()
+        }),
+        singleLine = true,
+        maxLines = 1,
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color(0xFFE0E0E0),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         )
+    )
+}
+
+@Composable
+fun FilterForm(
+    possibleFilters: List<String>,
+    activeFilters: List<String>,
+    onFilterChanged: (String, Boolean) -> Unit,
+    onApplyFilters: () -> Unit
+) {
+    var showFiltersDialog by remember { mutableStateOf(false) }
+
+    Column {
+        TextButton(onClick = { showFiltersDialog = true }) {
+            Text("Mostrar filtros")
+        }
+
+        if (showFiltersDialog) {
+            // Esta es una alternativa al menú desplegable utilizando un AlertDialog
+            AlertDialog(
+                onDismissRequest = { showFiltersDialog = false },
+                title = { Text("Filtros") },
+                text = {
+                    // Lista de todos los filtros posibles con un Checkbox
+                    Column {
+                        possibleFilters.forEach { filter ->
+                            val isChecked = activeFilters.contains(filter)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                            ) {
+                                Checkbox(
+                                    checked = isChecked,
+                                    onCheckedChange = { isSelected ->
+                                        onFilterChanged(filter, isSelected)
+                                    }
+                                )
+                                Text(text = filter)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onApplyFilters()
+                            showFiltersDialog = false
+                        }
+                    ) {
+                        Text("Aplicar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showFiltersDialog = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
 }
+
+
 
 @Composable
 fun RoutesList(modifier : Modifier, routes: List<Route>) {

@@ -1,6 +1,8 @@
 package com.example.bikejoyapp.viewmodel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,6 +15,17 @@ class RoutesViewModel : ViewModel() {
     // LiveData que contiene la lista de rutas
     private val _routes = MutableLiveData<List<Route>>(listOf())
     val routes: LiveData<List<Route>> = _routes
+
+    private val _searchQuery = MutableLiveData<String>()
+    val searchQuery: LiveData<String> = _searchQuery
+
+    private val _possibleFilters = MutableLiveData<List<String>>()
+    val possibleFilters = listOf("Corta", "Media", "Larga")
+
+
+    private val _activeFilters = mutableStateOf<List<String>>(emptyList())
+    val activeFilters: MutableState<List<String>> = _activeFilters
+
 
     init {
         // Añade aquí tus datos falsos de ejemplo
@@ -29,5 +42,29 @@ class RoutesViewModel : ViewModel() {
             Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground)
         )
     }
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun onFilterChanged(filter: String, isSelected: Boolean) {
+        val currentFilters = activeFilters.value.toMutableList()
+        if (isSelected && !currentFilters.contains(filter)) {
+            currentFilters.add(filter)
+        } else if (!isSelected) {
+            currentFilters.remove(filter)
+        }
+        activeFilters.value = currentFilters
+    }
+
+    // Función para realizar la búsqueda con los filtros activos.
+    fun performSearchWithFilters() {
+        // Aquí podrías llamar a la API de tu backend pasando los filtros activos.
+        // Esta sería una llamada de red similar a la implementación de la función performSearch().
+    }
+    fun performSearch() {
+        // Aquí deberías implementar la lógica de búsqueda
+    }
+
+
 
 }
