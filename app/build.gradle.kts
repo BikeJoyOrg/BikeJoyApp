@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.serialization)
 }
 
 
@@ -105,6 +106,10 @@ dependencies {
     implementation (libs.kotlinx.coroutines.play.services)
 
     implementation (libs.android.maps.utils)
+
+    implementation(libs.kotlinx.serialization.json.v132)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.okhttp)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {

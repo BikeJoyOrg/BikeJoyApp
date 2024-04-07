@@ -1,30 +1,46 @@
 package com.example.bikejoyapp.viewmodel
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.EstacioBicing
+import com.example.bikejoyapp.data.StationResponse
+import com.example.bikejoyapp.data.StationStatus
+import com.example.bikejoyapp.data.StationStatusResponse
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 class EstacionsViewModel : ViewModel() {
     private val _estacions = MutableLiveData<List<EstacioBicing>>(emptyList())
     val estacions: LiveData<List<EstacioBicing>> = _estacions
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
+    private val stationStatusCache = mutableMapOf<String, Pair<StationStatus?, LocalDateTime>>()
 
 
-    //no funciona si server tancat
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)
 
@@ -34,7 +50,7 @@ class EstacionsViewModel : ViewModel() {
 
     private fun getStationData() {
         viewModelScope.launch {
-            _loading.postValue(true)
+            _loading.value =true
             withContext(Dispatchers.IO) {
                 try {
                     val response: Response<StationResponse> = apiService.getStations()
@@ -49,23 +65,48 @@ class EstacionsViewModel : ViewModel() {
                     println("Error fetching data: $e")
                 }
             }
-            _loading.postValue(false)
+            _loading.value = false
         }
     }
 
-    fun getStationById(stationId: String): LiveData<EstacioBicing?> {
-        val stationLiveData = MutableLiveData<EstacioBicing?>()
-        estacions.observeForever { stations ->
-            val foundStation = stations.find { it.station_id == stationId.toInt() }
-            stationLiveData.value = foundStation
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getStationById(stationId: String): LiveData<StationStatus?> {
+        // Intenta recuperar el estado de la estación desde la caché.
+        val cached = stationStatusCache[stationId]
+        val now = LocalDateTime.now()
+
+        // Comprueba si el estado de la estación ya está en caché y si aún es válido.
+        if (cached != null && ChronoUnit.MINUTES.between(cached.second, now) < 2) {
+            println("no es crida api (<2min)")
+            return MutableLiveData(cached.first)
         }
-        return stationLiveData
+        println("es crida api")
+        val resultLiveData = MutableLiveData<StationStatus?>()
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = apiService.getStationById(stationId)
+                if (response.isSuccessful) {
+                    stationStatusCache[stationId] = Pair(response.body()?.state, LocalDateTime.now())
+                    resultLiveData.postValue(response.body()?.state)
+                }
+                else {
+                    Log.e("ViewModel", "Error fetching station status: ${response.errorBody()?.string()}")
+                }
+            }
+            catch (e: Exception) {
+                Log.e("ViewModel", "Exception when fetching station status", e)
+            }
+            _loading.value = false
+        }
+        return resultLiveData
     }
 }
 
 interface ApiService {
-    @GET("stations/a3")
+    @GET("stations")
     suspend fun getStations(): Response<StationResponse>
-}
 
-data class StationResponse(val stations: List<EstacioBicing>)
+    @GET("stations/{id}")
+    suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
+}

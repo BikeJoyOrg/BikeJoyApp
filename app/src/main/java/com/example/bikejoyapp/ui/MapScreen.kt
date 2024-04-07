@@ -177,7 +177,7 @@ fun MapScreen(
                         mainViewModel.navigateToDynamic(route)
                         true
                     },
-                    icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
+                    icon = resizeMapIcons(context, R.mipmap.logostation, 200, 200)
                 )
             }
             if (isNavigating) {

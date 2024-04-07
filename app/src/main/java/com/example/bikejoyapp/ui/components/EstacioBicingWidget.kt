@@ -1,5 +1,8 @@
 package com.example.bikejoyapp.ui.components
 
+import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +21,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,14 +37,22 @@ import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
 
+@SuppressLint("RememberReturnType")
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EstacioBicingWidget(
     navController: NavController,
     mainViewModel: MainViewModel,
     stationViewModel: EstacionsViewModel
 ) {
-    val stationId = navController.currentBackStackEntry?.arguments?.getString("stationId")
-    val estacioBicing = stationId?.let { stationViewModel.getStationById(it).observeAsState().value }
+    // Inicializa stationId como null
+    var stationId = remember { mutableStateOf<String?>(null) }
+
+    // LaunchedEffect con una clave constante se ejecuta solo una vez
+    LaunchedEffect(true) {
+        stationId.value = navController.currentBackStackEntry?.arguments?.getString("stationId")
+    }
+    val estacioBicing = stationId.let { it.value?.let { it1 -> stationViewModel.getStationById(it1).observeAsState().value } }
 
     Column(
         modifier = Modifier
@@ -113,7 +127,7 @@ fun BicingInfoRow(
         )
         ColoredCircleValue(
             value = value,
-            color = Color.Red
+            color = color
         )
     }
 }
