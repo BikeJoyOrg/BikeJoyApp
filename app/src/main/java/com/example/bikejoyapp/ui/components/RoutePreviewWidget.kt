@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Card
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,12 +22,13 @@ import androidx.compose.material3.MaterialTheme
 
 
 @Composable
-fun RoutePreviewWidget(name: String, description: String, image: Int) {
+fun RoutePreviewWidget(name: String, description: String, image: Int, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium,
     ) {
         Row (

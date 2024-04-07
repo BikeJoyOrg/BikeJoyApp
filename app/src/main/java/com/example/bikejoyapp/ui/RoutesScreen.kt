@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -26,18 +25,13 @@ import com.example.bikejoyapp.ui.components.RoutePreviewWidget
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.Route
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
@@ -46,10 +40,8 @@ import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -82,7 +74,7 @@ fun RoutesScreen(rutesviewModel: RoutesViewModel,mainViewModel: MainViewModel) {
                 rutesviewModel.performSearchWithFilters()
             }
         )
-        RoutesList(modifier = Modifier.weight(1f), routes = routes)
+        RoutesList(mainViewModel, modifier = Modifier.weight(1f), routes = routes)
 
     }
 }
@@ -220,7 +212,7 @@ fun FilterForm(
 
 
 @Composable
-fun RoutesList(modifier : Modifier, routes: List<Route>) {
+fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<Route>) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp)
@@ -239,7 +231,10 @@ fun RoutesList(modifier : Modifier, routes: List<Route>) {
             }
         }
         items(routes) { route ->
-            RoutePreviewWidget(route.name, route.description, route.imageRes)
+            RoutePreviewWidget(route.name, route.description, route.imageRes, onClick ={
+                mainViewModel.selectedRoute = route
+                mainViewModel.navigateTo(MyAppRoute.RouteDetail)
+            })
         }
     }
 }

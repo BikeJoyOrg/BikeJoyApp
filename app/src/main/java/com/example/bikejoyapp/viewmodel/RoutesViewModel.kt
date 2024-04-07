@@ -81,16 +81,16 @@ class RoutesViewModel : ViewModel() {
     init {
         // Añade aquí tus datos falsos de ejemplo
         _routes.value = listOf(
-            Route("Ruta 1", "Descripción de la ruta 1", R.drawable.ic_launcher_foreground),
-            Route("Ruta 2", "Descripción de la ruta 2", R.drawable.ic_launcher_foreground),
-            Route("Ruta 3", "Descripción de la ruta 3", R.drawable.ic_launcher_foreground),
-            Route("Ruta 4", "Descripción de la ruta 4", R.drawable.ic_launcher_foreground),
-            Route("Ruta 5", "Descripción de la ruta 5", R.drawable.ic_launcher_foreground),
-            Route("Ruta 6", "Descripción de la ruta 6", R.drawable.ic_launcher_foreground),
-            Route("Ruta 7", "Descripción de la ruta 7", R.drawable.ic_launcher_foreground),
-            Route("Ruta 8", "Descripción de la ruta 8", R.drawable.ic_launcher_foreground),
-            Route("Ruta 9", "Descripción de la ruta 9", R.drawable.ic_launcher_foreground),
-            Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground)
+            Route("Ruta 1", "Descripción de la ruta 1", R.drawable.ic_launcher_foreground, 5, "Barri Gotic"),
+            Route("Ruta 2", "Descripción de la ruta 2", R.drawable.ic_launcher_foreground, 4, "El Poble Sec"),
+            Route("Ruta 3", "Descripción de la ruta 3", R.drawable.ic_launcher_foreground, 3, "El Born"),
+            Route("Ruta 4", "Descripción de la ruta 4", R.drawable.ic_launcher_foreground, 2, "El Clot"),
+            Route("Ruta 5", "Descripción de la ruta 5", R.drawable.ic_launcher_foreground, 1, "El Poblenou"),
+            Route("Ruta 6", "Descripción de la ruta 6", R.drawable.ic_launcher_foreground, 5, "El Putxet"),
+            Route("Ruta 7", "Descripción de la ruta 7", R.drawable.ic_launcher_foreground, 4, "El Raval"),
+            Route("Ruta 8", "Descripción de la ruta 8", R.drawable.ic_launcher_foreground, 3, "El Tibidabo"),
+            Route("Ruta 9", "Descripción de la ruta 9", R.drawable.ic_launcher_foreground, 2, "El Vall d'Hebron"),
+            Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground, 1, "Horta")
         )
     }
     fun onSearchQueryChanged(query: String) {
