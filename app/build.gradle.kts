@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json.v132)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.okhttp)
+    //implementation(libs.android.maps.utils.v323)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {

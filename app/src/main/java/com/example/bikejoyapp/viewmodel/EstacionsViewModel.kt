@@ -50,7 +50,7 @@ class EstacionsViewModel : ViewModel() {
 
     private fun getStationData() {
         viewModelScope.launch {
-            _loading.value =true
+            _loading.value = true
             withContext(Dispatchers.IO) {
                 try {
                     val response: Response<StationResponse> = apiService.getStations()
@@ -70,39 +70,44 @@ class EstacionsViewModel : ViewModel() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getStationById(stationId: String): LiveData<StationStatus?> {
-        // Intenta recuperar el estado de la estación desde la caché.
+    fun getStationById(stationId: String): LiveData<Pair<StationStatus?, String?>> {
         val cached = stationStatusCache[stationId]
         val now = LocalDateTime.now()
 
-        // Comprueba si el estado de la estación ya está en caché y si aún es válido.
         if (cached != null && ChronoUnit.MINUTES.between(cached.second, now) < 2) {
-            println("no es crida api (<2min)")
-            return MutableLiveData(cached.first)
+            return MutableLiveData(Pair(cached.first, getStationAddress(stationId)))
         }
-        println("es crida api")
-        val resultLiveData = MutableLiveData<StationStatus?>()
+
+        val resultLiveData = MutableLiveData<Pair<StationStatus?, String?>>()
         viewModelScope.launch {
             _loading.value = true
             try {
                 val response = apiService.getStationById(stationId)
                 if (response.isSuccessful) {
-                    stationStatusCache[stationId] = Pair(response.body()?.state, LocalDateTime.now())
-                    resultLiveData.postValue(response.body()?.state)
+                    val stationStatus = response.body()?.state
+                    val address = getStationAddress(stationId)
+                    stationStatusCache[stationId] = Pair(stationStatus, LocalDateTime.now())
+                    resultLiveData.postValue(Pair(stationStatus, address))
+                } else {
+                    Log.e(
+                        "ViewModel",
+                        "Error fetching station status: ${response.errorBody()?.string()}"
+                    )
                 }
-                else {
-                    Log.e("ViewModel", "Error fetching station status: ${response.errorBody()?.string()}")
-                }
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 Log.e("ViewModel", "Exception when fetching station status", e)
             }
             _loading.value = false
         }
         return resultLiveData
     }
-}
 
+    private fun getStationAddress(stationId: String): String? {
+        val stations = _estacions.value ?: return null
+        val station = stations.find { it.station_id == stationId.toInt() } ?: return null
+        return station.address
+    }
+}
 interface ApiService {
     @GET("stations")
     suspend fun getStations(): Response<StationResponse>
@@ -110,3 +115,5 @@ interface ApiService {
     @GET("stations/{id}")
     suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
 }
+
+
