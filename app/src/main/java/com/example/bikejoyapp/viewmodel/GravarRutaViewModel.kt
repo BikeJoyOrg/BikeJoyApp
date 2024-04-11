@@ -113,7 +113,11 @@ class GravarRutaViewModel : ViewModel(){
                     .build()
                 val dist = totalDistance(ruta)
                 Log.d("aris", "entro2")
-                val rutaUsuari = RutaUsuari(null,"prova3",dist,timebicycle(dist),0)
+
+                val posStartLat = posstart.value?.latitude ?: 0.0
+                val posStartLng = posstart.value?.longitude ?: 0.0
+
+                val rutaUsuari = RutaUsuari(null,"prova3",dist,timebicycle(dist),0,posStartLat,posStartLng)
                 val call = retrofit.create(ApiRetrofit::class.java).postRoute(rutaUsuari)
                 // Resto del código para manejar la respuesta
 

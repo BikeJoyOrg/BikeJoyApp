@@ -7,10 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.Route
 import com.example.bikejoyapp.ui.GravarRutaScreen
+import kotlinx.coroutines.launch
 import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.Response
@@ -60,7 +62,12 @@ class RoutesViewModel : ViewModel() {
     private val _startLocationFilter = MutableLiveData<String>()
     val startLocationFilter: LiveData<String> = _startLocationFilter
 
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://66181f849a41b1b3dfbc4f82.mockapi.io/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
+    private val apiService = retrofit.create(ApiService::class.java)
 
     fun onDurationChange(value: Float) {
         _durationFilter.value = value
@@ -101,22 +108,33 @@ class RoutesViewModel : ViewModel() {
     // Función para realizar la búsqueda con los filtros activos.
     fun performSearchWithFilters() {
         // Aquí deberías implementar la lógica de búsqueda con los filtros activos
+        viewModelScope.launch {
+            try {
+                val response = apiService.searchRoutes(distanceFilter.value, durationFilter.value, null) // Ejemplo con distance y time
+                if (response.isSuccessful) {
+                    // Actualizar _routes con los datos obtenidos
+                    _routes.postValue(response.body())
+                } else {
+                    // Manejar la respuesta fallida
+                }
+            } catch (e: Exception) {
+                // Manejar la excepción
+            }
+        }
     }
     fun performSearch() {
         // Aquí deberías implementar la lógica de búsqueda
     }
 
+
     interface ApiService {
         // Asume que ya tienes otros endpoints aquí
         @GET("searchRoutes")
         suspend fun searchRoutes(
-            @Query("duration") duration: Float,
-            @Query("distance") distance: Float,
-            @Query("startLocation") startLocation: String
+            @Query("distance") distance: Float?,
+            @Query("duration") duration: Float?,
+            @Query("startLocation") startLocation: String?
         ): Response<List<Route>>
     }
-
-
-
 
 }
