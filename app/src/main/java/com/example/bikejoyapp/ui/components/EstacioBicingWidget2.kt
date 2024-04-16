@@ -40,19 +40,11 @@ import com.example.bikejoyapp.viewmodel.MainViewModel
 @SuppressLint("RememberReturnType")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EstacioBicingWidget(
-    navController: NavController,
-    mainViewModel: MainViewModel,
+fun EstacioBicingWidget2(
+    stationId: String,
     stationViewModel: EstacionsViewModel
 ) {
-    // Inicializa stationId como null
-    var stationId = remember { mutableStateOf<String?>(null) }
-
-    // LaunchedEffect con una clave constante se ejecuta solo una vez
-    LaunchedEffect(true) {
-        stationId.value = navController.currentBackStackEntry?.arguments?.getString("stationId")
-    }
-    val estacioBicing = stationId.let { it.value?.let { it1 -> stationViewModel.getStationById(it1).observeAsState().value } }
+    val estacioBicing = stationViewModel.getStationById(stationId).observeAsState().value
 
     Column(
         modifier = Modifier
@@ -67,16 +59,6 @@ fun EstacioBicingWidget(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            IconButton(
-                onClick = { mainViewModel.navigateBack() },
-                modifier = Modifier.align(Alignment.CenterStart)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_arrow_back_24),
-                    tint = Color.Black,
-                    contentDescription = "Back"
-                )
-            }
             Text(
                 text = "Estació bicing",
                 color = Color.Black,
@@ -116,53 +98,5 @@ fun EstacioBicingWidget(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun BicingInfoRow(
-    labelText: String,
-    value: Int,
-    color: Color,
-) {
-    Row(
-        modifier = Modifier
-            .padding(10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Spacer(modifier = Modifier.width(24.dp))
-        Text(
-            text = labelText,
-            color = Color.Black,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 12.dp)
-                .align(Alignment.CenterVertically),
-            textAlign = TextAlign.Start
-        )
-        ColoredCircleValue(
-            value = value,
-            color = color
-        )
-        Spacer(modifier = Modifier.width(24.dp))
-    }
-}
-
-@Composable
-fun ColoredCircleValue(value: Int, color: Color) {
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .background(color, shape = CircleShape)
-            .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = value.toString(),
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

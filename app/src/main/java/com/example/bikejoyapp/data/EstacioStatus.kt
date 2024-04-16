@@ -4,16 +4,18 @@ import com.google.maps.android.clustering.ClusterItem
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EstacioBicing(
+data class StationStatusResponse(
+    val state: StationStatus
+)
+
+@Serializable
+data class StationStatus(
     val station_id: Int,
-    val address: String,
-    val lat: Double,
-    val lon: Double,
+    val mechanical: Int,
+    val ebike: Int,
+    val num_docks_available: Int
 ): ClusterItem {
     override fun getPosition(): LatLng = position
     override fun getTitle(): String = title
-    override fun getSnippet(): String ?= null
+    override fun getSnippet(): String = snippet
 }
-
-@Serializable
-data class StationResponse(val stations: List<EstacioBicing>)

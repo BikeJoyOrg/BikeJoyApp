@@ -4,7 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Looper
+import android.view.View
+import android.widget.ImageView
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +57,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.ui.components.EstacioBicingWidget
+import com.example.bikejoyapp.ui.components.EstacioBicingWidget2
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -60,19 +68,27 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.AdvancedMarkerOptions.CollisionBehavior
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PinConfig
+import com.google.maps.android.compose.AdvancedMarker
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerInfoWindowContent
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import org.json.JSONObject
+import com.google.maps.android.clustering.ClusterManager
+import com.example.bikejoyapp.data.StationClusterItem
+
 
 fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
     val bikeLanes = mutableListOf<List<LatLng>>()
@@ -104,6 +120,7 @@ fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
@@ -151,12 +168,16 @@ fun MapScreen(
     }
 
     val markerState = rememberMarkerState()
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
+    val cameraPositionState = rememberSaveable(saver = CameraPositionState.Saver) {
+        CameraPositionState().apply {
+            position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
+        }
     }
-    val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)
+    val current = LocalContext.current
+    val bikeLanes = rememberSaveable { parseGeoJson(current, R.raw.bike_lanes) }
 
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
@@ -170,15 +191,44 @@ fun MapScreen(
                 Polyline(bikeLane, color = Color.Blue, width = 10f)
             }
             estacions.forEach { station ->
+                val markerState = rememberSaveable(saver = MarkerState.Saver) {
+                    MarkerState(LatLng(station.lat, station.lon))
+                }
                 Marker(
-                    state = MarkerState(LatLng(station.lat, station.lon)),
+                    state = markerState,
                     onClick = {
                         val route = MyAppRoute.Station.createRoute(station.station_id.toString())
                         mainViewModel.navigateToDynamic(route)
                         true
                     },
-                    icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
+                    icon = resizeMapIcons(context, R.mipmap.logostation, 200, 200)
                 )
+
+                /*
+                val locationState = rememberMarkerState(
+                    position = LatLng(station.lat, station.lon)
+                )
+                var showInfoWindow by remember {
+                    mutableStateOf(true)
+                }
+                MarkerInfoWindowContent(
+                    state = locationState,
+                    onClick = {
+                        if (showInfoWindow) {
+                            locationState.showInfoWindow()
+                        } else {
+                            locationState.hideInfoWindow()
+                        }
+                        showInfoWindow = !showInfoWindow
+                        return@MarkerInfoWindowContent false
+                    },
+                    icon = resizeMapIcons(context, R.mipmap.logostation, 200, 200),
+                ) {
+                    EstacioBicingWidget2(
+                        stationId = station.station_id.toString(),
+                        stationViewModel = stationViewModel
+                    )
+                } */
             }
             if (isNavigating) {
                 selectedPlace?.let { place ->
@@ -359,5 +409,6 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
 fun resizeMapIcons(context: Context, iconId: Int, width: Int, height: Int): BitmapDescriptor {
     val imageBitmap = BitmapFactory.decodeResource(context.resources, iconId)
     val resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false)
+
     return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
 }
