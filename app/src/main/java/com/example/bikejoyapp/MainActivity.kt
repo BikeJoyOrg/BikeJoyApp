@@ -25,9 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,9 +37,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.AccountScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
@@ -53,9 +48,13 @@ import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -64,6 +63,7 @@ import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
+import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -89,11 +89,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
+        val shopViewModel: ShopViewModel by viewModels()
 
 
         if (!Places.isInitialized()) {
@@ -119,13 +121,15 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
-                    navigationViewModel = navigationViewModel
+                    navigationViewModel = navigationViewModel,
+                    shopViewModel = shopViewModel
                 )
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAppContent(
@@ -133,38 +137,45 @@ fun MyAppContent(
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    shopViewModel: ShopViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
     val currentRoute =
-        rememberNavController().currentBackStackEntryAsState().value?.destination?.route
+        navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         topBar = {
             if (isTopBarVisible) {
-                TopAppBar(
+                CenterAlignedTopAppBar(
                     title = {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = stringResource(id = R.string.app_name))
-                        }
+                        Text(text = stringResource(id = R.string.app_name))
                     },
                     navigationIcon = {
                         IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
                             Icon(Icons.Default.AccountCircle, contentDescription = "Account")
                         }
-                    })
+                    },
+                    actions = {
+                        println("currentRoute: $currentRoute")
+                        println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                        if (currentRoute == MyAppRoute.Shop.route) {
+                            IconButton(onClick = { /* do something */ }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                    contentDescription = "Localized description"
+                                )
+                            }
+                        }
+                    },
+                )
             }
         },
         bottomBar = {
             if (isBottomBarVisible) {
                 MyAppBottomNavigation(
-                    navController = navController, currentRoute = currentRoute, mainViewModel = mainViewModel
+                    currentRoute = currentRoute, mainViewModel = mainViewModel
                 )
             }
         }
@@ -190,7 +201,7 @@ fun MyAppContent(
                     SocialScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen()
+                    ShopScreen(shopViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen()
@@ -201,7 +212,7 @@ fun MyAppContent(
                 composable(
                     route = MyAppRoute.Station.route,
                     arguments = listOf(navArgument("stationId") { type = NavType.StringType })
-                ) { backStackEntry ->
+                ) {
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
             }
@@ -211,7 +222,6 @@ fun MyAppContent(
 
 @Composable
 fun MyAppBottomNavigation(
-    navController: NavHostController,
     currentRoute: String?,
     mainViewModel: MainViewModel
 ) {

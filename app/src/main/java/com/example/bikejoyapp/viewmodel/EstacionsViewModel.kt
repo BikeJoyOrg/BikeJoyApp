@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.api.ApiService
 import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatus
@@ -82,7 +83,7 @@ class EstacionsViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val response = apiService.getStationById(stationId)
+                val response: Response<StationStatusResponse> = apiService.getStationById(stationId)
                 if (response.isSuccessful) {
                     val stationStatus = response.body()?.state
                     val address = getStationAddress(stationId)
@@ -107,13 +108,6 @@ class EstacionsViewModel : ViewModel() {
         val station = stations.find { it.station_id == stationId.toInt() } ?: return null
         return station.address
     }
-}
-interface ApiService {
-    @GET("stations")
-    suspend fun getStations(): Response<StationResponse>
-
-    @GET("stations/{id}")
-    suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
 }
 
 

@@ -4,11 +4,6 @@ import com.google.maps.android.clustering.ClusterItem
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class StationStatusResponse(
-    val state: StationStatus
-)
-
-@Serializable
 data class StationStatus(
     val station_id: Int,
     val mechanical: Int,
@@ -19,3 +14,8 @@ data class StationStatus(
     override fun getTitle(): String = title
     override fun getSnippet(): String = snippet
 }
+
+@Serializable
+data class StationStatusResponse(
+    val state: StationStatus
+)

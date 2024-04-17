@@ -1,6 +1,7 @@
 package com.example.bikejoyapp
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -18,7 +19,7 @@ val TOP_LEVEL_DESTINATIONS = listOf(
     ),
     MyAppTopLevelDestination(
         route = MyAppRoute.Routes,
-        selectedIcon = Icons.Default.Send,
+        selectedIcon = Icons.AutoMirrored.Filled.Send,
         iconTextId = R.string.routes
     ),
     MyAppTopLevelDestination(
