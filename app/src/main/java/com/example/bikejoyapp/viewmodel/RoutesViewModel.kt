@@ -1,21 +1,13 @@
 package com.example.bikejoyapp.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bikejoyapp.R
-import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.data.Route
 import com.example.bikejoyapp.data.RutaUsuari
-import com.example.bikejoyapp.ui.GravarRutaScreen
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
-import retrofit2.http.Query
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
