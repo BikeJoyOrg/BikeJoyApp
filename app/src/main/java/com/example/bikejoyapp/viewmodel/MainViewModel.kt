@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.MyAppTopLevelDestination
 import com.example.bikejoyapp.data.Route
+import com.example.bikejoyapp.data.RutaUsuari
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 
 class MainViewModel : ViewModel() {
-    var selectedRoute: Route? = null
+    var selectedRoute: RutaUsuari? = null
     private val _isBottomBarVisible = MutableStateFlow(true) // Inicialmente visible
     val isBottomBarVisible: StateFlow<Boolean> = _isBottomBarVisible
     fun hideBottomBar() { _isBottomBarVisible.value = false }

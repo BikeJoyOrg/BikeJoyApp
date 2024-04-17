@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.Route
+import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
@@ -22,8 +23,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class RoutesViewModel : ViewModel() {
     // LiveData que contiene la lista de rutas
-    private val _routes = MutableLiveData<List<Route>>(listOf())
-    val routes: LiveData<List<Route>> = _routes
+    private val _routes = MutableLiveData<List<RutaUsuari>>(listOf())
+    val routes: LiveData<List<RutaUsuari>> = _routes
 
     private val _searchQuery = MutableLiveData<String>()
     val searchQuery: LiveData<String> = _searchQuery
@@ -84,7 +85,7 @@ class RoutesViewModel : ViewModel() {
         Log.d("Filters", "Ubicación de inicio cambiada a: $location")
     }
 
-
+/*
     init {
         // Añade aquí tus datos falsos de ejemplo
         _routes.value = listOf(
@@ -100,6 +101,7 @@ class RoutesViewModel : ViewModel() {
             Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground, 1, "Horta")
         )
     }
+    */
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }
@@ -110,15 +112,14 @@ class RoutesViewModel : ViewModel() {
         // Aquí deberías implementar la lógica de búsqueda con los filtros activos
         viewModelScope.launch {
             try {
-                val response = apiService.searchRoutes(distanceFilter.value, durationFilter.value, null) // Ejemplo con distance y time
-                if (response.isSuccessful) {
-                    // Actualizar _routes con los datos obtenidos
+                val response = apiService.searchRoutes()
+                if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
-                    // Manejar la respuesta fallida
+                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                // Manejar la excepción
+                Log.e("API Exception", "Error occurred: ${e.message}")
             }
         }
     }
@@ -129,6 +130,13 @@ class RoutesViewModel : ViewModel() {
 
     interface ApiService {
         // Asume que ya tienes otros endpoints aquí
+        @GET("api/v5/Rutes")
+        suspend fun searchRoutes(): Response<List<RutaUsuari>>
+    }
+
+    /*
+    interface ApiService {
+        // Asume que ya tienes otros endpoints aquí
         @GET("searchRoutes")
         suspend fun searchRoutes(
             @Query("distance") distance: Float?,
@@ -136,5 +144,7 @@ class RoutesViewModel : ViewModel() {
             @Query("startLocation") startLocation: String?
         ): Response<List<Route>>
     }
+    */
+
 
 }

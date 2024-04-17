@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.bikejoyapp.data.RutaUsuari
 
 
 @Composable
@@ -212,7 +213,7 @@ fun FilterForm(
 
 
 @Composable
-fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<Route>) {
+fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<RutaUsuari>) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp)
@@ -231,7 +232,7 @@ fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<
             }
         }
         items(routes) { route ->
-            RoutePreviewWidget(route.name, route.description, route.imageRes, onClick ={
+            RoutePreviewWidget(route.RuteName, route.RuteDescription, onClick ={
                 mainViewModel.selectedRoute = route
                 mainViewModel.navigateTo(MyAppRoute.RouteDetail)
             })

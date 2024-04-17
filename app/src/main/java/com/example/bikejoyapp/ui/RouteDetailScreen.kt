@@ -19,10 +19,11 @@ import androidx.compose.material3.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.RutaUsuari
 
 
 @Composable
-fun RouteDetailScreen(mainViewModel: MainViewModel, route: Route) {
+fun RouteDetailScreen(mainViewModel: MainViewModel, route: RutaUsuari) {
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
             Box {
@@ -35,15 +36,14 @@ fun RouteDetailScreen(mainViewModel: MainViewModel, route: Route) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth().height(200.dp))
             Spacer(Modifier.height(16.dp))
-            Text(text = route.name)
+            route.RuteName?.let { Text(text = it) }
             //RatingBikes(route.rating)
             Spacer(Modifier.height(16.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Descripción")
-                    Text(route.description)
+                    route.RuteDescription?.let { Text(it) }
                     Spacer(Modifier.height(8.dp))
-                    Text("Zona inicial: ${route.startZone}")
+                    //Text("Zona inicial: ${route.startZone}")
                 }
             }
             Spacer(Modifier.height(16.dp))

@@ -22,7 +22,7 @@ import androidx.compose.material3.MaterialTheme
 
 
 @Composable
-fun RoutePreviewWidget(name: String, description: String, image: Int, onClick: () -> Unit) {
+fun RoutePreviewWidget(name: String?, description: String?, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -35,7 +35,7 @@ fun RoutePreviewWidget(name: String, description: String, image: Int, onClick: (
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image (
-                painter = painterResource(id = image),
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = null,
                 modifier = Modifier
                     .size(130.dp)
@@ -43,8 +43,12 @@ fun RoutePreviewWidget(name: String, description: String, image: Int, onClick: (
                 contentScale = ContentScale.Fit
             )
             Column (Modifier.padding(8.dp)) {
-                Text(text = name)
-                Text(text = description)
+                if (name != null) {
+                    Text(text = name)
+                }
+                if (description != null) {
+                    Text(text = description)
+                }
             }
         }
     }
