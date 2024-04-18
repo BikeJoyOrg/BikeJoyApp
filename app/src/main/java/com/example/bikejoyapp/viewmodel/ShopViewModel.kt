@@ -51,4 +51,8 @@ class ShopViewModel: ViewModel() {
             }
         }
     }
+
+    fun getItemById(itemId: String): Item? {
+        return _items.value?.find { it.id == itemId }
+    }
 }

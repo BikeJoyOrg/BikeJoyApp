@@ -46,7 +46,7 @@ fun EstacioBicingWidget(
     stationViewModel: EstacionsViewModel
 ) {
     // Inicializa stationId como null
-    var stationId = remember { mutableStateOf<String?>(null) }
+    val stationId = remember { mutableStateOf<String?>(null) }
 
     // LaunchedEffect con una clave constante se ejecuta solo una vez
     LaunchedEffect(true) {

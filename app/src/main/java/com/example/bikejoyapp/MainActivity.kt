@@ -50,13 +50,19 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
+import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -161,10 +167,12 @@ fun MyAppContent(
                         println("currentRoute: $currentRoute")
                         println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
                         if (currentRoute == MyAppRoute.Shop.route) {
-                            IconButton(onClick = { /* do something */ }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("1000 ", fontSize = 20.sp)
                                 Icon(
                                     painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                    contentDescription = "Localized description"
+                                    contentDescription = "Localized description",
+                                    modifier = Modifier.size(32.dp)
                                 )
                             }
                         }
@@ -201,7 +209,7 @@ fun MyAppContent(
                     SocialScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel)
+                    ShopScreen(shopViewModel, navigationViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen()
@@ -214,6 +222,12 @@ fun MyAppContent(
                     arguments = listOf(navArgument("stationId") { type = NavType.StringType })
                 ) {
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
+                }
+                composable(
+                    route = MyAppRoute.Item.route,
+                    arguments = listOf(navArgument("itemId") { type = NavType.StringType })
+                ) {
+                    ShopItemWidget(navController, mainViewModel, shopViewModel)
                 }
             }
         }
