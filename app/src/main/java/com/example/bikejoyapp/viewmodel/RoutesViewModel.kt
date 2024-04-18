@@ -64,7 +64,7 @@ class RoutesViewModel : ViewModel() {
     val startLocationFilter: LiveData<String> = _startLocationFilter
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://66181f849a41b1b3dfbc4f82.mockapi.io/")
+        .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -112,7 +112,8 @@ class RoutesViewModel : ViewModel() {
         // Aquí deberías implementar la lógica de búsqueda con los filtros activos
         viewModelScope.launch {
             try {
-                val response = apiService.searchRoutes()
+                val startLocation = startLocationFilter.value ?: "Cualquier zona"
+                val response = apiService.searchRoutes(distanceFilter.value, durationFilter.value, startLocation)
                 if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
@@ -127,24 +128,25 @@ class RoutesViewModel : ViewModel() {
         // Aquí deberías implementar la lógica de búsqueda
     }
 
-
+    /*
     interface ApiService {
         // Asume que ya tienes otros endpoints aquí
         @GET("api/v5/Rutes")
         suspend fun searchRoutes(): Response<List<RutaUsuari>>
     }
+    */
 
-    /*
+
     interface ApiService {
         // Asume que ya tienes otros endpoints aquí
-        @GET("searchRoutes")
+        @GET("rutes/")
         suspend fun searchRoutes(
             @Query("distance") distance: Float?,
             @Query("duration") duration: Float?,
-            @Query("startLocation") startLocation: String?
-        ): Response<List<Route>>
+            @Query("nombreZona") nombreZona: String,
+        ): Response<List<RutaUsuari>>
     }
-    */
+
 
 
 }

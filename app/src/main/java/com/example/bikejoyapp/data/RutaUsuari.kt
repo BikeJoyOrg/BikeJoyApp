@@ -8,5 +8,5 @@ data class RutaUsuari(
     val RuteTime: Int,
     val RuteRating:Int,
     val puntIniciLat: Double,
-    val puntIniciLon: Double,
+    val puntIniciLong: Double,
 )
