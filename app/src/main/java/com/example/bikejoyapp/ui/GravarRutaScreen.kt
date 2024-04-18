@@ -1,5 +1,7 @@
 package com.example.bikejoyapp.ui
 
+import android.app.Notification
+import androidx.compose.foundation.layout.Arrangement
 import com.example.bikejoyapp.viewmodel.GravarRutaViewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -7,7 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -15,12 +21,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontSynthesis.Companion.Style
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -33,15 +49,70 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.viewmodel.MainViewModel
 
 @Composable
-fun  GravarRutaScreen(viewModel: GravarRutaViewModel,) {
+fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewModel) {
     val barcelona = LatLng(41.38879, 2.15899)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(barcelona, 13f)
     }
     val pl: List<LatLng> by viewModel.pl.observeAsState(mutableListOf<LatLng>())
     val posstart: LatLng by viewModel.posstart.observeAsState(LatLng(0.0,0.0))
+    val referEnable: Boolean by viewModel.referEnable.observeAsState(false)
+    val desferEnable: Boolean by viewModel.desferEnable.observeAsState(false)
+    val guardarEnable: Boolean by viewModel.guardarEnable.observeAsState(false)
+    val showDialog: Boolean by viewModel.showDialog.observeAsState(false)
+    val nomRuta: String by viewModel.nomRuta.observeAsState("")
+    if  (showDialog) {
+        Dialog(onDismissRequest = { /*TODO*/ }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ){Text(
+                        text = "Introdueix nom de la ruta",
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+
+                    )}
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = nomRuta,
+                        onValueChange = { viewModel.assignaNom(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(fontSize = 20.sp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        TextButton(
+                            onClick = { viewModel.guardarRuta(mainViewModel) },
+                        ) {
+                            Text("Guardar", fontSize = 15.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val mapHeight = maxHeight.value * 0.9 // Adjust this value to set the height of the map
         val buttonHeight = maxHeight.value - mapHeight
@@ -65,12 +136,14 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,) {
                 Button(
                     onClick = { viewModel.ReferInici()},
                     Modifier.height(48.dp),
+                    enabled = referEnable
                 ) {
                     Text(text = "Refer Inici")
                 }
                 Button(
-                    onClick = { viewModel.guardarRuta()},
+                    onClick = { viewModel.dialogGuardarRuta()},
                     Modifier.height(48.dp),
+                    enabled = guardarEnable
 
                 ) {
                     Text(text = "Gravar Ruta")
@@ -78,6 +151,7 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,) {
                 Button(
                     onClick = { viewModel.Desfer()},
                     Modifier.height(48.dp),
+                    enabled = desferEnable
                 ) {
                     Text(text = "Desfer Punt")
                 }

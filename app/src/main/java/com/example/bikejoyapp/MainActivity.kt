@@ -189,7 +189,7 @@ fun MyAppContent(
                     PetScreen()
                 }
                 composable(MyAppRoute.GravarRuta.route) {
-                    GravarRutaScreen(GravarRutaViewModel())
+                    GravarRutaScreen(GravarRutaViewModel(),mainViewModel)
                 }
                 composable(
                     route = MyAppRoute.Station.route,
