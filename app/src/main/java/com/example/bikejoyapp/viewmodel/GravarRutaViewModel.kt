@@ -50,6 +50,9 @@ open class GravarRutaViewModel : ViewModel(){
 
     private val _nomRuta = MutableLiveData<String>()
     val nomRuta: LiveData<String> = _nomRuta
+
+    private val _descRuta = MutableLiveData<String>()
+    val descRuta: LiveData<String> = _descRuta
     open fun onselected(s: String) {
         if (start) {
             start = false
@@ -130,40 +133,50 @@ open class GravarRutaViewModel : ViewModel(){
                     .build()
                 val dist = totalDistance(ruta)
                 Log.d("aris", "entro2")
-                val rutaUsuari = RutaUsuari(null,_nomRuta.value,null,dist,timebicycle(dist),0,ruta.first().latitude,ruta.first().longitude)
-                val call = retrofit.create(ApiRetrofit::class.java).postRoute(rutaUsuari)
-                // Resto del código para manejar la respuesta
 
-                Log.d("aris", call.isSuccessful.toString())
-                if (call.isSuccessful) {
-                    val id_ruta = call.body()?.RuteId
-                    Log.d("aris", "Ruta guardada "+id_ruta)
-                    var i = 0
-                    ruta.forEach{
-                        val puntsInterRuta = PuntsInterRuta("",i,it.latitude.toFloat(),it.longitude.toFloat(),id_ruta)
-                        ++i
-                        /*
-                                            val retrofit2 = Retrofit.Builder()
-                                                .baseUrl("https://65faaa103909a9a65b1b14c0.mockapi.io/")
-                                                .addConverterFactory(GsonConverterFactory.create())
-                                                .build()*/
-                        val retrofit2 = Retrofit.Builder()
-                            .baseUrl("http://nattech.fib.upc.edu:40360/")
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .build()
-                        val call2 = retrofit2.create(ApiRetrofit::class.java).postPuntsInter(puntsInterRuta)
-                        if (call2.isSuccessful){
-                            Log.d("aris", "Pun")
+                if (_nomRuta.value == null || _nomRuta.value == "" || _nomRuta.value == "Ruta sense nom") {
+                    Log.d("aris", _nomRuta.value.toString())
+                    _nomRuta.postValue("Ruta sense nom")
+                }
+                else {
+                    val rutaUsuari = RutaUsuari(null,_nomRuta.value,_descRuta.value,dist,timebicycle(dist),0,ruta.first().latitude,ruta.first().longitude)
+
+                    val call = retrofit.create(ApiRetrofit::class.java).postRoute(rutaUsuari)
+
+                    // Resto del código para manejar la respuesta
+
+                    Log.d("aris", call.isSuccessful.toString())
+                    if (call.isSuccessful) {
+                        val id_ruta = call.body()?.RuteId
+                        Log.d("aris", "Ruta guardada "+id_ruta)
+                        var i = 0
+                        ruta.forEach{
+                            val puntsInterRuta = PuntsInterRuta("",i,it.latitude.toFloat(),it.longitude.toFloat(),id_ruta)
+                            ++i
+                            /*
+                                                val retrofit2 = Retrofit.Builder()
+                                                    .baseUrl("https://65faaa103909a9a65b1b14c0.mockapi.io/")
+                                                    .addConverterFactory(GsonConverterFactory.create())
+                                                    .build()*/
+                            val retrofit2 = Retrofit.Builder()
+                                .baseUrl("http://nattech.fib.upc.edu:40360/")
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build()
+                            val call2 = retrofit2.create(ApiRetrofit::class.java).postPuntsInter(puntsInterRuta)
+                            if (call2.isSuccessful){
+                                Log.d("aris", "Pun")
+                            }
                         }
+                    } else {
+                        Log.d("aris", "Error al guardar la ruta")
                     }
-                } else {
-                    Log.d("aris", "Error al guardar la ruta")
+                    mainViewModel.navigateTo(MyAppRoute.Routes)
                 }
             } catch (e: Exception) {
                 Log.e("aris", "Error en la llamada API: ${e.message}")
             }
         }
-        mainViewModel.navigateTo(MyAppRoute.Routes)
+
     }
     fun totalDistance(points: List<LatLng>): Double {
         if (points.isEmpty()) {
@@ -233,6 +246,9 @@ open class GravarRutaViewModel : ViewModel(){
 
     fun assignaNom(nom: String) {
         _nomRuta.value = nom
+    }
+    fun assignaDesc(desc: String) {
+        _descRuta.value = desc
     }
 
     fun dialogGuardarRuta() {

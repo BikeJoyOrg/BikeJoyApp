@@ -64,13 +64,14 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewMode
     val guardarEnable: Boolean by viewModel.guardarEnable.observeAsState(false)
     val showDialog: Boolean by viewModel.showDialog.observeAsState(false)
     val nomRuta: String by viewModel.nomRuta.observeAsState("")
+    val descRuta: String by viewModel.descRuta.observeAsState("")
     if  (showDialog) {
         Dialog(onDismissRequest = { /*TODO*/ }) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(16.dp),
+                    .height(400.dp)
+                    .padding(2.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Column(
@@ -89,18 +90,36 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewMode
                         fontSize = 20.sp
 
                     )}
-                    Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = nomRuta,
                         onValueChange = { viewModel.assignaNom(it) },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = TextStyle(fontSize = 20.sp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
+                    ){Text(
+                        text = "Descrpció de la ruta",
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+
+                    )}
+                    TextField(
+                        value = descRuta,
+                        onValueChange = { viewModel.assignaDesc(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(fontSize = 20.sp)
+                    )
+                    Spacer(modifier = Modifier.height(125.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.Bottom
                     ) {
                         TextButton(
                             onClick = { viewModel.guardarRuta(mainViewModel) },
