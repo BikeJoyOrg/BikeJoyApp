@@ -85,23 +85,6 @@ class RoutesViewModel : ViewModel() {
         Log.d("Filters", "Ubicación de inicio cambiada a: $location")
     }
 
-/*
-    init {
-        // Añade aquí tus datos falsos de ejemplo
-        _routes.value = listOf(
-            Route("Ruta 1", "Descripción de la ruta 1", R.drawable.ic_launcher_foreground, 5, "Barri Gotic"),
-            Route("Ruta 2", "Descripción de la ruta 2", R.drawable.ic_launcher_foreground, 4, "El Poble Sec"),
-            Route("Ruta 3", "Descripción de la ruta 3", R.drawable.ic_launcher_foreground, 3, "El Born"),
-            Route("Ruta 4", "Descripción de la ruta 4", R.drawable.ic_launcher_foreground, 2, "El Clot"),
-            Route("Ruta 5", "Descripción de la ruta 5", R.drawable.ic_launcher_foreground, 1, "El Poblenou"),
-            Route("Ruta 6", "Descripción de la ruta 6", R.drawable.ic_launcher_foreground, 5, "El Putxet"),
-            Route("Ruta 7", "Descripción de la ruta 7", R.drawable.ic_launcher_foreground, 4, "El Raval"),
-            Route("Ruta 8", "Descripción de la ruta 8", R.drawable.ic_launcher_foreground, 3, "El Tibidabo"),
-            Route("Ruta 9", "Descripción de la ruta 9", R.drawable.ic_launcher_foreground, 2, "El Vall d'Hebron"),
-            Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground, 1, "Horta")
-        )
-    }
-    */
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }
@@ -113,7 +96,7 @@ class RoutesViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val startLocation = startLocationFilter.value ?: "Cualquier zona"
-                val response = apiService.searchRoutes(distanceFilter.value, durationFilter.value, startLocation)
+                val response = apiService.searchRoutes(null, distanceFilter.value, durationFilter.value?.toInt(), startLocation)
                 if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
@@ -122,10 +105,24 @@ class RoutesViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("API Exception", "Error occurred: ${e.message}")
             }
+
         }
     }
     fun performSearch() {
-        // Aquí deberías implementar la lógica de búsqueda
+        // Aquí deberías implementar la lógica de búsqueda con los filtros activos
+        viewModelScope.launch {
+            try {
+                val response = apiService.searchRoutes(searchQuery.value, null, null, "Cualquier zona")
+                if (response.isSuccessful && response.body() != null) {
+                    _routes.postValue(response.body())
+                } else {
+                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+
+        }
     }
 
     /*
@@ -141,8 +138,9 @@ class RoutesViewModel : ViewModel() {
         // Asume que ya tienes otros endpoints aquí
         @GET("rutes/")
         suspend fun searchRoutes(
+            @Query("query") query: String?,
             @Query("distance") distance: Float?,
-            @Query("duration") duration: Float?,
+            @Query("duration") duration: Int?,
             @Query("nombreZona") nombreZona: String,
         ): Response<List<RutaUsuari>>
     }
