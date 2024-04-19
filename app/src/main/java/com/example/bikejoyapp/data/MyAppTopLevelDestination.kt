@@ -1,18 +1,14 @@
 package com.example.bikejoyapp.data
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.bikejoyapp.R
 
 data class MyAppTopLevelDestination(
     val route: MyAppRoute,
-    val selectedIcon: ImageVector,
-    val iconTextId: Int
+    val selectedIcon: ImageVector? = null,
+    val iconTextId: Int,
+    val unselectedIcon: ImageVector? = null,
+    val selectedImageResource: Int? = null,
+    val unselectedImageResource: Int? = null
 )
 
 

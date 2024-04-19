@@ -48,14 +48,27 @@ import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color.rgb
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -152,27 +165,42 @@ fun MyAppContent(
         navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (isTopBarVisible) {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(text = stringResource(id = R.string.app_name))
                     },
+                    colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        navigationIconContentColor = Color.White,
+                        titleContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
                     navigationIcon = {
-                        IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Account")
+                        if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route) {
+                            IconButton(onClick = { mainViewModel.navigateBack() }) {
+                                Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                            }
+                        }
+                        else {
+                            IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
+                                Icon(Icons.Default.AccountCircle, contentDescription = "Account", Modifier.size(32.dp))
+                            }
                         }
                     },
                     actions = {
                         println("currentRoute: $currentRoute")
                         println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                        if (currentRoute == MyAppRoute.Shop.route) {
+                        if (currentRoute == MyAppRoute.Shop.route || currentRoute == MyAppRoute.Item.route) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("1000 ", fontSize = 20.sp)
                                 Icon(
                                     painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
                                     contentDescription = "Localized description",
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(32.dp),
+                                    tint = Color(0xFFD4AF37)
                                 )
                             }
                         }
@@ -209,7 +237,7 @@ fun MyAppContent(
                     SocialScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel, navigationViewModel)
+                    ShopScreen(shopViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen()
@@ -239,17 +267,38 @@ fun MyAppBottomNavigation(
     currentRoute: String?,
     mainViewModel: MainViewModel
 ) {
-    NavigationBar(modifier = Modifier.fillMaxWidth()) {
-        TOP_LEVEL_DESTINATIONS.forEach { destination ->
+    var selected by remember { mutableStateOf(2) }
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.White
+    ) {
+        TOP_LEVEL_DESTINATIONS.forEachIndexed { index, destination ->
             NavigationBarItem(
-                selected = currentRoute == destination.route.route,
-                onClick = { mainViewModel.navigateTo(destination.route) },
+                selected = index == selected,
+                onClick =
+                {
+                    selected = index
+                    mainViewModel.navigateTo(destination.route)
+                },
                 icon = {
-                    Icon(
-                        imageVector = destination.selectedIcon,
-                        contentDescription = stringResource(id = destination.iconTextId)
-                    )
-                }
+                    if (destination.selectedIcon != null) {
+                        Icon(
+                            imageVector = if (index == selected) destination.selectedIcon!! else destination.unselectedIcon!!,
+                            contentDescription = stringResource(id = destination.iconTextId),
+                            tint = Color.White
+                        )
+                    }
+                    else {
+                        Icon(
+                            painter = painterResource(
+                                if (index == selected) destination.selectedImageResource!! else destination.unselectedImageResource!!
+                            ),
+                            contentDescription = stringResource(id = destination.iconTextId),
+                            tint = Color.White
+                        )
+                    }
+                },
             )
         }
     }

@@ -67,16 +67,6 @@ fun EstacioBicingWidget(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            IconButton(
-                onClick = { mainViewModel.navigateBack() },
-                modifier = Modifier.align(Alignment.CenterStart)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_arrow_back_24),
-                    tint = Color.Black,
-                    contentDescription = "Back"
-                )
-            }
             Text(
                 text = "Estació bicing",
                 color = Color.Black,

@@ -57,8 +57,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget2
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -203,32 +201,6 @@ fun MapScreen(
                     },
                     icon = resizeMapIcons(context, R.mipmap.logostation, 200, 200)
                 )
-
-                /*
-                val locationState = rememberMarkerState(
-                    position = LatLng(station.lat, station.lon)
-                )
-                var showInfoWindow by remember {
-                    mutableStateOf(true)
-                }
-                MarkerInfoWindowContent(
-                    state = locationState,
-                    onClick = {
-                        if (showInfoWindow) {
-                            locationState.showInfoWindow()
-                        } else {
-                            locationState.hideInfoWindow()
-                        }
-                        showInfoWindow = !showInfoWindow
-                        return@MarkerInfoWindowContent false
-                    },
-                    icon = resizeMapIcons(context, R.mipmap.logostation, 200, 200),
-                ) {
-                    EstacioBicingWidget2(
-                        stationId = station.station_id.toString(),
-                        stationViewModel = stationViewModel
-                    )
-                } */
             }
             if (isNavigating) {
                 selectedPlace?.let { place ->

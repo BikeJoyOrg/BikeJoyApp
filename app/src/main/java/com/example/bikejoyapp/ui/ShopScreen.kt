@@ -27,11 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Item
+import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 @Composable
-fun ShopScreen(shopViewModel: ShopViewModel, navigationViewModel: NavigationViewModel) {
+fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
     val items = shopViewModel.items.value ?: emptyList()
     Column(modifier = Modifier.fillMaxSize()) {
         //Spacer(modifier = Modifier.height(8.dp))
@@ -41,7 +43,10 @@ fun ShopScreen(shopViewModel: ShopViewModel, navigationViewModel: NavigationView
             modifier = Modifier.fillMaxSize()
         ) {
             items(items.size) { index ->
-                ItemCard(index = index, items = items, onItemClick = {items[index]})
+                ItemCard(index = index, items = items) {
+                    val route = MyAppRoute.Item.createRoute(it.id)
+                    mainViewModel.navigateToDynamic(route)
+                }
             }
         }
     }
