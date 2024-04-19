@@ -51,9 +51,11 @@ import android.content.pm.PackageManager
 import android.graphics.Color.rgb
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AddCircle
@@ -70,6 +72,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
@@ -168,51 +171,68 @@ fun MyAppContent(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (isTopBarVisible) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(text = stringResource(id = R.string.app_name))
-                    },
-                    colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        navigationIconContentColor = Color.White,
-                        titleContentColor = Color.White,
-                        actionIconContentColor = Color.White
-                    ),
-                    navigationIcon = {
-                        if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route) {
-                            IconButton(onClick = { mainViewModel.navigateBack() }) {
-                                Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                Box {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(id = R.string.app_name),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        colors = topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            navigationIconContentColor = Color.White,
+                            titleContentColor = Color.White,
+                            actionIconContentColor = Color.White
+                        ),
+                        navigationIcon = {
+                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route) {
+                                IconButton(onClick = { mainViewModel.navigateBack() }) {
+                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                                }
                             }
-                        }
-                        else {
-                            IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                Icon(Icons.Default.AccountCircle, contentDescription = "Account", Modifier.size(32.dp))
+                            else {
+                                IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Account", Modifier.size(32.dp))
+                                }
                             }
-                        }
-                    },
-                    actions = {
-                        println("currentRoute: $currentRoute")
-                        println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                        if (currentRoute == MyAppRoute.Shop.route || currentRoute == MyAppRoute.Item.route) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("1000 ", fontSize = 20.sp)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                    contentDescription = "Localized description",
-                                    modifier = Modifier.size(32.dp),
-                                    tint = Color(0xFFD4AF37)
-                                )
+                        },
+                        actions = {
+                            println("currentRoute: $currentRoute")
+                            println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                            if (currentRoute == MyAppRoute.Shop.route || currentRoute == MyAppRoute.Item.route) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("1000 ", fontSize = 20.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color(0xFFD4AF37)
+                                    )
+                                }
                             }
-                        }
-                    },
-                )
+                        },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.BottomStart),
+                        thickness = 3.dp,
+                        color = Color.White
+                    )
+                }
             }
         },
         bottomBar = {
             if (isBottomBarVisible) {
-                MyAppBottomNavigation(
-                    currentRoute = currentRoute, mainViewModel = mainViewModel
-                )
+                Box {
+                    MyAppBottomNavigation(
+                        currentRoute = currentRoute, mainViewModel = mainViewModel
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.TopStart),
+                        thickness = 3.dp,
+                        color = Color.White
+                    )
+                }
             }
         }
     ) { innerPadding ->

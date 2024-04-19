@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,26 +56,18 @@ fun ShopItemWidget(
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
             .padding(top = 16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = item?.title ?: "titol no disponible",
-                color = Color.Black,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Center),
-                textAlign = TextAlign.Center
-            )
-        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = item?.title ?: "titol no disponible",
+            color = Color.Black,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(24.dp))
         Image(
             painter = painterResource(imageResId),
@@ -87,9 +80,7 @@ fun ShopItemWidget(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = item?.description ?: "descripció no disponible",
-            color = Color.Black,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.W500,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = 16.dp),
             textAlign = TextAlign.Center
         )
