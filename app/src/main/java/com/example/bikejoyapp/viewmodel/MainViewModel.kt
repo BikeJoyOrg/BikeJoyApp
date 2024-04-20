@@ -29,7 +29,6 @@ class MainViewModel : ViewModel() {
     fun navigateTo(destination: MyAppRoute) {
         val result = _navigationCommands.trySend(NavigationCommand.ToDestination(destination))
 
-        // Traça opcional d'errors
         result.onFailure { throwable ->
             throwable?.printStackTrace()
         }
@@ -44,9 +43,8 @@ class MainViewModel : ViewModel() {
 
     fun navigateBack() {
         val result = _navigationCommands.trySend(NavigationCommand.Back)
-
-        // Traça opcional d'errors
         result.onFailure { throwable ->
+            println("error go back")
             throwable?.printStackTrace()
         }
     }
