@@ -21,8 +21,6 @@ import retrofit2.http.GET
 class BikeLanesViewModel: ViewModel() {
     private val _bikeLanes = MutableLiveData<List<BikeLane>>(emptyList())
     val bikeLanes: LiveData<List<BikeLane>> = _bikeLanes
-    /*private val _loading = MutableLiveData(false)
-    val loading: LiveData<Boolean> = _loading*/
 
 
     interface ApiService {
@@ -64,7 +62,7 @@ class BikeLanesViewModel: ViewModel() {
                         println("Correct loading data: ")
                     } else {
                         val errorBody = response.errorBody()?.string()
-                        println("Error fetching data: ${response.errorBody()}")
+                        println("Error fetching data: $errorBody")
                     }
                 } catch (e: Exception) {
                     println("Error fetching data: $e")
