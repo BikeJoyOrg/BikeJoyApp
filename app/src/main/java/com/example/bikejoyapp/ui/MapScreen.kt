@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -52,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
+import com.example.bikejoyapp.ui.theme.magentaClaroCrema
+import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -72,8 +76,8 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import org.json.JSONObject
 
+/*
 fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
     val bikeLanes = mutableListOf<List<LatLng>>()
     try {
@@ -101,9 +105,17 @@ fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
     }
 
     return bikeLanes
+}*/
+
+var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
+var locationCallback = object : LocationCallback() {
+    override fun onLocationResult(p0: LocationResult) {
+        p0 ?: return
+        for (location in p0.locations) {
+            deviceLocation.value = LatLng(location.latitude, location.longitude)
+        }
+    }
 }
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
@@ -114,27 +126,23 @@ fun MapScreen(
 ) {
     val context = LocalContext.current
     val searchQuery by navigationViewModel.searchQuery.observeAsState("")
-    val deviceLocation = remember { mutableStateOf(LatLng(41.390205, 2.154007)) }
+
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = LocationRequest.create().apply {
         interval = 1000
         fastestInterval = 500
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
-    val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(p0: LocationResult) {
-            p0 ?: return
-            for (location in p0.locations) {
-                deviceLocation.value = LatLng(location.latitude, location.longitude)
-            }
-        }
-    }
+
     val estacions by stationViewModel.estacions.observeAsState(emptyList())
     val selectedPlace by navigationViewModel.selectedPlace.observeAsState()
+    val consultarOpcio by navigationViewModel.consultarOpcio.collectAsState()
     val isNavigating by navigationViewModel.isNavigating.collectAsState()
     val PaintSearchFields by navigationViewModel.PaintSearchFields.collectAsState()
     val navigationTime by navigationViewModel.navigationTime.collectAsState()
     val navigationKm by navigationViewModel.navigationKm.collectAsState()
+    val ruta by navigationViewModel.ruta.observeAsState()
+    val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -154,143 +162,163 @@ fun MapScreen(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
     }
-    val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)
+    "val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)"
 
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMap(
+    Column {
+        Row (
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = bottomPadding),
-            cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
-        ) {
-            bikeLanes.forEach { bikeLane ->
-                Polyline(bikeLane, color = Color.Blue, width = 10f)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            if (PaintSearchFields) {
+                Column {
+                    SearchField(searchQuery = searchQuery,
+                        onSearchQueryChanged = { query -> navigationViewModel.onSearchQueryChanged(query) },
+                        onPerformSearch = { navigationViewModel.performSearch() }
+                    )
+                    SearchResultsList(navigationViewModel, mainViewModel)
+                }
             }
-            estacions.forEach { station ->
-                Marker(
-                    state = MarkerState(LatLng(station.lat, station.lon)),
-                    onClick = {
-                        val route = MyAppRoute.Station.createRoute(station.station_id.toString())
-                        mainViewModel.navigateToDynamic(route)
-                        true
-                    },
-                    icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
-                )
-            }
-            if (isNavigating) {
-                selectedPlace?.let { place ->
-                    val cameraPosition = CameraPosition.Builder()
-                        .target(place.latLng)
-                        .zoom(15f)
-                        .build()
-                    cameraPositionState.position = cameraPosition
+        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = bottomPadding),
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
+            ) {
+                /*
+                bikeLanes.forEach { bikeLane ->
+                    Polyline(bikeLane, color = colorAzulClaro, width = 10f)
+                }*/
+                estacions.forEach { station ->
                     Marker(
-                        state = MarkerState(position = place.latLng),
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                        state = MarkerState(LatLng(station.lat, station.lon)),
+                        onClick = {
+                            val route = MyAppRoute.Station.createRoute(station.station_id.toString())
+                            mainViewModel.navigateToDynamic(route)
+                            true
+                        },
+                        icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
                     )
+                }
+                if (consultarOpcio) {
 
-                    LaunchedEffect(place) {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(
-                                place.latLng,
-                                15f
+                    ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
+
+                    selectedPlace?.let { place ->
+                        if (primer_cop){
+                            val cameraPosition = CameraPosition.Builder()
+                                .target(place.latLng)
+                                .zoom(15f)
+                                .build()
+                            cameraPositionState.position = cameraPosition
+                            navigationViewModel.primer_cop()
+                        }
+                        Marker(
+                            state = MarkerState(position = place.latLng),
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE),
+                            onClick = {
+                                navigationViewModel.startNavigation()
+                                mainViewModel.hideBottomBar()
+                                mainViewModel.hideTopBar()
+                                true
+                            }
+                        )
+
+                    }
+                }
+            }
+
+            if (!isNavigating) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(
+                        onClick = {
+                            navigationViewModel.startNavigation()
+                            mainViewModel.hideBottomBar()
+                            navigationViewModel.stopPaintSearchFields()
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .clip(RoundedCornerShape(50)),
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                        )
+                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                        if (consultarOpcio){
+                            Text(
+                                text = "Iniciar navegació",
                             )
-                        )
+                        }
+                        else {
+                            Text(
+                                text = "Navegació lliure"
+                            )
+                        }
                     }
                 }
             }
-
-            Marker(state = markerState)
-
-            LaunchedEffect(deviceLocation.value) {
-                markerState.position = deviceLocation.value
-            }
-        }
-
-        if (PaintSearchFields) {
-            Column {
-                SearchField(searchQuery = searchQuery,
-                    onSearchQueryChanged = { query -> navigationViewModel.onSearchQueryChanged(query) },
-                    onPerformSearch = { navigationViewModel.performSearch() }
-                )
-                SearchResultsList(navigationViewModel, mainViewModel)
-            }
-        }
-
-        if (!isNavigating) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TextButton(
-                    onClick = {
-                        navigationViewModel.startNavigation()
-                        mainViewModel.hideBottomBar()
-                        navigationViewModel.stopPaintSearchFields()
-                    },
+            else {
+                BottomAppBar(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .clip(RoundedCornerShape(50)),
-                ) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
-                    )
-                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(
-                        text = "Navegació lliure"
-                    )
-                }
-            }
-        }
-        else {
-            BottomAppBar(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_access_time_24),
-                            contentDescription = "Tiempo de navegación"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Temps: ${navigationTime}s")
-                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_access_time_24),
+                                contentDescription = "Tiempo de navegación"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Temps: ${navigationTime}s")
+                        }
 
-                    IconButton(onClick = {
-                        navigationViewModel.stopNavigation()
-                        mainViewModel.showBottomBar()
-                        mainViewModel.showTopBar()
-                        navigationViewModel.PaintSearchFields()
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_stop_circle_24),
-                            contentDescription = "Stop",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
+                        IconButton(onClick = {
+                            navigationViewModel.stopNavigation()
+                            mainViewModel.showBottomBar()
+                            mainViewModel.showTopBar()
+                            navigationViewModel.PaintSearchFields()
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_stop_circle_24),
+                                contentDescription = "Stop",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_directions_bike_24),
-                            contentDescription = "Kilómetros"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Km: ${"%.2f".format(navigationKm)} m")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_directions_bike_24),
+                                contentDescription = "Kilómetros"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Km: ${"%.2f".format(navigationKm)} m")
+                        }
+                        LaunchedEffect(deviceLocation.value) {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    deviceLocation.value,
+                                    17f
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -343,15 +371,12 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
             place.name?.let {
                 place.address?.let { it1 ->
                     SearchPreviewWidget(it, it1, onClick = {
-                        navigationViewModel.selectedPlace.value = place
-                        navigationViewModel.startNavigation()
-                        mainViewModel.hideBottomBar()
-                        mainViewModel.hideTopBar()
+                        navigationViewModel.assignaPuntBusqueda(place,deviceLocation.value)
                         navigationViewModel.stopPaintSearchFields()
                     })
                 }
             }
-
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

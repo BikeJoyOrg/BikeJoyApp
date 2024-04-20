@@ -49,6 +49,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.ui.theme.magentaClaroCrema
 import com.example.bikejoyapp.viewmodel.MainViewModel
 
 @Composable
@@ -145,7 +146,7 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewMode
                     cameraPositionState = cameraPositionState,
                     properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
                 ) {
-                    Polyline(points = pl, color = Color.Magenta, width = 15.0f)
+                    Polyline(points = pl, color = magentaClaroCrema, width = 15.0f)
                     Marker(state = MarkerState(position = posstart),
                         icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala))
                 }

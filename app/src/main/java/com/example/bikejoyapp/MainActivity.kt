@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
 
     private val navigationViewModel: NavigationViewModel by viewModels {
-        NavigationViewModel.Factory(placesClient)
+        NavigationViewModel.Factory(placesClient, this)
     }
     private val CODIGO_PERMISO_FINE_LOCATION = 101
     private var isPermisos = false

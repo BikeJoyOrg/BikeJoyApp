@@ -107,6 +107,9 @@ dependencies {
     implementation (libs.android.maps.utils)
     implementation(libs.mockito.core)
     implementation(libs.androidx.core.testing)
+
+    implementation (libs.androidx.core.ktx)
+
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation (libs.io.mockk.mockk5)
     testImplementation (libs.androidx.core.testing.v210)
