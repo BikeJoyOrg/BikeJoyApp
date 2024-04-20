@@ -53,6 +53,12 @@ open class GravarRutaViewModel : ViewModel(){
 
     private val _descRuta = MutableLiveData<String>()
     val descRuta: LiveData<String> = _descRuta
+
+    private val _tempsRuta = MutableLiveData<Int>()
+    val tempsRuta: LiveData<Int> = _tempsRuta
+    private val _distanciaRuta = MutableLiveData<Double>()
+    val distanciaRuta: LiveData<Double> = _distanciaRuta
+
     open fun onselected(s: String) {
         if (start) {
             start = false
@@ -107,6 +113,8 @@ open class GravarRutaViewModel : ViewModel(){
         _referEnable.postValue(first != "")
         _desferEnable.postValue(ruta.size > 1)
         _guardarEnable.postValue(ruta.size > 1)
+        _distanciaRuta.postValue(dist)
+        _tempsRuta.postValue(timebicycle(dist))
         _pl.postValue(polylineaux.toList())
 
     }
@@ -253,5 +261,8 @@ open class GravarRutaViewModel : ViewModel(){
 
     fun dialogGuardarRuta() {
         _showDialog.postValue(true)
+    }
+    fun dialogGuardarRutaDismiss() {
+        _showDialog.postValue(false)
     }
 }
