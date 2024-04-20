@@ -2,8 +2,6 @@ package com.example.bikejoyapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.data.MyAppTopLevelDestination
-import com.example.bikejoyapp.data.Route
 import com.example.bikejoyapp.data.RutaUsuari
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure

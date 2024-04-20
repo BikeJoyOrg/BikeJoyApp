@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import com.example.bikejoyapp.ui.components.RoutePreviewWidget
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
 import androidx.compose.runtime.livedata.observeAsState
-import com.example.bikejoyapp.data.Route
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
