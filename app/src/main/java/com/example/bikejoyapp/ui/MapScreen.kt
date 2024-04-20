@@ -90,6 +90,7 @@ import com.google.maps.android.compose.rememberMarkerState
 import org.json.JSONObject
 import com.google.maps.android.clustering.ClusterManager
 import com.example.bikejoyapp.data.StationClusterItem
+import com.example.bikejoyapp.ui.theme.colorAzulClaro
 
 
 fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
@@ -208,10 +209,10 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-                /*
+
                 bikeLanes.forEach { bikeLane ->
                     Polyline(bikeLane, color = colorAzulClaro, width = 10f)
-                }*/
+                }
                 estacions.forEach { station ->
                     Marker(
                         state = MarkerState(LatLng(station.lat, station.lon)),

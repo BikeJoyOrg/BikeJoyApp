@@ -169,7 +169,7 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewMode
                 ) {
                     Polyline(points = pl, color = magentaOscuroCrema, width = 15.0f)
                     Marker(state = MarkerState(position = posstart),
-                        icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala))
+                        icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_inicit_escala))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))

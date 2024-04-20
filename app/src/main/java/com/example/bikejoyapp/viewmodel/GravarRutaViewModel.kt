@@ -237,6 +237,9 @@ open class GravarRutaViewModel : ViewModel(){
             _referEnable.postValue(first != "")
             _desferEnable.postValue(ruta.size > 1)
             _guardarEnable.postValue(ruta.size > 1)
+            val dist = totalDistance(ruta)
+            _distanciaRuta.postValue(dist)
+            _tempsRuta.postValue(timebicycle(dist))
             _pl.postValue(polylineaux.toList())
         }
     }
@@ -249,6 +252,8 @@ open class GravarRutaViewModel : ViewModel(){
         _desferEnable.postValue(ruta.size > 1)
         _guardarEnable.postValue(ruta.size > 1)
         _posstart.postValue(LatLng(0.0,0.0))
+        _distanciaRuta.postValue(0.0)
+        _tempsRuta.postValue(0)
         _pl.postValue(ruta.toList())
     }
 
