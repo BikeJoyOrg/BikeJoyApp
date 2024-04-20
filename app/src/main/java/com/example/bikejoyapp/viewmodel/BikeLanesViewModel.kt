@@ -1,18 +1,21 @@
 package com.example.bikejoyapp.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.BikeLane
+import com.example.bikejoyapp.data.BikeLaneResponse
 import com.google.android.gms.maps.model.LatLng
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
 class BikeLanesViewModel: ViewModel() {
@@ -21,29 +24,20 @@ class BikeLanesViewModel: ViewModel() {
     /*private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading*/
 
-    data class ServerLatLng(
-        val id: Int,
-        val latitude: Double,
-        val longitude: Double
-    )
-
-    data class ServerBikeLane(
-        val id: String,
-        val lat_lngs: List<ServerLatLng>
-    )
-
-    data class BikeLaneResponse(
-        val bikelanes: List<ServerBikeLane>
-    )
 
     interface ApiService {
         @GET("bikelanes")
         suspend fun getBikeLanes(): Response<BikeLaneResponse>
     }
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)
 

@@ -147,7 +147,6 @@ class MainActivity : ComponentActivity() {
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
                     shopViewModel = shopViewModel,
-                    navigationViewModel = navigationViewModel,
                     bikeLanesViewModel = bikeLanesViewModel
                 )
             }
@@ -155,6 +154,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAppContent(
@@ -164,7 +164,6 @@ fun MyAppContent(
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
     shopViewModel: ShopViewModel,
-    navigationViewModel: NavigationViewModel,
     bikeLanesViewModel: BikeLanesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
