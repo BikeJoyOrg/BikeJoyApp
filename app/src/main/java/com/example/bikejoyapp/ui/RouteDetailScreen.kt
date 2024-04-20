@@ -24,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
@@ -41,9 +44,34 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
 
 
+
+val rutaUsuariPreview = RutaUsuari(
+    RuteId = 1,
+    RuteName = "Ruta por Montjuïc",
+    RuteDescription = "Esta es una ruta de prueba",
+    RuteDistance = 10.0,
+    RuteTime = 60,
+    RuteRating = 3,
+    PuntIniciLat = 41.3851,
+    PuntIniciLong = 2.1734
+)
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewRouteDetailScreen() {
+    // Crear instancias de ViewModel vacías para el preview
+    val routesViewModel = RoutesViewModel()
+    val mainViewModel = MainViewModel()
+
+    RouteDetailScreen(routesViewModel, mainViewModel, rutaUsuariPreview)
+}
+
+
 @Composable
 fun RouteDetailScreen(routesViewModel: RoutesViewModel, mainViewModel: MainViewModel, route: RutaUsuari) {
-    var rating by remember { mutableIntStateOf(route.RuteRating ?: 0) }
+    var userRating by remember { mutableIntStateOf(0) }
+    val fixedRating = route.RuteRating
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(route.PuntIniciLat, route.PuntIniciLong), 12f)
@@ -80,34 +108,59 @@ fun RouteDetailScreen(routesViewModel: RoutesViewModel, mainViewModel: MainViewM
                 }
             }
             Spacer(Modifier.height(16.dp))
-            route.RuteName?.let { Text(text = it) }
-            RatingBikes(rating, onRatingChanged = { newRating ->
-                rating = newRating
-            })
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = route.RuteName ?: "Nombre de ruta",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .weight(1f) // Ocupa la mayor parte del espacio disponible, pero permite que el ícono se ajuste al lado
+                )
+                RatingBikes(
+                    rating = fixedRating,
+                    enabled = false,
+                )
+            }
             Spacer(Modifier.height(16.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    route.RuteDescription?.let { Text(it) }
-                    Spacer(Modifier.height(8.dp))
+                Column {
+                    Text(text = route.RuteDescription ?: "Descripción no disponible")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Tu valoración:")
+                    RatingBikes(rating = userRating, enabled = true, onRatingChanged = { newRating ->
+                        userRating = newRating
+                        // Aquí podrías llamar a una función de tu ViewModel para enviar la valoración del usuario al backend
+                        //routesViewModel.submitUserRating(routeId = route.RuteId, rating = newRating)
+                    })
                 }
             }
             Spacer(Modifier.height(16.dp))
         }
     }
 }
-
 @Composable
-fun RatingBikes(rating: Int, onRatingChanged: (Int) -> Unit) {
+fun RatingBikes(rating: Int, enabled: Boolean, iconSize: Dp = 40.dp, onRatingChanged: (Int) -> Unit = {}) {
     Row {
         for (i in 1..5) {
             val image = if (i <= rating) {
-                painterResource(id = R.drawable.bicicleta_filled) // Suponiendo que es el recurso para la bicicleta rellena
+                painterResource(id = R.drawable.bicicleta_filled)
             } else {
-                painterResource(id = R.drawable.bicicleta_outlined) // Suponiendo que es el recurso para la bicicleta delineada
+                painterResource(id = R.drawable.bicicleta_outlined)
             }
 
-            IconButton(onClick = { onRatingChanged(i) }) {
-                Icon(painter = image, contentDescription = "Bici $i")
+            if (enabled) {
+                IconButton(onClick = { onRatingChanged(i) }) {
+                    Icon(painter = image, contentDescription = "Bici $i", modifier = Modifier
+                        .padding(horizontal = 2.dp)
+                        .size(iconSize))
+                }
+            } else {
+                Icon(painter = image, contentDescription = "Bici $i", modifier = Modifier
+                    .padding(horizontal = 2.dp)
+                    .size(iconSize))
             }
         }
     }
