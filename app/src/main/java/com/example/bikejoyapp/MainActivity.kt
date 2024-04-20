@@ -58,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
+import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
+        val bikeLanesViewModel: BikeLanesViewModel by viewModels()
 
 
         if (!Places.isInitialized()) {
@@ -119,7 +121,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
-                    navigationViewModel = navigationViewModel
+                    navigationViewModel = navigationViewModel,
+                    bikeLanesViewModel = bikeLanesViewModel
                 )
             }
         }
@@ -133,7 +136,8 @@ fun MyAppContent(
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    bikeLanesViewModel: BikeLanesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -178,7 +182,7 @@ fun MyAppContent(
                 navController = navController, startDestination = MyAppRoute.Home.route
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel)
+                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)

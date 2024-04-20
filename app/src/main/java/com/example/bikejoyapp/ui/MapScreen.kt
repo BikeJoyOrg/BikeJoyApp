@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
+import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -74,43 +75,14 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import org.json.JSONObject
 
-fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
-    val bikeLanes = mutableListOf<List<LatLng>>()
-    try {
-        val geoJson =
-            context.resources.openRawResource(resourceId).bufferedReader().use { it.readText() }
-        val jsonObject = JSONObject(geoJson)
-        val features = jsonObject.getJSONArray("features")
-
-        for (i in 0 until features.length()) {
-            val feature = features.getJSONObject(i)
-            val geometry = feature.getJSONObject("geometry")
-            val coordinates = geometry.getJSONArray("coordinates")
-
-            val bikeLane = mutableListOf<LatLng>()
-            for (j in 0 until coordinates.length()) {
-                val coordinate = coordinates.getJSONArray(j)
-                val latLng = LatLng(coordinate.getDouble(1), coordinate.getDouble(0))
-                bikeLane.add(latLng)
-            }
-
-            bikeLanes.add(bikeLane)
-        }
-    } catch (e: Exception) {
-        println("Error al leer o analizar el archivo GeoJSON: ${e.message}")
-    }
-
-    return bikeLanes
-}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    bikeLanesViewModel: BikeLanesViewModel
 ) {
     val context = LocalContext.current
     val searchQuery by navigationViewModel.searchQuery.observeAsState("")
@@ -135,6 +107,7 @@ fun MapScreen(
     val PaintSearchFields by navigationViewModel.PaintSearchFields.collectAsState()
     val navigationTime by navigationViewModel.navigationTime.collectAsState()
     val navigationKm by navigationViewModel.navigationKm.collectAsState()
+    val bikelanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -154,7 +127,6 @@ fun MapScreen(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
     }
-    val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)
 
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
 
@@ -166,8 +138,8 @@ fun MapScreen(
             cameraPositionState = cameraPositionState,
             properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
         ) {
-            bikeLanes.forEach { bikeLane ->
-                Polyline(bikeLane, color = Color.Blue, width = 10f)
+            bikelanes.forEach { bikeLane ->
+                Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
             }
             estacions.forEach { station ->
                 Marker(
