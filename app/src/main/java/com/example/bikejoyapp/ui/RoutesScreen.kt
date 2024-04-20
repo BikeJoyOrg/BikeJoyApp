@@ -98,8 +98,10 @@ fun SearchBar(searchQuery: String,
             imeAction = ImeAction.Search
         ),
         keyboardActions = KeyboardActions(onSearch = {
-            onPerformSearch()
-            keyboardController?.hide()
+            if (searchQuery.isNotBlank()) {
+                onPerformSearch()
+                keyboardController?.hide()
+            }
         }),
         singleLine = true,
         maxLines = 1,

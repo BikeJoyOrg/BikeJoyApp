@@ -6,15 +6,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.RutaUsuari
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 class RoutesViewModel : ViewModel() {
-    // LiveData que contiene la lista de rutas
     private val _routes = MutableLiveData<List<RutaUsuari>>(listOf())
     val routes: LiveData<List<RutaUsuari>> = _routes
 
@@ -55,6 +57,9 @@ class RoutesViewModel : ViewModel() {
     private val _startLocationFilter = MutableLiveData<String>()
     val startLocationFilter: LiveData<String> = _startLocationFilter
 
+    private val _puntosIntermedios = MutableLiveData<List<LatLng>>()
+    val puntosIntermedios: LiveData<List<LatLng>> = _puntosIntermedios
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -82,9 +87,7 @@ class RoutesViewModel : ViewModel() {
     }
 
 
-    // Función para realizar la búsqueda con los filtros activos.
     fun performSearchWithFilters() {
-        // Aquí deberías implementar la lógica de búsqueda con los filtros activos
         viewModelScope.launch {
             try {
                 val startLocation = startLocationFilter.value ?: "Cualquier zona"
@@ -101,7 +104,6 @@ class RoutesViewModel : ViewModel() {
         }
     }
     fun performSearch() {
-        // Aquí deberías implementar la lógica de búsqueda con los filtros activos
         viewModelScope.launch {
             try {
                 val response = apiService.searchRoutes(searchQuery.value, null, null, "Cualquier zona")
@@ -117,17 +119,22 @@ class RoutesViewModel : ViewModel() {
         }
     }
 
-    /*
-    interface ApiService {
-        // Asume que ya tienes otros endpoints aquí
-        @GET("api/v5/Rutes")
-        suspend fun searchRoutes(): Response<List<RutaUsuari>>
+    fun getPuntosIntermedios(ruteId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getPuntosIntermedios(ruteId)
+                if (response.isSuccessful && response.body() != null) {
+                    _puntosIntermedios.postValue(response.body())
+                } else {
+                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+        }
     }
-    */
-
 
     interface ApiService {
-        // Asume que ya tienes otros endpoints aquí
         @GET("rutes/")
         suspend fun searchRoutes(
             @Query("query") query: String?,
@@ -135,6 +142,12 @@ class RoutesViewModel : ViewModel() {
             @Query("duration") duration: Int?,
             @Query("nombreZona") nombreZona: String,
         ): Response<List<RutaUsuari>>
+
+
+        @GET("puntos-intermedios/{ruteId}/")
+        suspend fun getPuntosIntermedios(
+            @Path("ruteId") ruteId: Int
+        ): Response<List<LatLng>>
     }
 
 

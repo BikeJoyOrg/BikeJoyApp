@@ -198,7 +198,7 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
-                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(mainViewModel, it1) }
+                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1) }
                 }
             }
         }
