@@ -29,7 +29,6 @@ import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
-import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 @Composable
@@ -44,7 +43,7 @@ fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
         ) {
             items(items.size) { index ->
                 ItemCard(index = index, items = items) {
-                    val route = MyAppRoute.Item.createRoute(it.id)
+                    val route = MyAppRoute.Item.createRoute(it.id.toString())
                     mainViewModel.navigateToDynamic(route)
                 }
             }
@@ -55,11 +54,11 @@ fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
 @Composable
 fun ItemCard(index: Int, items: List<Item>, onItemClick: (Item) -> Unit) {
     val item = items[index]
-    val imageResId = when (index) {
-        0 -> R.drawable.item_0
+    val imageResId = when (item.item_picture_id) {
         1 -> R.drawable.item_1
         2 -> R.drawable.item_2
         3 -> R.drawable.item_3
+        4 -> R.drawable.item_4
         else -> R.drawable.item_default
     }
     Card(

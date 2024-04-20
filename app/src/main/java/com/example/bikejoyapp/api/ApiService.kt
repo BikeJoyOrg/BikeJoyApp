@@ -10,7 +10,7 @@ import retrofit2.http.Path
 
 interface ApiService {
     @GET("items")
-    suspend fun getItems(): Response<List<Item>>
+    suspend fun getItems(): Response<ItemResponse>
 
     @GET("stations")
     suspend fun getStations(): Response<StationResponse>
