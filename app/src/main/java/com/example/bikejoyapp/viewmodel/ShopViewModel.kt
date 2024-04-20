@@ -35,7 +35,7 @@ class ShopViewModel: ViewModel() {
         getStoreData()
     }
 
-    private fun getStoreData() {
+    fun getStoreData() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
@@ -55,5 +55,19 @@ class ShopViewModel: ViewModel() {
 
     fun getItemById(itemId: Int): Item? {
         return _items.value?.find { it.id == itemId }
+    }
+
+    fun buyItem(id: Int) {
+        viewModelScope.launch {
+            val response = apiService.buyItem(id)
+            if (response.isSuccessful) {
+                println("Item purchase was successful")
+            } else {
+                println("Item purchase failed with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
+                }
+            }
+        }
     }
 }

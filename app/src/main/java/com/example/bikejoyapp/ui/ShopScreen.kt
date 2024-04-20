@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -33,6 +34,10 @@ import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 @Composable
 fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
+    LaunchedEffect(Unit) {
+        shopViewModel.getStoreData()
+    }
+
     val items = shopViewModel.items.value ?: emptyList()
     Column(modifier = Modifier.fillMaxSize()) {
         //Spacer(modifier = Modifier.height(8.dp))

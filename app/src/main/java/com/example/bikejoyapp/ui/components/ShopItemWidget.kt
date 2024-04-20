@@ -100,7 +100,8 @@ fun ShopItemWidget(
                     focusedElevation = 4.dp
                 ),
                 onClick = {
-
+                    shopViewModel.buyItem(item?.id ?: 0)
+                    mainViewModel.navigateToDynamic("Shop")
                 },
                 modifier = Modifier
                     .padding(horizontal = 24.dp, vertical = 16.dp)
