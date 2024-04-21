@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.data.Comment
 import com.example.bikejoyapp.data.RutaUsuari
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
@@ -59,6 +60,9 @@ class RoutesViewModel : ViewModel() {
 
     private val _puntosIntermedios = MutableLiveData<List<LatLng>>()
     val puntosIntermedios: LiveData<List<LatLng>> = _puntosIntermedios
+
+    private val _routeComments = MutableLiveData<List<Comment>>()
+    val routeComments: LiveData<List<Comment>> = _routeComments
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")

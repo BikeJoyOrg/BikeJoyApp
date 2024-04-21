@@ -235,7 +235,8 @@ fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<
         items(routes) { route ->
             RoutePreviewWidget(route.RuteName, route.RuteDescription, onClick ={
                 mainViewModel.selectedRoute = route
-                mainViewModel.navigateTo(MyAppRoute.RouteDetail)
+                mainViewModel.hideBottomBar()
+                mainViewModel.navigateToDynamic("RouteDetail")
             })
         }
     }
