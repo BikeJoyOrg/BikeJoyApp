@@ -13,3 +13,7 @@ val Pink40 = Color(0xFF7D5260)
 
 val Cyan = Color(rgb(41, 128, 153))
 val Gray = Color(rgb(217, 217, 217))
+val colorAzulClaro = Color(0xFFADD8E6)
+val magentaClaroCrema = Color(0xFFF5B0CB)
+val magentaOscuroCrema = Color(0xFF8B008B)
+

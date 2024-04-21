@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
+import com.example.bikejoyapp.ui.RouteDetailScreen
 import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
 
     private val navigationViewModel: NavigationViewModel by viewModels {
-        NavigationViewModel.Factory(placesClient)
+        NavigationViewModel.Factory(placesClient, this)
     }
     private val CODIGO_PERMISO_FINE_LOCATION = 101
     private var isPermisos = false
@@ -267,13 +268,16 @@ fun MyAppContent(
                     PetScreen()
                 }
                 composable(MyAppRoute.GravarRuta.route) {
-                    GravarRutaScreen(GravarRutaViewModel())
+                    GravarRutaScreen(GravarRutaViewModel(),mainViewModel)
                 }
                 composable(
                     route = MyAppRoute.Station.route,
                     arguments = listOf(navArgument("stationId") { type = NavType.StringType })
                 ) {
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
+                }
+                composable (route = MyAppRoute.RouteDetail.route) {
+                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(mainViewModel, it1) }
                 }
                 composable(
                     route = MyAppRoute.Item.route,

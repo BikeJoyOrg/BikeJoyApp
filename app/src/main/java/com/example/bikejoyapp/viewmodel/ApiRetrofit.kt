@@ -11,7 +11,7 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface ApiRetrofit {
-    @GET("/v2/directions/driving-car")
+    @GET("/v2/directions/cycling-regular")
     suspend fun getRoute(
         @Query("api_key") key: String,
         @Query("start", encoded = true) start: String,
