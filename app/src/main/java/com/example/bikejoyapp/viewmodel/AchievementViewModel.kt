@@ -4,9 +4,16 @@ import androidx.lifecycle.ViewModel
 import com.example.bikejoyapp.data.Achievement
 import com.example.bikejoyapp.data.Level
 
-class AchievementViewModel: ViewModel() {
-    private val _achievements = MutableLiveData(
-        mapOf(
+class AchievementViewModel : ViewModel() {
+    private val _achievements = MutableLiveData<Map<String, Achievement>>()
+    val achievements: LiveData<Map<String, Achievement>> = _achievements
+
+    init {
+        getAchievementsData()
+    }
+
+    fun getAchievementsData() {
+        _achievements.value = mapOf(
             "Aventurero" to Achievement(
                 name = "Aventurero",
                 actualValue = 15,
@@ -107,8 +114,7 @@ class AchievementViewModel: ViewModel() {
                 )
             ),
         )
-    )
-    val achievements: LiveData<Map<String, Achievement>> = _achievements
+    }
 
     fun updateAchievement(achievementName: String, value: Int) {
         _achievements.value?.get(achievementName)?.let { achievement ->
@@ -127,5 +133,12 @@ class AchievementViewModel: ViewModel() {
                 _achievements.value = _achievements.value // Trigger LiveData update
             }
         }
+    }
+
+    fun claimReward(achievementName: String, levelIndex: Int) {
+        val currentAchievements = _achievements.value.orEmpty().toMutableMap()
+        val achievement = currentAchievements[achievementName]
+        achievement?.levels?.get(levelIndex)?.isRedeemed = true
+        _achievements.value = currentAchievements
     }
 }

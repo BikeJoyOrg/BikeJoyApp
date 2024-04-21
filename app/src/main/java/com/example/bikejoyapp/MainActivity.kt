@@ -1,5 +1,6 @@
 package com.example.bikejoyapp
 
+import AchievementViewModel
 import com.example.bikejoyapp.viewmodel.GravarRutaViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -49,6 +50,7 @@ import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
 import com.example.bikejoyapp.ui.AchievementList
+import com.example.bikejoyapp.ui.AchievementScreen
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.ui.RouteDetailScreen
@@ -88,7 +90,7 @@ class MainActivity : ComponentActivity() {
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
-
+        val achievementViewModel: AchievementViewModel by viewModels()
 
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
@@ -113,7 +115,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
-                    navigationViewModel = navigationViewModel
+                    navigationViewModel = navigationViewModel,
+                    achievementViewModel = achievementViewModel
                 )
             }
         }
@@ -127,7 +130,8 @@ fun MyAppContent(
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    achievementViewModel: AchievementViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -181,7 +185,7 @@ fun MyAppContent(
                     HomeScreen()
                 }
                 composable(MyAppRoute.Social.route) {
-                    AchievementList()
+                    AchievementScreen(achievementViewModel)
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen()
