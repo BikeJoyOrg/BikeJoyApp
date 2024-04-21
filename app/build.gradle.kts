@@ -124,6 +124,7 @@ dependencies {
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.okhttp)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.androidx.compose.bom.v20240401)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {

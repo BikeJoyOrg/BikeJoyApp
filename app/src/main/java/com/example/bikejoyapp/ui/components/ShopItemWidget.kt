@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 
@@ -42,10 +43,18 @@ fun ShopItemWidget(
     shopViewModel: ShopViewModel
 ) {
     val itemId = remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(true) {
-        itemId.value = navController.currentBackStackEntry?.arguments?.getString("itemId")
-    }
+    itemId.value = navController.currentBackStackEntry?.arguments?.getString("itemId")
     val item = itemId.let { it.value?.let { it1 -> shopViewModel.getItemById(it1.toInt()) } }
+
+    LaunchedEffect(item) {
+        shopViewModel.getStoreData()
+        if (item == null) {
+            println("Item not found")
+            mainViewModel.navigateTo(MyAppRoute.Shop)
+        }
+        println("checking item: $itemId  $item")
+    }
+
     val imageResId = when (item?.item_picture_id) {
         1 -> R.drawable.item_1
         2 -> R.drawable.item_2
