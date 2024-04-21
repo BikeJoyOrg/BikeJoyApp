@@ -134,7 +134,7 @@ fun MapScreen(
     val navigationKm by navigationViewModel.navigationKm.collectAsState()
     val ruta by navigationViewModel.ruta.observeAsState()
     val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
-    val bikelanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
+    val bikeLanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -182,7 +182,7 @@ fun MapScreen(
             ) {
 
                 bikeLanes.forEach { bikeLane ->
-                    Polyline(bikeLane, color = Color.Blue, width = 10f)
+                    Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
                 }
                 estacions.forEach { station ->
                     Marker(
