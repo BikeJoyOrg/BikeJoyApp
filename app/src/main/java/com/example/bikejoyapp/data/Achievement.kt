@@ -1,7 +1,7 @@
 package com.example.bikejoyapp.data
 
 import kotlinx.serialization.Serializable
-@Serializable
+
 data class Level(
     val level: Int,
     val description: String,

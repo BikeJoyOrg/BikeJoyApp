@@ -48,6 +48,7 @@ import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
+import com.example.bikejoyapp.ui.AchievementList
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.ui.RouteDetailScreen
@@ -180,7 +181,7 @@ fun MyAppContent(
                     HomeScreen()
                 }
                 composable(MyAppRoute.Social.route) {
-                    SocialScreen()
+                    AchievementList()
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen()
