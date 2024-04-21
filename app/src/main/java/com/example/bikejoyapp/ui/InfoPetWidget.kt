@@ -112,7 +112,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
                     Text(text = "Bonus: "+ (mascotaAconseguida.nivell*10).toString() + Mascotes.getMascotaPorNombre(mascotaAconseguida.nomMascota)?.bonus, fontSize = 32.sp, modifier = Modifier.padding(top = 30.dp))
                 }
                 item {
-                    Button(onClick = { MascotesAconseguides.equipar(mascotaAconseguida.nomMascota, mascotaAconseguida.nicknameUsuari); println(mascotaAconseguida.nomMascota + mascotaAconseguida.nicknameUsuari) }) {
+                    Button(onClick = { MascotesAconseguides.equipar(mascotaAconseguida.nomMascota, mascotaAconseguida.nicknameUsuari) }) {
                         Text(text = "Equipar")
                     }
                 }
