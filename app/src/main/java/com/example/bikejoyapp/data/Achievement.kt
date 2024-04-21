@@ -6,6 +6,7 @@ data class Level(
     val level: Int,
     val description: String,
     val valueRequired: Int,
+    val recompense: Int,
     var isAchieved: Boolean = false,
     var isRedeemed: Boolean = false
 )
