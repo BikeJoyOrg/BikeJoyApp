@@ -13,7 +13,7 @@ object AchievementsIcons {
          "Sociable" to R.drawable.heart,
          "Crítico" to R.drawable.reviews,
          "Navegante" to R.drawable.viking_ship,
-         "Derrochador" to R.drawable.coins,
+         "Derrochador" to R.drawable.money_bag,
          "Criador" to R.drawable.pet,
          "Ecologista" to R.drawable.leaf,
      )
