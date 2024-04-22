@@ -78,6 +78,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
+import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
 import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
 
     private val navigationViewModel: NavigationViewModel by viewModels {
-        NavigationViewModel.Factory(placesClient)
+        NavigationViewModel.Factory(placesClient, this)
     }
     private val CODIGO_PERMISO_FINE_LOCATION = 101
     private var isPermisos = false
@@ -118,6 +119,7 @@ class MainActivity : ComponentActivity() {
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
+        val bikeLanesViewModel: BikeLanesViewModel by viewModels()
         val shopViewModel: ShopViewModel by viewModels()
 
 
@@ -145,7 +147,8 @@ class MainActivity : ComponentActivity() {
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
-                    shopViewModel = shopViewModel
+                    shopViewModel = shopViewModel,
+                    bikeLanesViewModel = bikeLanesViewModel
                 )
             }
         }
@@ -161,7 +164,8 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    shopViewModel: ShopViewModel
+    shopViewModel: ShopViewModel,
+    bikeLanesViewModel: BikeLanesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -246,7 +250,7 @@ fun MyAppContent(
                 navController = navController, startDestination = MyAppRoute.Home.route
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel)
+                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
