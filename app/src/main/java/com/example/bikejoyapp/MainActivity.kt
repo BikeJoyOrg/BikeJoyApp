@@ -90,6 +90,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
+import androidx.appcompat.app.AppCompatDelegate
 
 
 class MainActivity : ComponentActivity() {
@@ -118,6 +119,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
