@@ -58,8 +58,8 @@ val rutaUsuariPreview = RutaUsuari(
     RuteDistance = 10.0,
     RuteTime = 60,
     RuteRating = 3,
-    PuntIniciLat = 41.3851,
-    PuntIniciLong = 2.1734
+    PuntIniciLat = 41.3851f,
+    PuntIniciLong = 2.1734f
 )
 
 
@@ -88,7 +88,9 @@ fun RouteDetailScreen(
 ) {
     val fixedRating = route.RuteRating
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(route.PuntIniciLat, route.PuntIniciLong), 12f)
+        position = CameraPosition.fromLatLngZoom(LatLng(route.PuntIniciLat.toDouble(),
+            route.PuntIniciLong.toDouble()
+        ), 12f)
     }
     val currentView by routesViewModel.currentView.observeAsState(ViewType.Details)
 
@@ -109,7 +111,9 @@ fun RouteDetailScreen(
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
                 Marker(
-                    state = MarkerState(position = LatLng(route.PuntIniciLat, route.PuntIniciLong))
+                    state = MarkerState(position = LatLng(route.PuntIniciLat.toDouble(),
+                        route.PuntIniciLong.toDouble()),
+                    )
                 )
                 Polyline(
                     points = puntosIntermedios,
