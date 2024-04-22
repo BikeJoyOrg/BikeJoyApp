@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color.rgb
 import android.os.Build
 import android.os.Looper
 import androidx.annotation.RequiresApi
@@ -47,7 +49,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -83,6 +87,8 @@ import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.clustering.Clustering
 import kotlinx.coroutines.delay
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 
 var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
@@ -116,7 +122,8 @@ fun MapScreen(
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    val estacions by stationViewModel.estacions.observeAsState(emptyList())
+
+
     val selectedPlace by navigationViewModel.selectedPlace.observeAsState()
     val consultarOpcio by navigationViewModel.consultarOpcio.collectAsState()
     val isNavigating by navigationViewModel.isNavigating.collectAsState()
@@ -146,6 +153,66 @@ fun MapScreen(
     }
     val current = LocalContext.current
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
+
+    val clickState = remember { mutableStateOf(false) }
+    val stationClicked = remember { mutableStateOf<EstacioBicing?>(null) }
+    LaunchedEffect(clickState.value) {
+        if (stationClicked.value == null) return@LaunchedEffect
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(stationClicked.value!!.lat, stationClicked.value!!.lon),
+                24.0f),
+            1000
+        )
+        delay(1000L)
+        val route = MyAppRoute.Station.createRoute(stationClicked.value!!.station_id.toString())
+        mainViewModel.navigateToDynamic(route)
+    }
+
+    val estacions by stationViewModel.estacions.observeAsState(emptyList())
+    val visibleClusters = remember { mutableStateOf(emptyList<EstacioBicing>()) }
+    val cachedClusters = remember { mutableStateOf(HashSet<EstacioBicing>()) }
+    val lastCameraPosition = remember { mutableStateOf<LatLng?>(null) }
+    val lastZoomLevel = remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(cameraPositionState.position) {
+        val newCameraPosition = LatLng(cameraPositionState.position.target.latitude,
+            cameraPositionState.position.target.longitude)
+        val newZoomLevel = cameraPositionState.position.zoom
+        if (lastCameraPosition.value == null ||
+            distanceBetween(lastCameraPosition.value!!, newCameraPosition) > 0.001 ||
+            abs(newZoomLevel - (lastZoomLevel.value ?: 0f)) > 0.8f) {
+            println("La posición de la cámara se ha actualizado a: ${cameraPositionState.position}")
+            println("Numero de estaciones cargadas: ${estacions.size}")
+
+            val visibleRegion = cameraPositionState.projection?.visibleRegion
+            val latLngBounds = visibleRegion?.latLngBounds
+            println("Límites de la región visible: $latLngBounds")
+
+            // Calcular las coordenadas que están a un 20% de distancia de los bordes de la región visible
+            val latDiff = (latLngBounds?.northeast?.latitude ?: 0.0) - (latLngBounds?.southwest?.latitude ?: 0.0)
+            val lonDiff = (latLngBounds?.northeast?.longitude ?: 0.0) - (latLngBounds?.southwest?.longitude ?: 0.0)
+            val extraLat = latDiff * 0.2
+            val extraLon = lonDiff * 0.2
+            val northeast = LatLng((latLngBounds?.northeast?.latitude ?: 0.0) + extraLat, (latLngBounds?.northeast?.longitude ?: 0.0) + extraLon)
+            val southwest = LatLng((latLngBounds?.southwest?.latitude ?: 0.0) - extraLat, (latLngBounds?.southwest?.longitude ?: 0.0) - extraLon)
+
+            // Expandir los límites para incluir las coordenadas adicionales
+            val expandedBounds = latLngBounds?.including(northeast)?.including(southwest)
+            println("Límites expandidos: $expandedBounds")
+
+            val newClusters = estacions.filter { it !in cachedClusters.value && expandedBounds?.contains(LatLng(it.lat, it.lon)) == true }
+            println("Nuevos clusters encontrados: ${newClusters.size}") // Imprimir la cantidad de nuevos clusters encontrados
+            cachedClusters.value.addAll(newClusters)
+            visibleClusters.value = cachedClusters.value.toList()
+
+            println("Clusters visibles: ${visibleClusters.value.size}") // Imprimir la cantidad de clusters visibles
+
+            lastCameraPosition.value = newCameraPosition
+            lastZoomLevel.value = newZoomLevel
+        }
+    }
+
+
     Column {
         Row (
             modifier = Modifier
@@ -175,10 +242,8 @@ fun MapScreen(
                 }
 
                 // Estacions
-                val clickState = remember { mutableStateOf(false) }
-                val stationClicked = remember { mutableStateOf<EstacioBicing?>(null) }
                 Clustering(
-                    items = estacions,
+                    items = visibleClusters.value,
                     onClusterClick = {
                         cameraPositionState.move(
                             update = CameraUpdateFactory.zoomIn()
@@ -193,29 +258,18 @@ fun MapScreen(
                         Image(
                             painter = painterResource(R.drawable.bikeparking),
                             contentDescription = "bike station marker",
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     },
                     clusterContent = {
                         Image(
-                            painter = painterResource(R.drawable.bikeparking),
+                            painter = painterResource(R.drawable.bikeparkingdark),
                             contentDescription = "bike station marker",
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(24.dp),
                         )
                     },
                 )
-                LaunchedEffect(clickState.value) {
-                    if (stationClicked.value == null) return@LaunchedEffect
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newLatLngZoom(
-                            LatLng(stationClicked.value!!.lat, stationClicked.value!!.lon),
-                            32.0f),
-                        1000
-                    )
-                    delay(1000L)
-                    val route = MyAppRoute.Station.createRoute(stationClicked.value!!.station_id.toString())
-                    mainViewModel.navigateToDynamic(route)
-                }
+
                 // Fi estacions
 
                 if (consultarOpcio) {
@@ -395,8 +449,8 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
     }
 }
 
-fun resizeMapIcons(context: Context, iconId: Int, width: Int, height: Int): BitmapDescriptor {
-    val imageBitmap = BitmapFactory.decodeResource(context.resources, iconId)
-    val resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false)
-    return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+fun distanceBetween(point1: LatLng, point2: LatLng): Double {
+    val latDiff = point2.latitude - point1.latitude
+    val lonDiff = point2.longitude - point1.longitude
+    return sqrt(latDiff * latDiff + lonDiff * lonDiff)
 }
