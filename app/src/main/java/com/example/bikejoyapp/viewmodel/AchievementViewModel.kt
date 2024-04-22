@@ -1,3 +1,5 @@
+package com.example.bikejoyapp.viewmodel
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,7 +14,7 @@ class AchievementViewModel : ViewModel() {
         getAchievementsData()
     }
 
-    fun getAchievementsData() {
+    private fun getAchievementsData() {
         _achievements.value = mapOf(
             "Aventurero" to Achievement(
                 name = "Aventurero",
@@ -27,9 +29,9 @@ class AchievementViewModel : ViewModel() {
                 name = "Creador",
                 currentValue = 10,
                 levels = arrayOf(
-                    Level(1, "Crea un total de 10 rutas", 10, 200, isAchieved = true, isRedeemed = false),
-                    Level(2, "Crea un total de 25 rutas", 25, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Crea un total de 50 rutas", 50, 200, isAchieved = false, isRedeemed = false)
+                    Level(1, "Crea un total de 10 rutas", 10, 50, isAchieved = true, isRedeemed = false),
+                    Level(2, "Crea un total de 25 rutas", 25, 100, isAchieved = false, isRedeemed = false),
+                    Level(3, "Crea un total de 50 rutas", 50, 150, isAchieved = false, isRedeemed = false)
                 )
             ),
             "Explorador" to Achievement(

@@ -1,6 +1,6 @@
 package com.example.bikejoyapp.ui
 
-import AchievementViewModel
+import com.example.bikejoyapp.viewmodel.AchievementViewModel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -60,7 +59,7 @@ fun AchievementScreen(achievementViewModel: AchievementViewModel) {
 @Composable
 fun AchievementList(achievements: List<Achievement>, onRewardClaimed: (String, Int) -> Unit) {
     LazyColumn {
-        itemsIndexed(achievements) { index, achievement ->
+        itemsIndexed(achievements) { _, achievement ->
             AchievementItem(achievement) { levelIndex ->
                 onRewardClaimed(achievement.name, levelIndex)
             }
@@ -85,8 +84,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
         else -> MaterialTheme.colorScheme.surface
     }
     var completed = false
-    val showDialog = remember { mutableStateOf(false) }
-    //Para que se recargue
+    //Para que se recargue la card al reclamarla
     val reloadTrigger = remember { mutableIntStateOf(0) }
     val reload = reloadTrigger.intValue
     OutlinedCard(
@@ -198,7 +196,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                                 onRewardClaimed(lastAchievedLevel)
                                 //Irrellevant
                                 achievementState.value = achievementState.value.copy()
-                                showDialog.value = true
+                                reloadTrigger.intValue += 1
                                 val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
                                 mediaPlayer.start()
                             },
@@ -221,24 +219,6 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             Text("Reclamar")
                         }
 
-                    }
-                    if (showDialog.value) {
-                        AlertDialog(
-                            onDismissRequest = {
-                                showDialog.value = false
-                                reloadTrigger.intValue += 1
-                            },
-                            title = { Text(text = "Recompensa") },
-                            text = { Text(text = "Has recibido: ${achievement.levels[lastAchievedLevel].coinReward}") },
-                            confirmButton = {
-                                Button(onClick = {
-                                    showDialog.value = false
-                                    reloadTrigger.intValue += 1
-                                }) {
-                                    Text("OK")
-                                }
-                            }
-                        )
                     }
                 } else {
                     Box(

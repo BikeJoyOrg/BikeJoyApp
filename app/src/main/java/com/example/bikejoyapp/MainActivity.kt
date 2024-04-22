@@ -1,6 +1,6 @@
 package com.example.bikejoyapp
 
-import AchievementViewModel
+import com.example.bikejoyapp.viewmodel.AchievementViewModel
 import com.example.bikejoyapp.viewmodel.GravarRutaViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -44,12 +44,10 @@ import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
 import com.example.bikejoyapp.ui.ShopScreen
-import com.example.bikejoyapp.ui.SocialScreen
 import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import com.example.bikejoyapp.ui.AchievementList
 import com.example.bikejoyapp.ui.AchievementScreen
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
