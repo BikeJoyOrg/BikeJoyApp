@@ -277,7 +277,7 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
-                    val userHasCompletedRoute = false
+                    val userHasCompletedRoute = true
                     mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute) }
                 }
                 composable(

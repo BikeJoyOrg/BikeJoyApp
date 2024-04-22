@@ -8,12 +8,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.Comment
 import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.data.RutaUsuari
+import com.example.bikejoyapp.ui.ViewType
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -65,6 +68,20 @@ class RoutesViewModel : ViewModel() {
     private val _routeComments = MutableLiveData<List<Comment>>()
     val routeComments: LiveData<List<Comment>> = _routeComments
 
+    private val _currentView = MutableLiveData<ViewType>(ViewType.Details)
+    val currentView: LiveData<ViewType> = _currentView
+
+    private val _showDialog = MutableLiveData<Boolean>(false)
+    val showDialog: LiveData<Boolean> = _showDialog
+
+    private val _userRating = MutableLiveData<Int>(0)
+    val userRating: LiveData<Int> = _userRating
+
+    private val _ratingSent = MutableLiveData<Boolean>(false)
+    val ratingSent: LiveData<Boolean> = _ratingSent
+
+
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -89,6 +106,26 @@ class RoutesViewModel : ViewModel() {
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+    fun toggleView() {
+        _currentView.value = when (_currentView.value) {
+            ViewType.Details -> ViewType.Comments
+            ViewType.Comments, null -> ViewType.Details
+        }
+    }
+
+    fun showRatingDialog() {
+        _showDialog.value = true
+    }
+
+    fun hideRatingDialog() {
+        _showDialog.value = false
+        _userRating.value = 0
+    }
+    fun updateUserRating(newRating: Int) {
+        if (!_ratingSent.value!!) {
+            _userRating.value = newRating
+        }
     }
 
 
@@ -142,6 +179,41 @@ class RoutesViewModel : ViewModel() {
         }
     }
 
+    fun submitUserRating(ruteId: Int, rating: Int) {
+        _ratingSent.value = true
+        _showDialog.value = false
+        _userRating.value = rating
+        viewModelScope.launch {
+            try {
+                val response = apiService.submitRating(ruteId, rating)
+                if (response.isSuccessful) {
+                    Log.d("API", "Rating submitted successfully")
+                    // Aquí podrías actualizar la UI para reflejar que la valoración fue enviada
+                } else {
+                    Log.e("API Error", "Failed to submit rating: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred while submitting rating: ${e.message}")
+            }
+        }
+    }
+
+    fun addNewComment(ruteId: Int, commentText: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.addComment(ruteId, commentText)
+                if (response.isSuccessful) {
+                    // Actualizar la lista de comentarios en la UI
+                    _routeComments.postValue(_routeComments.value.orEmpty() + Comment(author = "Username", text = commentText))
+                } else {
+                    Log.e("API Error", "Failed to add comment: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred while adding comment: ${e.message}")
+            }
+        }
+    }
+
     interface ApiService {
         @GET("rutes/")
         suspend fun searchRoutes(
@@ -156,8 +228,17 @@ class RoutesViewModel : ViewModel() {
         suspend fun getPuntosIntermedios(
             @Path("ruteId") ruteId: Int
         ): Response<List<PuntoIntermedio>>
+
+        @POST("submit-rating/{ruteId}/")
+        suspend fun submitRating(
+            @Path("ruteId") ruteId: Int,
+            @Body rating: Int
+        ): Response<Unit>
+
+        @POST("add-comment/{ruteId}/")
+        suspend fun addComment(
+            @Path("ruteId") ruteId: Int,
+            @Body comment: String
+        ): Response<Unit>
     }
-
-
-
 }

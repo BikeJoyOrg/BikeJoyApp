@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.window.DialogProperties
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
@@ -68,7 +70,7 @@ fun PreviewRouteDetailScreen() {
     val routesViewModel = RoutesViewModel()
     val mainViewModel = MainViewModel()
 
-    RouteDetailScreen(routesViewModel, mainViewModel, rutaUsuariPreview, userHasCompletedRoute = false)
+    RouteDetailScreen(routesViewModel, mainViewModel, rutaUsuariPreview, userHasCompletedRoute = true)
 }
 
 
@@ -85,24 +87,21 @@ fun RouteDetailScreen(
     userHasCompletedRoute: Boolean
 ) {
     val fixedRating = route.RuteRating
-        val cameraPositionState = rememberCameraPositionState {
+    val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(route.PuntIniciLat, route.PuntIniciLong), 12f)
     }
+    val currentView by routesViewModel.currentView.observeAsState(ViewType.Details)
 
     val puntosIntermedios by routesViewModel.puntosIntermedios.observeAsState(initial = emptyList())
-    var currentView by remember { mutableStateOf(ViewType.Details) }
 
     LaunchedEffect(route.RuteId) {
         routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
         Log.d("UI", "Actualizando puntos en el mapa: $puntosIntermedios")
     }
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Box(
-            modifier = Modifier
-                .height(200.dp)
-                .fillMaxWidth()
+            modifier = Modifier.height(200.dp).fillMaxWidth()
         ) {
             GoogleMap(
                 cameraPositionState = cameraPositionState,
@@ -120,91 +119,147 @@ fun RouteDetailScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = route.RuteName ?: "Nombre de ruta",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f)
-            )
-            RatingBikes(
-                rating = fixedRating,
-                enabled = false,
-            )
-        }
-        Spacer(Modifier.height(16.dp))
-        Box(
-            modifier = Modifier.fillMaxSize(),
-        ) {
+        RouteHeader(route, userHasCompletedRoute, fixedRating)
+        Box(modifier = Modifier.fillMaxSize()) {
             when (currentView) {
-                ViewType.Details -> {
-                    // Mostrar la vista de detalles de la ruta
-                    DetailsView(route, userHasCompletedRoute)
-                }
-
-                ViewType.Comments -> {
-                    // Mostrar la vista de comentarios
-                    CommentsView(routesViewModel, userHasCompletedRoute)
-                }
+                ViewType.Details -> DetailsView(routesViewModel, route, userHasCompletedRoute)
+                ViewType.Comments -> CommentsView(routesViewModel, route, userHasCompletedRoute)
             }
             Spacer(Modifier.height(16.dp))
             FloatingActionButton(
-                onClick = {
-                    currentView = when (currentView) {
-                        ViewType.Details -> ViewType.Comments
-                        ViewType.Comments -> ViewType.Details
-                    }
-                },
+                onClick = { routesViewModel.toggleView() },
                 modifier = Modifier
-                    .align(
-                        if (currentView == ViewType.Comments) Alignment.BottomStart else Alignment.BottomEnd
-                    )
+                    .align(if (currentView == ViewType.Comments) Alignment.BottomStart else Alignment.BottomEnd)
                     .padding(16.dp)
             ) {
-                Text(
-                    text = if (currentView == ViewType.Details) "Ver comentarios >>" else "<< Ver Detalles"
-                )
+                Text(text = if (currentView == ViewType.Details) "Ver comentarios >>" else "<< Ver Detalles")
             }
         }
     }
 }
+
 @Composable
-fun RatingBikes(rating: Int, enabled: Boolean, iconSize: Dp = 40.dp, onRatingChanged: (Int) -> Unit = {}) {
+fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = route.RuteName ?: "Nombre de ruta",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = if (userHasCompletedRoute) "Completada" else "Pendiente",
+            style = MaterialTheme.typography.bodyLarge.copy(color = if (userHasCompletedRoute) Color.Green else Color.Red),
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Valoración:",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.weight(1f)
+        )
+        RatingBikes(
+            rating = rating,
+            enabled = false,
+            onRatingChanged = {}
+        )
+    }
+}
+@Composable
+fun RatingBikes(rating: Int, enabled: Boolean, onRatingChanged: (Int) -> Unit) {
     Row {
         for (i in 1..5) {
             val image = if (i <= rating) {
-                painterResource(id = R.drawable.bicicleta_filled)
+                painterResource(id = R.drawable.bycicle_filled) // Asegúrate de que el nombre del recurso es correcto
             } else {
-                painterResource(id = R.drawable.bicicleta_outlined)
+                painterResource(id = R.drawable.bycicle_outlined) // Asegúrate de que el nombre del recurso es correcto
             }
 
-            if (enabled) {
-                IconButton(onClick = { onRatingChanged(i) }) {
-                    Icon(painter = image, contentDescription = "Bici $i", modifier = Modifier
-                        .padding(horizontal = 2.dp)
-                        .size(iconSize))
-                }
-            } else {
-                Icon(painter = image, contentDescription = "Bici $i", modifier = Modifier
-                    .padding(horizontal = 2.dp)
-                    .size(iconSize))
+            IconButton(onClick = { if (enabled) onRatingChanged(i) }) {
+                Icon(painter = image, contentDescription = "Bici $i", tint = Color.Unspecified)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RatingDialog(
+    viewModel: RoutesViewModel,
+    routeId: Int
+) {
+    val userRating by viewModel.userRating.observeAsState(0)
 
-
-
-
+    if (viewModel.showDialog.value == true) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideRatingDialog() },
+            content = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Dejanos tu valoración",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        RatingBikes(
+                            rating = userRating,
+                            enabled = true,
+                            onRatingChanged = { viewModel.updateUserRating(it) })
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(onClick = {
+                            viewModel.hideRatingDialog()
+                        }) {
+                            Text("Cancelar")
+                        }
+                        Button(onClick = {
+                            viewModel.submitUserRating(routeId, userRating)
+                            viewModel.hideRatingDialog()
+                        }) {
+                            Text("Enviar")
+                        }
+                    }
+                }
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false
+            )
+        )
+    }
+}
 
 @Composable
 fun DetailsView(
+    viewModel: RoutesViewModel,
     route: RutaUsuari,
-    userHasCompletedRoute: Boolean) {
+    userHasCompletedRoute: Boolean
+) {
+    val showDialog by viewModel.showDialog.observeAsState(false)
+    val ratingSent by viewModel.ratingSent.observeAsState(false)
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column {
             Text (
@@ -231,36 +286,28 @@ fun DetailsView(
                     modifier = Modifier.padding(16.dp)
                 )
             }
-            /*
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Check, contentDescription = "Ruta completada", tint = Color.Green)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Ruta Completada",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-            */
-            if (userHasCompletedRoute) {
-                var userRating by remember { mutableIntStateOf(0) }
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (userHasCompletedRoute && !ratingSent) {
+                    Button(
+                        onClick = { viewModel.showRatingDialog() },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text("Enviar Valoración")
+                    }
+                }
+                if (ratingSent) {
                     Text(
-                        text = "Tu valoración:",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "Valoración enviada",
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Green),
                         modifier = Modifier.padding(16.dp)
                     )
-                    RatingBikes(rating = userRating, enabled = true, onRatingChanged = { newRating ->
-                        userRating = newRating
-                        // Aquí podrías llamar a una función de tu ViewModel para enviar la valoración del usuario al backend
-                        //routesViewModel.submitUserRating(routeId = route.RuteId, rating = newRating)
-                    })
                 }
+            }
+            if (showDialog) {
+                RatingDialog(viewModel = viewModel, routeId = route.RuteId ?: 0)
             }
         }
     }
@@ -307,6 +354,7 @@ fun NewCommentSection(onCommentAdded: (String) -> Unit) {
 @Composable
 fun CommentsView(
     routesViewModel: RoutesViewModel,
+    route: RutaUsuari,
     userHasCompletedRoute: Boolean
 ) {
     val routeComments by routesViewModel.routeComments.observeAsState(initial = emptyList())
@@ -315,7 +363,7 @@ fun CommentsView(
             Card(modifier = Modifier.fillMaxWidth()) {
 
                 NewCommentSection(onCommentAdded = { commentText ->
-                    //routesViewModel.addNewComment(route.RuteId, commentText)
+                    route.RuteId?.let { routesViewModel.addNewComment(it, commentText) }
                 })
             }
             Spacer(Modifier.height(16.dp))
