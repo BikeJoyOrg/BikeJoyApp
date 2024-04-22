@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -28,12 +29,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,13 +44,17 @@ import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Achievement
 import com.example.bikejoyapp.data.AchievementsIcons.achievementsIcons
+import android.media.MediaPlayer
+
 
 @Composable
 fun AchievementScreen(achievementViewModel: AchievementViewModel) {
     val achievements by achievementViewModel.achievements.observeAsState(initial = emptyMap())
-    AchievementList(achievements = achievements.values.toList(), onRewardClaimed = { name, levelIndex ->
-        achievementViewModel.claimReward(name, levelIndex)
-    })
+    AchievementList(
+        achievements = achievements.values.toList(),
+        onRewardClaimed = { name, levelIndex ->
+            achievementViewModel.claimReward(name, levelIndex)
+        })
 }
 
 @Composable
@@ -78,7 +85,10 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
         else -> MaterialTheme.colorScheme.surface
     }
     var completed = false
-
+    val showDialog = remember { mutableStateOf(false) }
+    //Para que se recargue
+    val reloadTrigger = remember { mutableIntStateOf(0) }
+    val reload = reloadTrigger.intValue
     OutlinedCard(
         colors = CardDefaults.cardColors(
             containerColor = cardColor,
@@ -141,7 +151,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             .padding(top = 8.dp, bottom = 0.dp, start = 12.dp, end = 12.dp)
                     ) {
                         val progress =
-                            achievement.actualValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
+                            achievement.currentValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier
@@ -152,7 +162,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             color = Color(2, 160, 235),
                         )
                         Text(
-                            text = "${achievement.actualValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
+                            text = "${achievement.currentValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
                             fontSize = 10.sp,
                             modifier = Modifier
                                 .align(Alignment.Center)
@@ -177,16 +187,21 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                                 .size(40.dp),
 
                             )
-                        Text(achievement.levels[lastAchievedLevel].recompense.toString())
+                        Text(achievement.levels[lastAchievedLevel].coinReward.toString())
 
 
                     }
                     if (achievement.levels[lastAchievedLevel].isAchieved && !achievement.levels[lastAchievedLevel].isRedeemed) {
+                        val context = LocalContext.current
                         Button(
                             onClick = {
                                 onRewardClaimed(lastAchievedLevel)
+                                //Irrellevant
                                 achievementState.value = achievementState.value.copy()
-                                      },
+                                showDialog.value = true
+                                val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
+                                mediaPlayer.start()
+                            },
                             modifier = Modifier
                                 .padding(top = 24.dp)
                                 .size(
@@ -205,6 +220,25 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                         ) {
                             Text("Reclamar")
                         }
+
+                    }
+                    if (showDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDialog.value = false
+                                reloadTrigger.intValue += 1
+                            },
+                            title = { Text(text = "Recompensa") },
+                            text = { Text(text = "Has recibido: ${achievement.levels[lastAchievedLevel].coinReward}") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    showDialog.value = false
+                                    reloadTrigger.intValue += 1
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
                     }
                 } else {
                     Box(
