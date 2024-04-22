@@ -10,6 +10,9 @@ import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.ui.ViewType
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
 import retrofit2.Response
@@ -65,6 +68,7 @@ class RoutesViewModel : ViewModel() {
     private val _puntosIntermedios = MutableLiveData<List<LatLng>>()
     val puntosIntermedios: LiveData<List<LatLng>> = _puntosIntermedios
 
+
     private val _routeComments = MutableLiveData<List<Comment>>()
     val routeComments: LiveData<List<Comment>> = _routeComments
 
@@ -107,6 +111,7 @@ class RoutesViewModel : ViewModel() {
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }
+
     fun toggleView() {
         _currentView.value = when (_currentView.value) {
             ViewType.Details -> ViewType.Comments
@@ -166,12 +171,12 @@ class RoutesViewModel : ViewModel() {
             try {
                 val response = apiService.getPuntosIntermedios(ruteId)
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("API RESPONSE", "Puntos Intermedios: ${response.body()}")
                     val puntosLatLng = response.body()!!.map { LatLng(it.lat.toDouble(), it.lng.toDouble()) }
-                    Log.d("API", "Puntos recibidos: $puntosLatLng")
                     _puntosIntermedios.postValue(puntosLatLng)
+
+
                 } else {
-                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                    Log.d("MapDebug", "Error fetching points: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Log.e("API Exception", "Error occurred: ${e.message}")

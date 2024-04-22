@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,7 +49,9 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
 import com.example.bikejoyapp.data.Comment
-
+import com.example.bikejoyapp.data.PuntoIntermedio
+import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
 val rutaUsuariPreview = RutaUsuari(
@@ -88,18 +91,15 @@ fun RouteDetailScreen(
 ) {
     val fixedRating = route.RuteRating
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(route.PuntIniciLat.toDouble(),
-            route.PuntIniciLong.toDouble()
-        ), 12f)
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble()), 16f)
     }
     val currentView by routesViewModel.currentView.observeAsState(ViewType.Details)
+    val puntosIntermedios by routesViewModel.puntosIntermedios.observeAsState(emptyList())
 
-    val puntosIntermedios by routesViewModel.puntosIntermedios.observeAsState(initial = emptyList())
+    routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
 
-    LaunchedEffect(route.RuteId) {
-        routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
-        Log.d("UI", "Actualizando puntos en el mapa: $puntosIntermedios")
-    }
+    val puntFinalLatLng = puntosIntermedios.lastOrNull() ?: LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble())
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Box(
@@ -110,16 +110,19 @@ fun RouteDetailScreen(
                 modifier = Modifier.matchParentSize(),
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
+
                 Marker(
-                    state = MarkerState(position = LatLng(route.PuntIniciLat.toDouble(),
-                        route.PuntIniciLong.toDouble()),
-                    )
+                    state = MarkerState(position = LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble())),
+                    icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_inicit_escala)
                 )
-                Polyline(
-                    points = puntosIntermedios,
-                    color = Color.Blue,
-                    width = 5f
+                Marker(
+                    state = MarkerState(position = LatLng(puntFinalLatLng.latitude, puntFinalLatLng.longitude)),
+                    icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala)
                 )
+                Polyline(points = puntosIntermedios, color = magentaOscuroCrema, width = 15.0f)
+
+
+
             }
         }
         Spacer(Modifier.height(16.dp))
