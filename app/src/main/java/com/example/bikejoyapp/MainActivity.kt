@@ -191,7 +191,7 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route) {
+                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
                                     Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
                                 }
@@ -277,7 +277,8 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
-                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(mainViewModel, it1) }
+                    val userHasCompletedRoute = true
+                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute) }
                 }
                 composable(
                     route = MyAppRoute.Item.route,

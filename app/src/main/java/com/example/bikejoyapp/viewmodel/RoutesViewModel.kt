@@ -5,16 +5,23 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.data.Comment
+import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.data.RutaUsuari
+import com.example.bikejoyapp.ui.ViewType
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import retrofit2.http.GET
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 class RoutesViewModel : ViewModel() {
-    // LiveData que contiene la lista de rutas
     private val _routes = MutableLiveData<List<RutaUsuari>>(listOf())
     val routes: LiveData<List<RutaUsuari>> = _routes
 
@@ -55,8 +62,28 @@ class RoutesViewModel : ViewModel() {
     private val _startLocationFilter = MutableLiveData<String>()
     val startLocationFilter: LiveData<String> = _startLocationFilter
 
+    private val _puntosIntermedios = MutableLiveData<List<LatLng>>()
+    val puntosIntermedios: LiveData<List<LatLng>> = _puntosIntermedios
+
+    private val _routeComments = MutableLiveData<List<Comment>>()
+    val routeComments: LiveData<List<Comment>> = _routeComments
+
+    private val _currentView = MutableLiveData<ViewType>(ViewType.Details)
+    val currentView: LiveData<ViewType> = _currentView
+
+    private val _showDialog = MutableLiveData<Boolean>(false)
+    val showDialog: LiveData<Boolean> = _showDialog
+
+    private val _userRating = MutableLiveData<Int>(0)
+    val userRating: LiveData<Int> = _userRating
+
+    private val _ratingSent = MutableLiveData<Boolean>(false)
+    val ratingSent: LiveData<Boolean> = _ratingSent
+
+
+
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://66181f849a41b1b3dfbc4f82.mockapi.io/")
+        .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -77,34 +104,36 @@ class RoutesViewModel : ViewModel() {
         Log.d("Filters", "Ubicación de inicio cambiada a: $location")
     }
 
-/*
-    init {
-        // Añade aquí tus datos falsos de ejemplo
-        _routes.value = listOf(
-            Route("Ruta 1", "Descripción de la ruta 1", R.drawable.ic_launcher_foreground, 5, "Barri Gotic"),
-            Route("Ruta 2", "Descripción de la ruta 2", R.drawable.ic_launcher_foreground, 4, "El Poble Sec"),
-            Route("Ruta 3", "Descripción de la ruta 3", R.drawable.ic_launcher_foreground, 3, "El Born"),
-            Route("Ruta 4", "Descripción de la ruta 4", R.drawable.ic_launcher_foreground, 2, "El Clot"),
-            Route("Ruta 5", "Descripción de la ruta 5", R.drawable.ic_launcher_foreground, 1, "El Poblenou"),
-            Route("Ruta 6", "Descripción de la ruta 6", R.drawable.ic_launcher_foreground, 5, "El Putxet"),
-            Route("Ruta 7", "Descripción de la ruta 7", R.drawable.ic_launcher_foreground, 4, "El Raval"),
-            Route("Ruta 8", "Descripción de la ruta 8", R.drawable.ic_launcher_foreground, 3, "El Tibidabo"),
-            Route("Ruta 9", "Descripción de la ruta 9", R.drawable.ic_launcher_foreground, 2, "El Vall d'Hebron"),
-            Route("Ruta 10", "Descripción de la ruta 10", R.drawable.ic_launcher_foreground, 1, "Horta")
-        )
-    }
-    */
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }
+    fun toggleView() {
+        _currentView.value = when (_currentView.value) {
+            ViewType.Details -> ViewType.Comments
+            ViewType.Comments, null -> ViewType.Details
+        }
+    }
+
+    fun showRatingDialog() {
+        _showDialog.value = true
+    }
+
+    fun hideRatingDialog() {
+        _showDialog.value = false
+        _userRating.value = 0
+    }
+    fun updateUserRating(newRating: Int) {
+        if (!_ratingSent.value!!) {
+            _userRating.value = newRating
+        }
+    }
 
 
-    // Función para realizar la búsqueda con los filtros activos.
     fun performSearchWithFilters() {
-        // Aquí deberías implementar la lógica de búsqueda con los filtros activos
         viewModelScope.launch {
             try {
-                val response = apiService.searchRoutes()
+                val startLocation = startLocationFilter.value ?: "Cualquier zona"
+                val response = apiService.searchRoutes(null, distanceFilter.value, durationFilter.value?.toInt(), startLocation)
                 if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
@@ -113,30 +142,103 @@ class RoutesViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("API Exception", "Error occurred: ${e.message}")
             }
+
         }
     }
     fun performSearch() {
-        // Aquí deberías implementar la lógica de búsqueda
+        viewModelScope.launch {
+            try {
+                val response = apiService.searchRoutes(searchQuery.value, null, null, "Cualquier zona")
+                if (response.isSuccessful && response.body() != null) {
+                    _routes.postValue(response.body())
+                } else {
+                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+
+        }
     }
 
-
-    interface ApiService {
-        // Asume que ya tienes otros endpoints aquí
-        @GET("api/v5/Rutes")
-        suspend fun searchRoutes(): Response<List<RutaUsuari>>
+    fun getPuntosIntermedios(ruteId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getPuntosIntermedios(ruteId)
+                if (response.isSuccessful && response.body() != null) {
+                    Log.d("API RESPONSE", "Puntos Intermedios: ${response.body()}")
+                    val puntosLatLng = response.body()!!.map { LatLng(it.lat.toDouble(), it.lng.toDouble()) }
+                    Log.d("API", "Puntos recibidos: $puntosLatLng")
+                    _puntosIntermedios.postValue(puntosLatLng)
+                } else {
+                    Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+        }
     }
 
-    /*
+    fun submitUserRating(ruteId: Int, rating: Int) {
+        _ratingSent.value = true
+        _showDialog.value = false
+        _userRating.value = rating
+        viewModelScope.launch {
+            try {
+                val response = apiService.submitRating(ruteId, rating)
+                if (response.isSuccessful) {
+                    Log.d("API", "Rating submitted successfully")
+                    // Aquí podrías actualizar la UI para reflejar que la valoración fue enviada
+                } else {
+                    Log.e("API Error", "Failed to submit rating: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred while submitting rating: ${e.message}")
+            }
+        }
+    }
+
+    fun addNewComment(ruteId: Int, commentText: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.addComment(ruteId, commentText)
+                if (response.isSuccessful) {
+                    // Actualizar la lista de comentarios en la UI
+                    _routeComments.postValue(_routeComments.value.orEmpty() + Comment(author = "Username", text = commentText))
+                } else {
+                    Log.e("API Error", "Failed to add comment: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred while adding comment: ${e.message}")
+            }
+        }
+    }
+
     interface ApiService {
-        // Asume que ya tienes otros endpoints aquí
-        @GET("searchRoutes")
+        @GET("rutes/")
         suspend fun searchRoutes(
+            @Query("query") query: String?,
             @Query("distance") distance: Float?,
-            @Query("duration") duration: Float?,
-            @Query("startLocation") startLocation: String?
-        ): Response<List<Route>>
+            @Query("duration") duration: Int?,
+            @Query("nombreZona") nombreZona: String,
+        ): Response<List<RutaUsuari>>
+
+
+        @GET("puntos-intermedios/{ruteId}/")
+        suspend fun getPuntosIntermedios(
+            @Path("ruteId") ruteId: Int
+        ): Response<List<PuntoIntermedio>>
+
+        @POST("submit-rating/{ruteId}/")
+        suspend fun submitRating(
+            @Path("ruteId") ruteId: Int,
+            @Body rating: Int
+        ): Response<Unit>
+
+        @POST("add-comment/{ruteId}/")
+        suspend fun addComment(
+            @Path("ruteId") ruteId: Int,
+            @Body comment: String
+        ): Response<Unit>
     }
-    */
-
-
 }
