@@ -4,6 +4,7 @@ import com.example.bikejoyapp.data.PuntsInterRuta
 import com.example.bikejoyapp.data.PuntsRuta
 import com.example.bikejoyapp.data.RouteResponse
 import com.example.bikejoyapp.data.RutaUsuari
+import kotlinx.serialization.json.Json
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

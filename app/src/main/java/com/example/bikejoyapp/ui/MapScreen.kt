@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +59,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
@@ -92,7 +96,7 @@ import com.google.maps.android.clustering.ClusterManager
 import com.example.bikejoyapp.data.StationClusterItem
 import com.example.bikejoyapp.ui.theme.colorAzulClaro
 
-
+/*
 fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
     val bikeLanes = mutableListOf<List<LatLng>>()
     try {
@@ -120,7 +124,7 @@ fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
     }
 
     return bikeLanes
-}
+}*/
 
 var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
 var locationCallback = object : LocationCallback() {
@@ -161,6 +165,8 @@ fun MapScreen(
     val navigationKm by navigationViewModel.navigationKm.collectAsState()
     val ruta by navigationViewModel.ruta.observeAsState()
     val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
+    val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
+    val avis by navigationViewModel.avis.observeAsState(false)
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -182,9 +188,15 @@ fun MapScreen(
     }
     "val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)"
     val current = LocalContext.current
-    val bikeLanes = rememberSaveable { parseGeoJson(current, R.raw.bike_lanes) }
+    //val bikeLanes = rememberSaveable { parseGeoJson(current, R.raw.bike_lanes) }
 
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
+    if (avis){
+        Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+    }
+    if (showRouteResume){
+        Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+    }
     Column {
         Row (
             modifier = Modifier
@@ -209,7 +221,7 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-
+                /*
                 bikeLanes.forEach { bikeLane ->
                     Polyline(bikeLane, color = colorAzulClaro, width = 10f)
                 }
@@ -223,7 +235,7 @@ fun MapScreen(
                         },
                         icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
                     )
-                }
+                }*/
                 if (consultarOpcio) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
@@ -263,7 +275,6 @@ fun MapScreen(
                         onClick = {
                             navigationViewModel.startNavigation()
                             mainViewModel.hideBottomBar()
-                            navigationViewModel.stopPaintSearchFields()
                         },
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -307,14 +318,17 @@ fun MapScreen(
                                 contentDescription = "Tiempo de navegación"
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Temps: ${navigationTime}s")
+                            if(navigationTime > 60){
+                                val minuts = navigationTime / 60
+                                val segons = navigationTime % 60
+                                Text(text = "Temps: ${minuts}m ${segons}s")
+                            }
+                            else
+                                Text(text = "Temps: ${navigationTime}s")
                         }
 
                         IconButton(onClick = {
-                            navigationViewModel.stopNavigation()
-                            mainViewModel.showBottomBar()
-                            mainViewModel.showTopBar()
-                            navigationViewModel.PaintSearchFields()
+                            navigationViewModel.avis()
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_stop_circle_24),
@@ -392,7 +406,6 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
                 place.address?.let { it1 ->
                     SearchPreviewWidget(it, it1, onClick = {
                         navigationViewModel.assignaPuntBusqueda(place,deviceLocation.value)
-                        navigationViewModel.stopPaintSearchFields()
                     })
                 }
             }
@@ -401,6 +414,85 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
     }
 }
 
+@Composable
+fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(16.dp)
+        ){
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ){
+                Row(     modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,) {
+                    Icon(
+                        painter = painterResource(R.drawable.celebration_24),
+                        contentDescription = "Celebarcion" )
+                    Text("¡Ruta completada!",
+                        fontSize = 20.sp
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.celebration_24),
+                        contentDescription = "Celebarcion" )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                TempsDistancia_vertical(distanciaRuta = distanciaRuta, tempsRuta = tempsRuta/60)
+                Row (     modifier = Modifier
+                    .fillMaxWidth().weight(1f),
+                    horizontalArrangement = Arrangement.Center,){
+                    TextButton(onClick = { navigationViewModel.stopNavigation(true)
+                        mainViewModel.showBottomBar() }) {
+                        Text("Acceptar")
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
+fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(16.dp)
+        ){
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ){
+                Row(     modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,) {
+                    Text("Segure que vols finalitzar?",
+                        fontSize = 20.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row (     modifier = Modifier
+                    .fillMaxWidth().weight(1f),
+                    horizontalArrangement = Arrangement.Center,){
+                    TextButton(onClick = { navigationViewModel.stopNavigation(false)
+                        mainViewModel.showBottomBar() }) {
+                        Text("Finalitzar")
+                    }
+                    TextButton(onClick = { navigationViewModel.continuar() }) {
+                        Text("Continuar ruta")
+                    }
+
+                }
+            }
+        }
+    }
+}
 fun resizeMapIcons(context: Context, iconId: Int, width: Int, height: Int): BitmapDescriptor {
     val imageBitmap = BitmapFactory.decodeResource(context.resources, iconId)
     val resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false)

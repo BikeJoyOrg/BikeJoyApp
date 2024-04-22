@@ -147,7 +147,7 @@ open class GravarRutaViewModel : ViewModel(){
                     _nomRuta.postValue("Ruta sense nom")
                 }
                 else {
-                    val rutaUsuari = RutaUsuari(null,_nomRuta.value,_descRuta.value,dist,timebicycle(dist),0,ruta.first().latitude,ruta.first().longitude)
+                    val rutaUsuari = RutaUsuari(null,_nomRuta.value,_descRuta.value,dist,timebicycle(dist),0,ruta.first().latitude.toFloat(),ruta.first().longitude.toFloat())
 
                     val call = retrofit.create(ApiRetrofit::class.java).postRoute(rutaUsuari)
 
@@ -157,10 +157,11 @@ open class GravarRutaViewModel : ViewModel(){
                     if (call.isSuccessful) {
                         val id_ruta = call.body()?.RuteId
                         Log.d("aris", "Ruta guardada "+id_ruta)
-                        var i = 0
+                        var i: Int = 0
                         ruta.forEach{
                             val puntsInterRuta = PuntsInterRuta("",i,it.latitude.toFloat(),it.longitude.toFloat(),id_ruta)
                             ++i
+                            Log.d("aris", "Punt guardat $puntsInterRuta $i")
                             /*
                                                 val retrofit2 = Retrofit.Builder()
                                                     .baseUrl("https://65faaa103909a9a65b1b14c0.mockapi.io/")
@@ -172,7 +173,7 @@ open class GravarRutaViewModel : ViewModel(){
                                 .build()
                             val call2 = retrofit2.create(ApiRetrofit::class.java).postPuntsInter(puntsInterRuta)
                             if (call2.isSuccessful){
-                                Log.d("aris", "Pun")
+                                Log.d("aris", call2.body().toString())
                             }
                         }
                     } else {

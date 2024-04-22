@@ -244,15 +244,20 @@ fun TempsDistancia_vertical(distanciaRuta: Double, tempsRuta: Int) {
                 contentDescription = "Tiempo de navegación"
             )
             Spacer(modifier = Modifier.width(8.dp))
+
             Text(text = "Temps: ${tempsRuta} min")
         }
+        Spacer(modifier = Modifier.width(20.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(R.drawable.baseline_directions_bike_24),
                 contentDescription = "Kilómetros"
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Dist: ${"%.2f".format(distanciaRuta)} m")
+            if(distanciaRuta>1000)
+                Text(text = "Distancia: ${"%.2f".format(distanciaRuta/1000)} km")
+            else
+                Text(text = "Distancia: ${"%.2f".format(distanciaRuta)} m")
         }
     }
 }

@@ -64,6 +64,7 @@
         val _selectedPlace = MutableLiveData<Place?>()
         val selectedPlace: LiveData<Place?> = _selectedPlace
 
+
         fun onSearchQueryChanged(query: String) {
             _searchQuery.value = query
         }
@@ -149,11 +150,16 @@
 
         private val _primer_cop = MutableLiveData<Boolean>()
         val primer_cop: LiveData<Boolean> = _primer_cop
+
+        private val _showRouteResume = MutableLiveData<Boolean>()
+        val showRouteResume: LiveData<Boolean> = _showRouteResume
+        private val _avis = MutableLiveData<Boolean>()
+        val avis: LiveData<Boolean> = _avis
         fun PaintSearchFields() {
             _PaintSearchFields.value = true
         }
 
-        fun stopPaintSearchFields() {
+        fun stopPaintResultList() {
             _PaintSearchFields.value = false
         }
 
@@ -166,9 +172,14 @@
 
         private var primer: LatLng? = null
         private var segon: LatLng? = null
-
+        var start = ""
+        var finish = ""
+        var coordfinish:LatLng? = null
+        var stop = false
+        var lliure = false
         @SuppressLint("MissingPermission")
         fun startNavigation() {
+            _PaintSearchFields.value = false
             _isNavigating.value = true
             _navigationTime.value = 0
             _navigationKm.value = 0.0
@@ -177,11 +188,15 @@
                 locationCallback,
                 null
             )
+            lliure = coordfinish == null
+            stop = false
             viewModelScope.launch {
                 while (_isNavigating.value!!) {
                     delay(1000)
-                    _navigationTime.value = (_navigationTime.value ?: 0) + 1
-                    calcularDistancia()
+                    if (!stop) {
+                        _navigationTime.value = (_navigationTime.value ?: 0) + 1
+                        calcularDistancia()
+                    }
                 }
             }
         }
@@ -192,7 +207,20 @@
                 for (location in p0.locations) {
                     if (primer == null) {
                         primer = LatLng(location.latitude, location.longitude)
-                    } else {
+                    }
+                    else if( _isNavigating.value && !lliure && distanceBetween(
+                            LatLng(location.latitude, location.longitude),
+                            coordfinish!!
+                        ) <= 50.0
+                    ){
+                        Log.d("aris", "he arribat")
+                        if (!_avis.value!!) {
+                            rutacompleta()
+                            stop = true
+                        }
+
+                    }
+                    else {
                         segon = LatLng(location.latitude, location.longitude)
                     }
                 }
@@ -206,24 +234,35 @@
                 primer = segon
             }
         }
-        fun stopNavigation() {
+        fun stopNavigation(rutaCompletada: Boolean) {
+            Log.d("aris", "final")
+            _PaintSearchFields.value = true
             _isNavigating.value = false
             _selectedPlace.value = null
             _ruta.value = mutableListOf()
             _consultarOpcio.value = false
             _searchResults.value = emptyList()
             _searchQuery.value = ""
-            primer_cop()
+            _primer_cop.value = true
+            stop = false
+            coordfinish = null
+            if (rutaCompletada) {
+                _showRouteResume.value = false
+            }
+            else{
+                _avis.value = false
+            }
+            Log.d("aris", _isNavigating.value.toString())
         }
-        var start = ""
-        var finish = ""
+
         open fun assignaPuntBusqueda(place: Place, value: LatLng) {
             _selectedPlace.value = place
             _consultarOpcio.value = true
-            Log.d("aris", "heloooo")
+            _searchResults.value = emptyList()
+
             start = "${value.longitude},${value.latitude}"
             finish = place.latLng?.longitude.toString() + "," + place.latLng?.latitude.toString()
-
+            coordfinish = place.latLng
             createRute()
         }
 
@@ -257,9 +296,18 @@
             _ruta.postValue(aux)
         }
         fun primer_cop() {
-            if (_primer_cop.value == true) {
-                _primer_cop.value = false
-            }
-            else _primer_cop.value = true
+            _primer_cop.value = false
+        }
+
+        fun rutacompleta(){
+            _showRouteResume.value = true
+        }
+        fun avis(){
+            _avis.value = true
+            stop = true
+        }
+        fun continuar(){
+            _avis.value = false
+            stop = false
         }
     }
