@@ -44,27 +44,59 @@ import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
 import com.example.bikejoyapp.ui.ShopScreen
+import com.example.bikejoyapp.ui.SocialScreen
 import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
 import com.example.bikejoyapp.ui.AchievementScreen
+import android.graphics.Color.rgb
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.PetScreen
+import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
+import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
+import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
 
     private val navigationViewModel: NavigationViewModel by viewModels {
-        NavigationViewModel.Factory(placesClient)
+        NavigationViewModel.Factory(placesClient, this)
     }
     private val CODIGO_PERMISO_FINE_LOCATION = 101
     private var isPermisos = false
@@ -83,11 +115,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
+        val bikeLanesViewModel: BikeLanesViewModel by viewModels()
+        val shopViewModel: ShopViewModel by viewModels()
+
         val achievementViewModel: AchievementViewModel by viewModels()
 
         if (!Places.isInitialized()) {
@@ -114,6 +150,8 @@ class MainActivity : ComponentActivity() {
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
+                    shopViewModel = shopViewModel,
+                    bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel
                 )
             }
@@ -121,6 +159,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAppContent(
@@ -129,39 +168,81 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
+    shopViewModel: ShopViewModel,
+    bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
     val currentRoute =
-        rememberNavController().currentBackStackEntryAsState().value?.destination?.route
+        navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (isTopBarVisible) {
-                TopAppBar(
-                    title = {
-                        Row(
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = stringResource(id = R.string.app_name))
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Account")
-                        }
-                    })
+                Box {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(id = R.string.app_name),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        colors = topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            navigationIconContentColor = Color.White,
+                            titleContentColor = Color.White,
+                            actionIconContentColor = Color.White
+                        ),
+                        navigationIcon = {
+                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
+                                IconButton(onClick = { mainViewModel.navigateBack() }) {
+                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                                }
+                            }
+                            else {
+                                IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Account", Modifier.size(32.dp))
+                                }
+                            }
+                        },
+                        actions = {
+                            println("currentRoute: $currentRoute")
+                            println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                            if (currentRoute == MyAppRoute.Shop.route || currentRoute == MyAppRoute.Item.route) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("1000 ", fontSize = 20.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color(0xFFD4AF37)
+                                    )
+                                }
+                            }
+                        },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.BottomStart),
+                        thickness = 3.dp,
+                        color = Color.White
+                    )
+                }
             }
         },
         bottomBar = {
             if (isBottomBarVisible) {
-                MyAppBottomNavigation(
-                    navController = navController, currentRoute = currentRoute, mainViewModel = mainViewModel
-                )
+                Box {
+                    MyAppBottomNavigation(
+                        currentRoute = currentRoute, mainViewModel = mainViewModel
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.align(Alignment.TopStart),
+                        thickness = 3.dp,
+                        color = Color.White
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -174,7 +255,7 @@ fun MyAppContent(
                 navController = navController, startDestination = MyAppRoute.Home.route
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel)
+                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
@@ -186,7 +267,7 @@ fun MyAppContent(
                     AchievementScreen(achievementViewModel)
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen()
+                    ShopScreen(shopViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen()
@@ -197,11 +278,18 @@ fun MyAppContent(
                 composable(
                     route = MyAppRoute.Station.route,
                     arguments = listOf(navArgument("stationId") { type = NavType.StringType })
-                ) { backStackEntry ->
+                ) {
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
-                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(mainViewModel, it1) }
+                    val userHasCompletedRoute = true
+                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute) }
+                }
+                composable(
+                    route = MyAppRoute.Item.route,
+                    arguments = listOf(navArgument("itemId") { type = NavType.StringType })
+                ) {
+                    ShopItemWidget(navController, mainViewModel, shopViewModel)
                 }
             }
         }
@@ -210,21 +298,41 @@ fun MyAppContent(
 
 @Composable
 fun MyAppBottomNavigation(
-    navController: NavHostController,
     currentRoute: String?,
     mainViewModel: MainViewModel
 ) {
-    NavigationBar(modifier = Modifier.fillMaxWidth()) {
-        TOP_LEVEL_DESTINATIONS.forEach { destination ->
+    var selected by remember { mutableStateOf(2) }
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.White
+    ) {
+        TOP_LEVEL_DESTINATIONS.forEachIndexed { index, destination ->
             NavigationBarItem(
-                selected = currentRoute == destination.route.route,
-                onClick = { mainViewModel.navigateTo(destination.route) },
+                selected = index == selected,
+                onClick =
+                {
+                    selected = index
+                    mainViewModel.navigateTo(destination.route)
+                },
                 icon = {
-                    Icon(
-                        imageVector = destination.selectedIcon,
-                        contentDescription = stringResource(id = destination.iconTextId)
-                    )
-                }
+                    if (destination.selectedIcon != null) {
+                        Icon(
+                            imageVector = if (index == selected) destination.selectedIcon!! else destination.unselectedIcon!!,
+                            contentDescription = stringResource(id = destination.iconTextId),
+                            tint = Color.White
+                        )
+                    }
+                    else {
+                        Icon(
+                            painter = painterResource(
+                                if (index == selected) destination.selectedImageResource!! else destination.unselectedImageResource!!
+                            ),
+                            contentDescription = stringResource(id = destination.iconTextId),
+                            tint = Color.White
+                        )
+                    }
+                },
             )
         }
     }

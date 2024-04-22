@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.serialization)
 }
 
 
@@ -107,6 +108,9 @@ dependencies {
     implementation (libs.android.maps.utils)
     implementation(libs.mockito.core)
     implementation(libs.androidx.core.testing)
+
+    implementation (libs.androidx.core.ktx)
+
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation (libs.io.mockk.mockk5)
     testImplementation (libs.androidx.core.testing.v210)
@@ -118,6 +122,11 @@ dependencies {
     androidTestImplementation (libs.androidx.espresso.core.v340)
     androidTestImplementation (libs.androidx.runner)
     androidTestImplementation (libs.androidx.rules)
+
+    implementation(libs.kotlinx.serialization.json.v132)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.okhttp)
+    implementation(libs.androidx.ui.text.google.fonts)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {
