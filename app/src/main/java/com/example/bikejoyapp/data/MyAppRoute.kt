@@ -13,4 +13,9 @@ sealed class MyAppRoute(val route: String) {
     }
     data object Login : MyAppRoute("login")
     data object Register : MyAppRoute("register")
+
+    data object Item : MyAppRoute("item/{itemId}") {
+        fun createRoute(itemId: String) = "item/$itemId"
+    }
+    data object RouteDetail : MyAppRoute("RouteDetail")
 }

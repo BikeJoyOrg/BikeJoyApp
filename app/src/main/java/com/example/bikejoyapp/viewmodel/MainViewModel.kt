@@ -2,7 +2,7 @@ package com.example.bikejoyapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.data.MyAppTopLevelDestination
+import com.example.bikejoyapp.data.RutaUsuari
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,10 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 
 class MainViewModel : ViewModel() {
+    var selectedRoute: RutaUsuari? = null
     private val _isBottomBarVisible = MutableStateFlow(true) // Inicialmente visible
     val isBottomBarVisible: StateFlow<Boolean> = _isBottomBarVisible
     fun hideBottomBar() { _isBottomBarVisible.value = false }
     fun showBottomBar() { _isBottomBarVisible.value = true }
+
 
 
     private val _isTopBarVisible = MutableStateFlow(true) // Inicialmente visible
@@ -27,7 +29,6 @@ class MainViewModel : ViewModel() {
     fun navigateTo(destination: MyAppRoute) {
         val result = _navigationCommands.trySend(NavigationCommand.ToDestination(destination))
 
-        // Traça opcional d'errors
         result.onFailure { throwable ->
             throwable?.printStackTrace()
         }
@@ -42,9 +43,8 @@ class MainViewModel : ViewModel() {
 
     fun navigateBack() {
         val result = _navigationCommands.trySend(NavigationCommand.Back)
-
-        // Traça opcional d'errors
         result.onFailure { throwable ->
+            println("error go back")
             throwable?.printStackTrace()
         }
     }

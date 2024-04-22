@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.serialization)
 }
 
 
@@ -68,6 +69,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -106,6 +108,27 @@ dependencies {
     implementation (libs.kotlinx.coroutines.play.services)
 
     implementation (libs.android.maps.utils)
+    implementation(libs.mockito.core)
+    implementation(libs.androidx.core.testing)
+
+    implementation (libs.androidx.core.ktx)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation (libs.io.mockk.mockk5)
+    testImplementation (libs.androidx.core.testing.v210)
+    androidTestImplementation (libs.androidx.junit.v112)
+    androidTestImplementation (libs.androidx.espresso.core.v330)
+    androidTestImplementation (libs.ui.test.junit4)
+    debugImplementation(libs.ui.test.manifest)
+    implementation (libs.androidx.core.ktx.v170)
+    androidTestImplementation (libs.androidx.espresso.core.v340)
+    androidTestImplementation (libs.androidx.runner)
+    androidTestImplementation (libs.androidx.rules)
+
+    implementation(libs.kotlinx.serialization.json.v132)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.okhttp)
+    implementation(libs.androidx.ui.text.google.fonts)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {
