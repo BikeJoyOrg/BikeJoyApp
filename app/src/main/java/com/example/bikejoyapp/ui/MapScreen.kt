@@ -246,7 +246,6 @@ fun MapScreen(
                         onClick = {
                             navigationViewModel.startNavigation()
                             mainViewModel.hideBottomBar()
-                            navigationViewModel.stopPaintSearchFields()
                         },
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -378,7 +377,6 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
                 place.address?.let { it1 ->
                     SearchPreviewWidget(it, it1, onClick = {
                         navigationViewModel.assignaPuntBusqueda(place,deviceLocation.value)
-                        navigationViewModel.stopPaintSearchFields()
                     })
                 }
             }
