@@ -66,6 +66,7 @@ import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
 import com.example.bikejoyapp.ui.theme.magentaClaroCrema
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
+import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -96,35 +97,6 @@ import com.google.maps.android.clustering.ClusterManager
 import com.example.bikejoyapp.data.StationClusterItem
 import com.example.bikejoyapp.ui.theme.colorAzulClaro
 
-/*
-fun parseGeoJson(context: Context, resourceId: Int): List<List<LatLng>> {
-    val bikeLanes = mutableListOf<List<LatLng>>()
-    try {
-        val geoJson =
-            context.resources.openRawResource(resourceId).bufferedReader().use { it.readText() }
-        val jsonObject = JSONObject(geoJson)
-        val features = jsonObject.getJSONArray("features")
-
-        for (i in 0 until features.length()) {
-            val feature = features.getJSONObject(i)
-            val geometry = feature.getJSONObject("geometry")
-            val coordinates = geometry.getJSONArray("coordinates")
-
-            val bikeLane = mutableListOf<LatLng>()
-            for (j in 0 until coordinates.length()) {
-                val coordinate = coordinates.getJSONArray(j)
-                val latLng = LatLng(coordinate.getDouble(1), coordinate.getDouble(0))
-                bikeLane.add(latLng)
-            }
-
-            bikeLanes.add(bikeLane)
-        }
-    } catch (e: Exception) {
-        println("Error al leer o analizar el archivo GeoJSON: ${e.message}")
-    }
-
-    return bikeLanes
-}*/
 
 var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
 var locationCallback = object : LocationCallback() {
@@ -144,7 +116,8 @@ var locationCallback = object : LocationCallback() {
 fun MapScreen(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    bikeLanesViewModel: BikeLanesViewModel
 ) {
     val context = LocalContext.current
     val searchQuery by navigationViewModel.searchQuery.observeAsState("")
@@ -167,6 +140,7 @@ fun MapScreen(
     val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
     val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
     val avis by navigationViewModel.avis.observeAsState(false)
+    val bikeLanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -186,10 +160,7 @@ fun MapScreen(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
     }
-    "val bikeLanes = parseGeoJson(LocalContext.current, R.raw.bike_lanes)"
     val current = LocalContext.current
-    //val bikeLanes = rememberSaveable { parseGeoJson(current, R.raw.bike_lanes) }
-
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
     if (avis){
         Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel)
@@ -221,9 +192,9 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-                /*
+
                 bikeLanes.forEach { bikeLane ->
-                    Polyline(bikeLane, color = colorAzulClaro, width = 10f)
+                    Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
                 }
                 estacions.forEach { station ->
                     Marker(
@@ -235,7 +206,7 @@ fun MapScreen(
                         },
                         icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
                     )
-                }*/
+                }
                 if (consultarOpcio) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
@@ -275,6 +246,7 @@ fun MapScreen(
                         onClick = {
                             navigationViewModel.startNavigation()
                             mainViewModel.hideBottomBar()
+                            navigationViewModel.stopPaintSearchFields()
                         },
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -406,6 +378,7 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
                 place.address?.let { it1 ->
                     SearchPreviewWidget(it, it1, onClick = {
                         navigationViewModel.assignaPuntBusqueda(place,deviceLocation.value)
+                        navigationViewModel.stopPaintSearchFields()
                     })
                 }
             }
