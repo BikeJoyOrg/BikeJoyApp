@@ -27,6 +27,7 @@ playServicesMaps = "18.2.0"
 retrofit = "2.9.0"
 runtimeLivedata = "1.6.3"
 runtimeLivedataVersion = "1.6.1"
+constraintlayoutCompose = "1.0.1"
 
 [libraries]
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
@@ -63,6 +64,7 @@ places = { module = "com.google.android.libraries.places:places", version.ref = 
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

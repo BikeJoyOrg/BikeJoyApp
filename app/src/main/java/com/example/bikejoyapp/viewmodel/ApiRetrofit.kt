@@ -6,6 +6,8 @@ import com.example.bikejoyapp.data.RouteResponse
 import com.example.bikejoyapp.data.RutaUsuari
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -32,6 +34,26 @@ interface ApiRetrofit {
     suspend fun postPuntsInter(
         @Body puntsInterRuta: PuntsInterRuta
     ):Response<PuntsInterRuta>
+
+    @FormUrlEncoded
+    @POST("users/login/")
+    suspend fun login(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Response<Map<String, Any>>
+
+    @FormUrlEncoded
+    @POST("users/register/")
+    suspend fun register(
+        @Field("username") username: String,
+        @Field("email") email: String,
+        @Field("password1") password1: String,
+        @Field("password2") password2: String
+    ): Response<Map<String, Any>>
+
+    @POST("users/logout")
+    suspend fun logout(
+    ): Response<Map<String, Any>>
 }
 
 

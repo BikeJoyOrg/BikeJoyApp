@@ -25,9 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,9 +37,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.AccountScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
@@ -53,17 +48,21 @@ import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.ViewModelProvider
 import com.example.bikejoyapp.ui.GravarRutaScreen
+import com.example.bikejoyapp.ui.LoginScreen
 import com.example.bikejoyapp.ui.PetScreen
+import com.example.bikejoyapp.ui.RegisterScreen
+import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
+import com.example.bikejoyapp.viewmodel.UserViewModel
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -94,6 +93,15 @@ class MainActivity : ComponentActivity() {
         verificarPermisos()
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://mi-url-base.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val apiRetrofit: ApiRetrofit by lazy {
+            retrofit.create(ApiRetrofit::class.java)
+        }
+        val userViewModel: UserViewModel by viewModels()
+        val userState by lazy { UserState(userViewModel) }
 
 
         if (!Places.isInitialized()) {
@@ -119,7 +127,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
-                    navigationViewModel = navigationViewModel
+                    navigationViewModel = navigationViewModel,
+                    userState = userState
                 )
             }
         }
@@ -133,7 +142,8 @@ fun MyAppContent(
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
-    navigationViewModel: NavigationViewModel
+    navigationViewModel: NavigationViewModel,
+    userState: UserState
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -175,7 +185,7 @@ fun MyAppContent(
                 .fillMaxSize()
         ) {
             NavHost(
-                navController = navController, startDestination = MyAppRoute.Home.route
+                navController = navController, startDestination = MyAppRoute.Login.route
             ) {
                 composable(MyAppRoute.Map.route) {
                     MapScreen(stationViewModel, mainViewModel, navigationViewModel)
@@ -203,6 +213,12 @@ fun MyAppContent(
                     arguments = listOf(navArgument("stationId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
+                }
+                composable(MyAppRoute.Login.route) {
+                    LoginScreen(userState, mainViewModel)
+                }
+                composable(MyAppRoute.Register.route) {
+                    RegisterScreen(userState, mainViewModel)
                 }
             }
         }
