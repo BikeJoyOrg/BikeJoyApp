@@ -10,9 +10,11 @@ data class EstacioBicing(
     val lat: Double,
     val lon: Double,
 ): ClusterItem {
-    override fun getPosition(): LatLng = position
-    override fun getTitle(): String = title
+    override fun getPosition(): LatLng = LatLng(lat, lon)
+    override fun getTitle(): String = address
     override fun getSnippet(): String ?= null
+    override fun getZIndex(): Float ?= null
+
 }
 
 @Serializable

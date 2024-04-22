@@ -6,9 +6,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Looper
-import android.view.View
-import android.widget.ImageView
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +32,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -45,8 +44,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,9 +55,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
-import com.example.bikejoyapp.ui.theme.magentaClaroCrema
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
@@ -71,27 +68,21 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.AdvancedMarkerOptions.CollisionBehavior
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PinConfig
-import com.google.maps.android.compose.AdvancedMarker
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerInfoWindowContent
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import org.json.JSONObject
-import com.google.maps.android.clustering.ClusterManager
-import com.example.bikejoyapp.data.StationClusterItem
-import com.example.bikejoyapp.ui.theme.colorAzulClaro
+import com.google.maps.android.compose.MapsComposeExperimentalApi
+import com.google.maps.android.compose.clustering.Clustering
+import kotlinx.coroutines.delay
 
 
 var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
@@ -106,7 +97,7 @@ var locationCallback = object : LocationCallback() {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(MapsComposeExperimentalApi::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(
@@ -150,7 +141,6 @@ fun MapScreen(
         }
     }
 
-    val markerState = rememberMarkerState()
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
     }
@@ -180,21 +170,54 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-
                 bikeLanes.forEach { bikeLane ->
                     Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
                 }
-                estacions.forEach { station ->
-                    Marker(
-                        state = MarkerState(LatLng(station.lat, station.lon)),
-                        onClick = {
-                            val route = MyAppRoute.Station.createRoute(station.station_id.toString())
-                            mainViewModel.navigateToDynamic(route)
-                            true
-                        },
-                        icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
+
+                // Estacions
+                val clickState = remember { mutableStateOf(false) }
+                val stationClicked = remember { mutableStateOf<EstacioBicing?>(null) }
+                Clustering(
+                    items = estacions,
+                    onClusterClick = {
+                        cameraPositionState.move(
+                            update = CameraUpdateFactory.zoomIn()
+                        )
+                        false },
+                    onClusterItemClick = { station ->
+                        clickState.value = true
+                        stationClicked.value = station
+                        true
+                    },
+                    clusterItemContent = {
+                        Image(
+                            painter = painterResource(R.drawable.bikeparking),
+                            contentDescription = "bike station marker",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                    clusterContent = {
+                        Image(
+                            painter = painterResource(R.drawable.bikeparking),
+                            contentDescription = "bike station marker",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                )
+                LaunchedEffect(clickState.value) {
+                    if (stationClicked.value == null) return@LaunchedEffect
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(stationClicked.value!!.lat, stationClicked.value!!.lon),
+                            32.0f),
+                        1000
                     )
+                    delay(1000L)
+                    val route = MyAppRoute.Station.createRoute(stationClicked.value!!.station_id.toString())
+                    mainViewModel.navigateToDynamic(route)
                 }
+                // Fi estacions
+
                 if (consultarOpcio) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
