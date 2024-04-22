@@ -6,3 +6,5 @@ data class PuntsRuta(
     val PuntLat: Double,
     val PuntLong: Double
 )
+
+data class PuntoIntermedio(val lat: Float, val lng: Float)

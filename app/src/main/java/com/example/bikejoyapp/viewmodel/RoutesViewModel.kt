@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.Comment
+import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.data.RutaUsuari
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
@@ -128,7 +129,10 @@ class RoutesViewModel : ViewModel() {
             try {
                 val response = apiService.getPuntosIntermedios(ruteId)
                 if (response.isSuccessful && response.body() != null) {
-                    _puntosIntermedios.postValue(response.body())
+                    Log.d("API RESPONSE", "Puntos Intermedios: ${response.body()}")
+                    val puntosLatLng = response.body()!!.map { LatLng(it.lat.toDouble(), it.lng.toDouble()) }
+                    Log.d("API", "Puntos recibidos: $puntosLatLng")
+                    _puntosIntermedios.postValue(puntosLatLng)
                 } else {
                     Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
                 }
@@ -151,7 +155,7 @@ class RoutesViewModel : ViewModel() {
         @GET("puntos-intermedios/{ruteId}/")
         suspend fun getPuntosIntermedios(
             @Path("ruteId") ruteId: Int
-        ): Response<List<LatLng>>
+        ): Response<List<PuntoIntermedio>>
     }
 
 

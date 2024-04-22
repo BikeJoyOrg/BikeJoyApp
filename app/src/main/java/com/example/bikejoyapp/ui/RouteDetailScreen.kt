@@ -1,5 +1,6 @@
 package com.example.bikejoyapp.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -93,6 +94,7 @@ fun RouteDetailScreen(
 
     LaunchedEffect(route.RuteId) {
         routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
+        Log.d("UI", "Actualizando puntos en el mapa: $puntosIntermedios")
     }
     Column(modifier = Modifier
         .fillMaxSize()
@@ -110,7 +112,6 @@ fun RouteDetailScreen(
                 Marker(
                     state = MarkerState(position = LatLng(route.PuntIniciLat, route.PuntIniciLong))
                 )
-
                 Polyline(
                     points = puntosIntermedios,
                     color = Color.Blue,
