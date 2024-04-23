@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
 import com.example.bikejoyapp.data.Item
+import com.example.bikejoyapp.data.ItemResponse
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,7 +26,7 @@ class ShopViewModel: ViewModel() {
 
     @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()
-        .baseUrl("https://65f1c39c034bdbecc763a229.mockapi.io/bikejoy/v1/")
+        .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)
@@ -34,13 +35,13 @@ class ShopViewModel: ViewModel() {
         getStoreData()
     }
 
-    private fun getStoreData() {
+    fun getStoreData() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<List<Item>> = apiService.getItems()
+                    val response: Response<ItemResponse> = apiService.getItems()
                     if (response.isSuccessful) {
-                        _items.postValue(response.body())
+                        _items.postValue(response.body()?.items ?: emptyList())
                         println("Correct loading data: ")
                     } else {
                         println("Error loading data: ${response.errorBody()}")
@@ -52,7 +53,21 @@ class ShopViewModel: ViewModel() {
         }
     }
 
-    fun getItemById(itemId: String): Item? {
+    fun getItemById(itemId: Int): Item? {
         return _items.value?.find { it.id == itemId }
+    }
+
+    fun buyItem(id: Int) {
+        viewModelScope.launch {
+            val response = apiService.buyItem(id)
+            if (response.isSuccessful) {
+                println("Item purchase was successful")
+            } else {
+                println("Item purchase failed with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
+                }
+            }
+        }
     }
 }

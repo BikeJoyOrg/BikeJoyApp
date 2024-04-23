@@ -5,6 +5,7 @@ androidMapsUtils = "2.2.0"
 androidMapsUtilsVersion = "3.2.3"
 androidxEspressoCore = "3.4.0"
 androidxJunit = "1.1.2"
+composeBomVersion = "2024.04.01"
 converterGson = "2.9.0"
 coreKtxVersion = "1.7.0"
 coreTesting = "2.2.0"
@@ -54,6 +55,7 @@ constraintlayoutCompose = "1.0.1"
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
 android-maps-utils-v323 = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtilsVersion" }
 androidx-activity-compose-v140alpha02 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
+androidx-compose-bom-v20240401 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v170 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
