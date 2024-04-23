@@ -47,6 +47,7 @@ class MainViewModel : ViewModel() {
             println("error go back")
             throwable?.printStackTrace()
         }
+        showBottomBar()
     }
 }
 
