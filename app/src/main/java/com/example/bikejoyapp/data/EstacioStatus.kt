@@ -9,11 +9,7 @@ data class StationStatus(
     val mechanical: Int,
     val ebike: Int,
     val num_docks_available: Int
-): ClusterItem {
-    override fun getPosition(): LatLng = position
-    override fun getTitle(): String = title
-    override fun getSnippet(): String = snippet
-}
+)
 
 @Serializable
 data class StationStatusResponse(

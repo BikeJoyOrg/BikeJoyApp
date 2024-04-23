@@ -1,20 +1,15 @@
 package com.example.bikejoyapp.ui
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Looper
-import android.view.View
-import android.widget.ImageView
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,8 +42,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,9 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
-import com.example.bikejoyapp.ui.theme.magentaClaroCrema
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
@@ -75,27 +68,22 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.AdvancedMarkerOptions.CollisionBehavior
-import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PinConfig
-import com.google.maps.android.compose.AdvancedMarker
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerInfoWindowContent
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import org.json.JSONObject
-import com.google.maps.android.clustering.ClusterManager
-import com.example.bikejoyapp.data.StationClusterItem
-import com.example.bikejoyapp.ui.theme.colorAzulClaro
+import com.google.maps.android.compose.MapsComposeExperimentalApi
+import com.google.maps.android.compose.clustering.Clustering
+import kotlinx.coroutines.delay
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 
 var deviceLocation = mutableStateOf(LatLng(41.3851, 2.1734))
@@ -110,7 +98,7 @@ var locationCallback = object : LocationCallback() {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(MapsComposeExperimentalApi::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(
@@ -129,7 +117,8 @@ fun MapScreen(
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    val estacions by stationViewModel.estacions.observeAsState(emptyList())
+
+
     val selectedPlace by navigationViewModel.selectedPlace.observeAsState()
     val consultarOpcio by navigationViewModel.consultarOpcio.collectAsState()
     val isNavigating by navigationViewModel.isNavigating.collectAsState()
@@ -168,6 +157,66 @@ fun MapScreen(
     if (showRouteResume){
         Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel)
     }
+
+    val clickState = remember { mutableStateOf(false) }
+    val stationClicked = remember { mutableStateOf<EstacioBicing?>(null) }
+    LaunchedEffect(clickState.value) {
+        if (stationClicked.value == null) return@LaunchedEffect
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(stationClicked.value!!.lat, stationClicked.value!!.lon),
+                24.0f),
+            1000
+        )
+        delay(1000L)
+        val route = MyAppRoute.Station.createRoute(stationClicked.value!!.station_id.toString())
+        mainViewModel.navigateToDynamic(route)
+    }
+
+    val estacions by stationViewModel.estacions.observeAsState(emptyList())
+    val visibleClusters = remember { mutableStateOf(emptyList<EstacioBicing>()) }
+    val cachedClusters = remember { mutableStateOf(HashSet<EstacioBicing>()) }
+    val lastCameraPosition = remember { mutableStateOf<LatLng?>(null) }
+    val lastZoomLevel = remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(cameraPositionState.position) {
+        val newCameraPosition = LatLng(cameraPositionState.position.target.latitude,
+            cameraPositionState.position.target.longitude)
+        val newZoomLevel = cameraPositionState.position.zoom
+        if (lastCameraPosition.value == null ||
+            distanceBetween(lastCameraPosition.value!!, newCameraPosition) > 0.001 ||
+            abs(newZoomLevel - (lastZoomLevel.value ?: 0f)) > 0.8f) {
+            println("La posición de la cámara se ha actualizado a: ${cameraPositionState.position}")
+            println("Numero de estaciones cargadas: ${estacions.size}")
+
+            val visibleRegion = cameraPositionState.projection?.visibleRegion
+            val latLngBounds = visibleRegion?.latLngBounds
+            println("Límites de la región visible: $latLngBounds")
+
+            // Calcular las coordenadas que están a un 20% de distancia de los bordes de la región visible
+            val latDiff = (latLngBounds?.northeast?.latitude ?: 0.0) - (latLngBounds?.southwest?.latitude ?: 0.0)
+            val lonDiff = (latLngBounds?.northeast?.longitude ?: 0.0) - (latLngBounds?.southwest?.longitude ?: 0.0)
+            val extraLat = latDiff * 0.2
+            val extraLon = lonDiff * 0.2
+            val northeast = LatLng((latLngBounds?.northeast?.latitude ?: 0.0) + extraLat, (latLngBounds?.northeast?.longitude ?: 0.0) + extraLon)
+            val southwest = LatLng((latLngBounds?.southwest?.latitude ?: 0.0) - extraLat, (latLngBounds?.southwest?.longitude ?: 0.0) - extraLon)
+
+            // Expandir los límites para incluir las coordenadas adicionales
+            val expandedBounds = latLngBounds?.including(northeast)?.including(southwest)
+            println("Límites expandidos: $expandedBounds")
+
+            val newClusters = estacions.filter { it !in cachedClusters.value && expandedBounds?.contains(LatLng(it.lat, it.lon)) == true }
+            println("Nuevos clusters encontrados: ${newClusters.size}") // Imprimir la cantidad de nuevos clusters encontrados
+            cachedClusters.value.addAll(newClusters)
+            visibleClusters.value = cachedClusters.value.toList()
+
+            println("Clusters visibles: ${visibleClusters.value.size}") // Imprimir la cantidad de clusters visibles
+
+            lastCameraPosition.value = newCameraPosition
+            lastZoomLevel.value = newZoomLevel
+        }
+    }
+
+
     Column {
         Row (
             modifier = Modifier
@@ -192,21 +241,40 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-
                 bikeLanes.forEach { bikeLane ->
                     Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
                 }
-                estacions.forEach { station ->
-                    Marker(
-                        state = MarkerState(LatLng(station.lat, station.lon)),
-                        onClick = {
-                            val route = MyAppRoute.Station.createRoute(station.station_id.toString())
-                            mainViewModel.navigateToDynamic(route)
-                            true
-                        },
-                        icon = resizeMapIcons(context, R.mipmap.bikeparking, 100, 100)
-                    )
-                }
+
+                // Estacions
+                Clustering(
+                    items = visibleClusters.value,
+                    onClusterClick = {
+                        cameraPositionState.move(
+                            update = CameraUpdateFactory.zoomIn()
+                        )
+                        false },
+                    onClusterItemClick = { station ->
+                        clickState.value = true
+                        stationClicked.value = station
+                        true
+                    },
+                    clusterItemContent = {
+                        Image(
+                            painter = painterResource(R.drawable.bikeparking),
+                            contentDescription = "bike station marker",
+                            modifier = Modifier.size(22.dp)
+                        )
+                    },
+                    clusterContent = {
+                        Image(
+                            painter = painterResource(R.drawable.bikeparkingdark),
+                            contentDescription = "bike station marker",
+                            modifier = Modifier.size(24.dp),
+                        )
+                    },
+                )
+                // Fi estacions
+
                 if (consultarOpcio) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
@@ -464,8 +532,9 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
         }
     }
 }
-fun resizeMapIcons(context: Context, iconId: Int, width: Int, height: Int): BitmapDescriptor {
-    val imageBitmap = BitmapFactory.decodeResource(context.resources, iconId)
-    val resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false)
-    return BitmapDescriptorFactory.fromBitmap(resizedBitmap)
+
+fun distanceBetween(point1: LatLng, point2: LatLng): Double {
+    val latDiff = point2.latitude - point1.latitude
+    val lonDiff = point2.longitude - point1.longitude
+    return sqrt(latDiff * latDiff + lonDiff * lonDiff)
 }

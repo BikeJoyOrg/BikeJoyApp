@@ -283,7 +283,7 @@ fun DetailsView(
             Spacer(modifier = Modifier.height(16.dp))
             Row {
                 Text(
-                    text = "Distancia: ${route.RuteDistance} km",
+                    text = "Distancia: ${"%.2f".format(route.RuteDistance)} m",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(16.dp)
                 )
