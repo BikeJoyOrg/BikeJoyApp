@@ -13,15 +13,24 @@ class MainViewModel : ViewModel() {
     var selectedRoute: RutaUsuari? = null
     private val _isBottomBarVisible = MutableStateFlow(true) // Inicialmente visible
     val isBottomBarVisible: StateFlow<Boolean> = _isBottomBarVisible
-    fun hideBottomBar() { _isBottomBarVisible.value = false }
-    fun showBottomBar() { _isBottomBarVisible.value = true }
+    fun hideBottomBar() {
+        _isBottomBarVisible.value = false
+    }
 
+    fun showBottomBar() {
+        _isBottomBarVisible.value = true
+    }
 
 
     private val _isTopBarVisible = MutableStateFlow(true) // Inicialmente visible
     val isTopBarVisible: StateFlow<Boolean> = _isTopBarVisible
-    fun hideTopBar() { _isTopBarVisible.value = false }
-    fun showTopBar() { _isTopBarVisible.value = true }
+    fun hideTopBar() {
+        _isTopBarVisible.value = false
+    }
+
+    fun showTopBar() {
+        _isTopBarVisible.value = true
+    }
 
     private val _navigationCommands = Channel<NavigationCommand>(Channel.BUFFERED)
     val navigationCommands = _navigationCommands.receiveAsFlow()
