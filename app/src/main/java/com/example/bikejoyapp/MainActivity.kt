@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
                     navigationViewModel = navigationViewModel,
                     shopViewModel = shopViewModel,
                     bikeLanesViewModel = bikeLanesViewModel,
-                    achievementViewModel = achievementViewModel
+                    achievementViewModel = achievementViewModel,
                     userState = userState
                 )
             }
@@ -192,7 +192,7 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    userState: UserState
+    userState: UserState,
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel
