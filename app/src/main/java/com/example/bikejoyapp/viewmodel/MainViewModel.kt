@@ -64,5 +64,6 @@ sealed class NavigationCommand {
     data class ToDestination(val destination: MyAppRoute) : NavigationCommand()
 
     data class ToDynamicDestination(val destination: String) : NavigationCommand()
+
     data object Back : NavigationCommand()
 }

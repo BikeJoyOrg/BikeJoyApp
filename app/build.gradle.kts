@@ -131,7 +131,7 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.maps.compose.utils)
     implementation(libs.maps.compose.widgets)
-    implementation(libs.androidx.compose.bom.v20240401)
+    implementation(platform(libs.androidx.compose.bom.v20240401))
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {

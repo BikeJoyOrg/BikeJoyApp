@@ -164,6 +164,7 @@ class MainActivity : ComponentActivity() {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
                             is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
                             is NavigationCommand.Back -> navController.popBackStack()
+                            else -> {}
                         }
                     }
                 }
@@ -345,6 +346,7 @@ fun MyAppBottomNavigation(
                 {
                     selected = index
                     mainViewModel.navigateTo(destination.route)
+
                 },
                 icon = {
                     if (destination.selectedIcon != null) {

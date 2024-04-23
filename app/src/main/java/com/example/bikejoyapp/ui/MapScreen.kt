@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.BikeLane
 import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.components.SearchPreviewWidget
@@ -97,9 +98,9 @@ var locationCallback = object : LocationCallback() {
 }
 
 
+@SuppressLint("MissingPermission")
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(MapsComposeExperimentalApi::class)
-@SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(
     stationViewModel: EstacionsViewModel,
@@ -129,7 +130,7 @@ fun MapScreen(
     val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
     val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
     val avis by navigationViewModel.avis.observeAsState(false)
-    val bikeLanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
+
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -145,11 +146,9 @@ fun MapScreen(
         }
     }
 
-    val markerState = rememberMarkerState()
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLocation.value, 18f)
     }
-    val current = LocalContext.current
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
     if (avis){
         Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel)
@@ -174,8 +173,11 @@ fun MapScreen(
     }
 
     val estacions by stationViewModel.estacions.observeAsState(emptyList())
+    val bikeLanes by bikeLanesViewModel.bikeLanes.observeAsState(emptyList())
     val visibleClusters = remember { mutableStateOf(emptyList<EstacioBicing>()) }
-    val cachedClusters = remember { mutableStateOf(HashSet<EstacioBicing>()) }
+    val visibleLanes = remember { mutableStateOf(emptyList< BikeLane >()) }
+    val chargedClusters = remember { mutableStateOf(emptyList<EstacioBicing>()) }
+    val chargedLanes = remember { mutableStateOf(emptyList< BikeLane >()) }
     val lastCameraPosition = remember { mutableStateOf<LatLng?>(null) }
     val lastZoomLevel = remember { mutableStateOf<Float?>(null) }
     LaunchedEffect(cameraPositionState.position) {
@@ -185,12 +187,9 @@ fun MapScreen(
         if (lastCameraPosition.value == null ||
             distanceBetween(lastCameraPosition.value!!, newCameraPosition) > 0.001 ||
             abs(newZoomLevel - (lastZoomLevel.value ?: 0f)) > 0.8f) {
-            println("La posición de la cámara se ha actualizado a: ${cameraPositionState.position}")
-            println("Numero de estaciones cargadas: ${estacions.size}")
 
             val visibleRegion = cameraPositionState.projection?.visibleRegion
             val latLngBounds = visibleRegion?.latLngBounds
-            println("Límites de la región visible: $latLngBounds")
 
             // Calcular las coordenadas que están a un 20% de distancia de los bordes de la región visible
             val latDiff = (latLngBounds?.northeast?.latitude ?: 0.0) - (latLngBounds?.southwest?.latitude ?: 0.0)
@@ -202,14 +201,14 @@ fun MapScreen(
 
             // Expandir los límites para incluir las coordenadas adicionales
             val expandedBounds = latLngBounds?.including(northeast)?.including(southwest)
-            println("Límites expandidos: $expandedBounds")
 
-            val newClusters = estacions.filter { it !in cachedClusters.value && expandedBounds?.contains(LatLng(it.lat, it.lon)) == true }
-            println("Nuevos clusters encontrados: ${newClusters.size}") // Imprimir la cantidad de nuevos clusters encontrados
-            cachedClusters.value.addAll(newClusters)
-            visibleClusters.value = cachedClusters.value.toList()
 
-            println("Clusters visibles: ${visibleClusters.value.size}") // Imprimir la cantidad de clusters visibles
+            visibleClusters.value = estacions.filter { expandedBounds?.contains(LatLng(it.lat, it.lon)) == true }
+            visibleLanes.value = bikeLanes.filter { bikeLane ->
+                bikeLane.latLng.any { latLng -> expandedBounds?.contains(latLng) == true }
+            }
+            chargedClusters.value = (chargedClusters.value + visibleClusters.value).distinct()
+            chargedLanes.value = (chargedLanes.value + visibleLanes.value).distinct()
 
             lastCameraPosition.value = newCameraPosition
             lastZoomLevel.value = newZoomLevel
@@ -241,13 +240,13 @@ fun MapScreen(
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true, mapType = MapType.NORMAL)
             ) {
-                bikeLanes.forEach { bikeLane ->
+                chargedLanes.value.forEach { bikeLane ->
                     Polyline(bikeLane.latLng, color = Color.Blue, width = 10f)
                 }
 
                 // Estacions
                 Clustering(
-                    items = visibleClusters.value,
+                    items = chargedClusters.value,
                     onClusterClick = {
                         cameraPositionState.move(
                             update = CameraUpdateFactory.zoomIn()
