@@ -14,7 +14,10 @@ import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -101,9 +105,14 @@ fun RouteDetailScreen(
 
     val puntFinalLatLng = puntosIntermedios.lastOrNull() ?: LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble())
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Box(
-            modifier = Modifier.height(200.dp).fillMaxWidth()
+            modifier = Modifier
+                .height(200.dp)
+                .fillMaxWidth()
+                .border(2.dp, Color.Black, RoundedCornerShape(10.dp)) // Agrega esta línea
         ) {
             GoogleMap(
                 cameraPositionState = cameraPositionState,
@@ -120,11 +129,9 @@ fun RouteDetailScreen(
                     icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala)
                 )
                 Polyline(points = puntosIntermedios, color = magentaOscuroCrema, width = 15.0f)
-
-
-
             }
         }
+
         Spacer(Modifier.height(16.dp))
         RouteHeader(route, userHasCompletedRoute, fixedRating)
         Box(modifier = Modifier.fillMaxSize()) {
@@ -145,23 +152,33 @@ fun RouteDetailScreen(
     }
 }
 
+
 @Composable
 fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = route.RuteName ?: "Nombre de ruta",
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = if (userHasCompletedRoute) "Completada" else "Pendiente",
-            style = MaterialTheme.typography.bodyLarge.copy(color = if (userHasCompletedRoute) Color.Green else Color.Red),
             modifier = Modifier.padding(horizontal = 16.dp),
         )
+        Spacer(Modifier.height(16.dp))
+        Icon(
+            painter = if (userHasCompletedRoute) painterResource(id = R.drawable.route_completed) else painterResource(id = R.drawable.route_uncompleted),
+            tint = Color.Unspecified,
+            contentDescription = "Status de la ruta",
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = if (userHasCompletedRoute) "¡Ruta completada!" else "Aún no has completado esta ruta",
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+
     }
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -170,7 +187,7 @@ fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) 
     ) {
         Text(
             text = "Valoración:",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.weight(1f)
         )
         RatingBikes(
@@ -185,9 +202,9 @@ fun RatingBikes(rating: Int, enabled: Boolean, onRatingChanged: (Int) -> Unit) {
     Row {
         for (i in 1..5) {
             val image = if (i <= rating) {
-                painterResource(id = R.drawable.bycicle_filled) // Asegúrate de que el nombre del recurso es correcto
+                painterResource(id = R.drawable.bycicle_filled)
             } else {
-                painterResource(id = R.drawable.bycicle_outlined) // Asegúrate de que el nombre del recurso es correcto
+                painterResource(id = R.drawable.bycicle_outlined)
             }
 
             IconButton(onClick = { if (enabled) onRatingChanged(i) }) {
@@ -271,26 +288,27 @@ fun DetailsView(
         Column {
             Text (
                 text = "Descripción",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(16.dp)
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally),
+                color = Color.Black
             )
             Text(
                 text = route.RuteDescription ?: "Descripción no disponible",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row {
+            Spacer(modifier = Modifier.height(8.dp))
+            Column {
                 Text(
                     text = "Distancia: ${"%.2f".format(route.RuteDistance)} m",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(16.dp)
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(8.dp)
                 )
                 Text(
                     text = "Tiempo estimado: ${route.RuteTime} min",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(16.dp)
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(8.dp)
                 )
             }
             Column(
@@ -300,7 +318,10 @@ fun DetailsView(
                 if (userHasCompletedRoute && !ratingSent) {
                     Button(
                         onClick = { viewModel.showRatingDialog() },
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .border(1.dp, Color.Black, CircleShape),
+                        shape = CircleShape
                     ) {
                         Text("Enviar Valoración")
                     }

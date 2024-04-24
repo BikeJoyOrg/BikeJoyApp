@@ -92,7 +92,7 @@ fun SearchBar(searchQuery: String,
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(),
-        placeholder = { Text("Search", color = Color(0xFF000000)) },
+        placeholder = { Text("Cerca les rutes d'altres usuaris", color = Color(0xFF000000)) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Search
@@ -153,14 +153,14 @@ fun FilterForm(
             title = { Text("Filtros") },
             text = {
                 Column {
-                    Text("Duración: ${tempDuration.toInt()}h")
+                    Text("Máxima Duración: ${if (tempDuration == durationRange.endInclusive) "Máx." else "${tempDuration.toInt()}h"}")
                     Slider(
                         value = tempDuration,
                         onValueChange = { tempDuration = it },
                         valueRange = durationRange,
                         steps = 5
                     )
-                    Text("Distancia: ${tempDistance.toInt()}km")
+                    Text("Máxima Distancia: ${if (tempDistance == distanceRange.endInclusive) "Máx." else "${tempDistance.toInt()}km"}")
                     Slider(
                         value = tempDistance,
                         onValueChange = { tempDistance = it },
@@ -181,10 +181,10 @@ fun FilterForm(
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = "Seleccionado",
-                                        tint = Color.Green // Ajusta el color del ícono aquí
+                                        tint = Color.Green
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(8.dp)) // Espacio entre el icono y el texto
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = location,
                                     color = if (location == tempSelectedLocation) Color.Green else Color.Black, // Cambia el color del texto
@@ -228,7 +228,7 @@ fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "BikeJoy Routes"
+                    " ${if (routes.isNotEmpty()) "BikeJoy Routes" else "No se han encontrado rutas"}",
                 )
             }
         }
@@ -246,15 +246,16 @@ fun RoutesList(mainViewModel : MainViewModel, modifier : Modifier, routes: List<
 fun AddRouteForm(rutesviewModel: RoutesViewModel, mainViewModel: MainViewModel){
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp) // Asegúrate de que este padding sea consistente con el de SearchBar
+            .padding(16.dp)
     ) {
         Button(
             onClick = { mainViewModel.navigateTo(MyAppRoute.GravarRuta)},
             modifier = Modifier
-                .wrapContentWidth() // Esto asegura que el botón no estire el Row innecesariamente
+                .wrapContentWidth()
+                .align(Alignment.CenterVertically)
         ) {
             Text("Crear Ruta")
         }
