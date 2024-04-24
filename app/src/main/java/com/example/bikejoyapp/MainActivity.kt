@@ -103,6 +103,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 
 
 class MainActivity : ComponentActivity() {
@@ -229,23 +233,33 @@ fun MyAppContent(
                             }
                             else {
                                 IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                    Icon(Icons.Default.AccountCircle, contentDescription = "Account", Modifier.size(32.dp))
+                                    val iconBackground = if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                    Box(
+                                        modifier = Modifier
+                                            .background(color = iconBackground, shape = CircleShape)
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.cyclist_boy_icon),
+                                            contentDescription = "Account",
+                                            Modifier.size(32.dp),
+                                            tint = Color.Unspecified
+                                        )
+                                    }
                                 }
                             }
                         },
                         actions = {
                             println("currentRoute: $currentRoute")
                             println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                            if (currentRoute == MyAppRoute.Shop.route || currentRoute == MyAppRoute.Item.route) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("1000 ", fontSize = 20.sp)
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                        contentDescription = "Localized description",
-                                        modifier = Modifier.size(32.dp),
-                                        tint = Color(0xFFD4AF37)
-                                    )
-                                }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("1000 ", fontSize = 20.sp)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                    contentDescription = "Localized description",
+                                    modifier = Modifier.size(32.dp),
+                                    tint = Color(0xFFD4AF37)
+                                )
                             }
                         },
                     )
@@ -278,7 +292,7 @@ fun MyAppContent(
                 .fillMaxSize()
         ) {
             NavHost(
-                navController = navController, startDestination = MyAppRoute.Login.route
+                navController = navController, startDestination = MyAppRoute.Map.route
             ) {
                 composable(MyAppRoute.Map.route) {
                     MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
@@ -337,35 +351,39 @@ fun MyAppBottomNavigation(
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = Color.White
+        contentColor = Color.Unspecified,
+        tonalElevation = 0.dp
     ) {
         TOP_LEVEL_DESTINATIONS.forEachIndexed { index, destination ->
             NavigationBarItem(
                 selected = index == selected,
-                onClick =
-                {
+                onClick = {
                     selected = index
                     mainViewModel.navigateTo(destination.route)
-
                 },
                 icon = {
-                    if (destination.selectedIcon != null) {
-                        Icon(
-                            imageVector = if (index == selected) destination.selectedIcon!! else destination.unselectedIcon!!,
-                            contentDescription = stringResource(id = destination.iconTextId),
-                            tint = Color.White
-                        )
-                    }
-                    else {
+                    val iconBackground = if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                    Box(
+                        modifier = Modifier
+                            .background(color = iconBackground, shape = CircleShape)
+                            .padding(8.dp)
+                    ) {
                         Icon(
                             painter = painterResource(
-                                if (index == selected) destination.selectedImageResource!! else destination.unselectedImageResource!!
+                                id = if (index == selected) destination.selectedIcon else destination.unselectedIcon
                             ),
                             contentDescription = stringResource(id = destination.iconTextId),
-                            tint = Color.White
+                            tint = if (index == selected) Color.Unspecified else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent, // Esto intenta hacer el indicador transparente
+                    selectedIconColor = Color.Transparent,
+                    unselectedIconColor = Color.Transparent,
+                    selectedTextColor = Color.Transparent,
+                    unselectedTextColor = Color.Transparent
+                )
             )
         }
     }
