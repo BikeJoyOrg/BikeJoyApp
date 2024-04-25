@@ -132,7 +132,7 @@ fun RouteDetailScreen(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
         RouteHeader(route, userHasCompletedRoute, fixedRating)
         Box(modifier = Modifier.fillMaxSize()) {
             when (currentView) {
@@ -165,20 +165,39 @@ fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) 
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         Spacer(Modifier.height(16.dp))
-        Icon(
-            painter = if (userHasCompletedRoute) painterResource(id = R.drawable.route_completed) else painterResource(id = R.drawable.route_uncompleted),
-            tint = Color.Unspecified,
-            contentDescription = "Status de la ruta",
-            modifier = Modifier.size(64.dp)
-        )
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .background(Color.Blue, CircleShape)
+                    .border(1.dp, Color.Black, CircleShape),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
+            ) {
+                Text("Seguir ruta")
+            }
+            Icon(
+                painter = if (userHasCompletedRoute) painterResource(id = R.drawable.route_completed) else painterResource(
+                    id = R.drawable.route_uncompleted
+                ),
+                tint = Color.Unspecified,
+                contentDescription = "Status de la ruta",
+                modifier = Modifier.size(64.dp)
+            )
+        }
         Text(
             text = if (userHasCompletedRoute) "¡Ruta completada!" else "Aún no has completado esta ruta",
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
             color = Color.Black,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
-
-
     }
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -317,11 +336,15 @@ fun DetailsView(
             ) {
                 if (userHasCompletedRoute && !ratingSent) {
                     Button(
-                        onClick = { viewModel.showRatingDialog() },
+                        onClick = {
+                            viewModel.showRatingDialog()
+                        },
                         modifier = Modifier
                             .padding(16.dp)
+                            .background(Color.Blue, CircleShape)
                             .border(1.dp, Color.Black, CircleShape),
-                        shape = CircleShape
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
                     ) {
                         Text("Enviar Valoración")
                     }
