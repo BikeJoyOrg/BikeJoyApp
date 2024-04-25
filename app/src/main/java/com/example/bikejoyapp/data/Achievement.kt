@@ -5,6 +5,7 @@ data class Level(
     val description: String,
     val valueRequired: Int,
     val coinReward: Int,
+    val xpReward: Int,
     val petReward: String? = null,
     var isAchieved: Boolean = false,
     var isRedeemed: Boolean = false

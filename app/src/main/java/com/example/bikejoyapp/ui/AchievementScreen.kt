@@ -109,7 +109,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                     painter = painterResource(
                         id = achievementsIcons[achievement.name] ?: R.drawable.coins
                     ),
-                    contentDescription = "coins",
+                    contentDescription = "achievementIcon",
                     modifier = Modifier.size(70.dp)
                 )
             }
@@ -172,7 +172,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                 if (!completed) {
                     Row(
                         modifier = Modifier
-                            .padding(top = 12.dp, start = 6.dp)
+                            .padding(top = 8.dp, start = 6.dp)
                             .height(40.dp)
                             .width(200.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -182,12 +182,28 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             painterResource(id = R.drawable.coins),
                             contentDescription = "coins",
                             modifier = Modifier
-                                .size(40.dp),
+                                .size(30.dp),
 
                             )
-                        Text(achievement.levels[lastAchievedLevel].coinReward.toString())
+                        Text(achievement.levels[lastAchievedLevel].coinReward.toString(),
+                        modifier = Modifier.padding(start = 4.dp))
+                    }
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .height(40.dp)
+                            .width(200.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
 
-
+                        Image(
+                            painterResource(id = R.drawable.level),
+                            contentDescription = "xp",
+                            modifier = Modifier
+                                .size(30.dp),
+                            )
+                        Text(achievement.levels[lastAchievedLevel].xpReward.toString(),
+                            modifier = Modifier.padding(start = 2.dp))
                     }
                     if (achievement.levels[lastAchievedLevel].isAchieved && !achievement.levels[lastAchievedLevel].isRedeemed) {
                         val context = LocalContext.current
@@ -201,7 +217,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                                 mediaPlayer.start()
                             },
                             modifier = Modifier
-                                .padding(top = 24.dp)
+
                                 .size(
                                     80.dp,
                                     30.dp
