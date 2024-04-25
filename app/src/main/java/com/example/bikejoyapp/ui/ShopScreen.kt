@@ -35,10 +35,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.MyAppRoute
@@ -91,13 +94,6 @@ fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
 @Composable
 fun ItemCard(index: Int, items: List<Item>, onItemClick: (Item) -> Unit) {
     val item = items[index]
-    val imageResId = when (item.item_picture_id) {
-        1 -> R.drawable.item_1
-        2 -> R.drawable.item_2
-        3 -> R.drawable.item_3
-        4 -> R.drawable.item_4
-        else -> R.drawable.item_default
-    }
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -106,9 +102,13 @@ fun ItemCard(index: Int, items: List<Item>, onItemClick: (Item) -> Unit) {
         elevation = CardDefaults.cardElevation(6.dp),
     ) {
         Box(modifier = Modifier.height(160.dp)) {
-            Image(
-                painter = painterResource(imageResId),
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.image)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "Item Image",
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
             Box (modifier = Modifier

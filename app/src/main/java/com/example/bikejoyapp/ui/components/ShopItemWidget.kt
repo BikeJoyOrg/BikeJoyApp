@@ -27,10 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -55,13 +58,6 @@ fun ShopItemWidget(
         println("checking item: $itemId  $item")
     }
 
-    val imageResId = when (item?.item_picture_id) {
-        1 -> R.drawable.item_1
-        2 -> R.drawable.item_2
-        3 -> R.drawable.item_3
-        4 -> R.drawable.item_4
-        else -> R.drawable.item_default
-    }
 
     Column (
         modifier = Modifier
@@ -79,14 +75,25 @@ fun ShopItemWidget(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Image(
-            painter = painterResource(imageResId),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp),
-            contentScale = ContentScale.Crop
-        )
+        if (item != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.image)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Item Image",
+                modifier = Modifier.fillMaxWidth().height(250.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+        else {
+            Image(
+                painter = painterResource(id = R.drawable.item_default),
+                contentDescription = "Item Image",
+                modifier = Modifier.fillMaxWidth().height(250.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = item?.description ?: "descripció no disponible",
