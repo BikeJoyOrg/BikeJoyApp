@@ -2,6 +2,7 @@ package com.example.bikejoyapp.api
 
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.ItemResponse
+import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatusResponse
 import retrofit2.Response
@@ -17,4 +18,7 @@ interface ApiService {
 
     @GET("stations/{id}")
     suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
+
+    @GET("Mascota")
+    suspend fun getPets(): Response<List<Mascota>>
 }

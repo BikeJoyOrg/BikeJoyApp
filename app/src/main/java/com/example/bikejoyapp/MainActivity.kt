@@ -81,6 +81,7 @@ import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.ui.RouteDetailScreen
 import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.libraries.places.api.Places
@@ -119,6 +120,7 @@ class MainActivity : ComponentActivity() {
         val stationViewModel: EstacionsViewModel by viewModels()
         val mainViewModel: MainViewModel by viewModels()
         val shopViewModel: ShopViewModel by viewModels()
+        val mascotesViewModel: MascotesViewModel by viewModels()
 
 
         if (!Places.isInitialized()) {
@@ -145,7 +147,8 @@ class MainActivity : ComponentActivity() {
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
-                    shopViewModel = shopViewModel
+                    shopViewModel = shopViewModel,
+                    mascotesViewModel = mascotesViewModel,
                 )
             }
         }
@@ -161,7 +164,8 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    shopViewModel: ShopViewModel
+    shopViewModel: ShopViewModel,
+    mascotesViewModel: MascotesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -261,7 +265,7 @@ fun MyAppContent(
                     ShopScreen(shopViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
-                    PetScreen()
+                    PetScreen(mascotesViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.GravarRuta.route) {
                     GravarRutaScreen(GravarRutaViewModel(),mainViewModel)

@@ -35,7 +35,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
             Row(modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = mascotaAconseguida.nomMascota, fontSize = 32.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text(text = mascotaAconseguida.mascota.name, fontSize = 32.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             }
         },
 
@@ -46,8 +46,8 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
             ) {
                 item {
                     Image(
-                        painter = painterResource(id = MascotaImatges.numDrawables[Mascotes.getMascotaPorNombre(mascotaAconseguida.nomMascota)?.img1!!]),
-                        contentDescription = mascotaAconseguida.nomMascota,
+                        painter = painterResource(id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img1]),
+                        contentDescription = mascotaAconseguida.mascota.name,
                         modifier = Modifier.height(100.dp)
                     )
                 }
@@ -58,22 +58,18 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
                     if (mascotaAconseguida.nivell >= 2) {
                         Image(
                             painter = painterResource(
-                                id = MascotaImatges.numDrawables[Mascotes.getMascotaPorNombre(
-                                    mascotaAconseguida.nomMascota
-                                )?.img2!!]
+                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2]
                             ),
-                            contentDescription = mascotaAconseguida.nomMascota,
+                            contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
                     }
                     else {
                         Image(
                             painter = painterResource(
-                                id = MascotaImatges.numDrawables[Mascotes.getMascotaPorNombre(
-                                    mascotaAconseguida.nomMascota
-                                )?.img2l!!]
+                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2l]
                             ),
-                            contentDescription = mascotaAconseguida.nomMascota,
+                            contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
                     }
@@ -85,34 +81,42 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
                     if (mascotaAconseguida.nivell >= 3) {
                         Image(
                             painter = painterResource(
-                                id = MascotaImatges.numDrawables[Mascotes.getMascotaPorNombre(
-                                    mascotaAconseguida.nomMascota
-                                )?.img3!!]
+                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3]
                             ),
-                            contentDescription = mascotaAconseguida.nomMascota,
+                            contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
                     }
                     else {
                         Image(
                             painter = painterResource(
-                                id = MascotaImatges.numDrawables[Mascotes.getMascotaPorNombre(
-                                    mascotaAconseguida.nomMascota
-                                )?.img3l!!]
+                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3l]
                             ),
-                            contentDescription = mascotaAconseguida.nomMascota,
+                            contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
                     }
                 }
                 item {
-                    Text(text = "Nivell: "+mascotaAconseguida.nivell.toString(), fontSize = 32.sp, modifier = Modifier.padding(top = 30.dp))
+                    Text(text = "Nivell: "+ mascotaAconseguida.nivell.toString(), fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
                 }
                 item {
-                    Text(text = "Bonus: "+ (mascotaAconseguida.nivell*10).toString() + Mascotes.getMascotaPorNombre(mascotaAconseguida.nomMascota)?.bonus, fontSize = 32.sp, modifier = Modifier.padding(top = 30.dp))
+                    Text(text = "Bonus1: "+ ((mascotaAconseguida.mascota.bonus1.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
                 }
                 item {
-                    Button(onClick = { MascotesAconseguides.equipar(mascotaAconseguida.nomMascota, mascotaAconseguida.nicknameUsuari) }) {
+                    Text(text = "Bonus2: "+ ((mascotaAconseguida.mascota.bonus2.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
+                }
+                item {
+                    Text(text = "Bonus3: "+ ((mascotaAconseguida.mascota.bonus3.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+                }
+                item {
+                    Button(onClick = {
+                        MascotesAconseguides.equipar(mascotaAconseguida.mascota.name, mascotaAconseguida.nicknameUsuari)
+                        onDismiss()
+                    }) {
                         Text(text = "Equipar")
                     }
                 }
