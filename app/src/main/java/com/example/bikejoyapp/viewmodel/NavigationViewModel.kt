@@ -155,6 +155,9 @@
         val showRouteResume: LiveData<Boolean> = _showRouteResume
         private val _avis = MutableLiveData<Boolean>()
         val avis: LiveData<Boolean> = _avis
+
+        private val _buscat = MutableLiveData<Boolean>()
+        val buscat: LiveData<Boolean> = _buscat
         fun PaintSearchFields() {
             _PaintSearchFields.value = true
         }
@@ -246,6 +249,7 @@
             _primer_cop.value = true
             stop = false
             coordfinish = null
+            _buscat.value = false
             if (rutaCompletada) {
                 _showRouteResume.value = false
             }
@@ -259,6 +263,7 @@
             _selectedPlace.value = place
             _consultarOpcio.value = true
             _searchResults.value = emptyList()
+            _buscat.value = true
 
             start = "${value.longitude},${value.latitude}"
             finish = place.latLng?.longitude.toString() + "," + place.latLng?.latitude.toString()
@@ -309,5 +314,10 @@
         fun continuar(){
             _avis.value = false
             stop = false
+        }
+        fun mostrarRuta(puntos: List<LatLng>){
+            _ruta.value = puntos.toMutableList()
+            coordfinish = puntos.last()
+            _consultarOpcio.value = true
         }
     }

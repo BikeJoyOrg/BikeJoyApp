@@ -306,7 +306,7 @@ fun MyAppContent(
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
                     val userHasCompletedRoute = true
-                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute) }
+                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute, navigationViewModel) }
                 }
                 composable(
                     route = MyAppRoute.Item.route,

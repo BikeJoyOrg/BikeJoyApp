@@ -53,8 +53,10 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
 import com.example.bikejoyapp.data.Comment
+import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
+import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
@@ -69,7 +71,7 @@ val rutaUsuariPreview = RutaUsuari(
     PuntIniciLong = 2.1734f
 )
 
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun PreviewRouteDetailScreen() {
@@ -77,9 +79,9 @@ fun PreviewRouteDetailScreen() {
     val routesViewModel = RoutesViewModel()
     val mainViewModel = MainViewModel()
 
-    RouteDetailScreen(routesViewModel, mainViewModel, rutaUsuariPreview, userHasCompletedRoute = true)
+    RouteDetailScreen(routesViewModel, mainViewModel, rutaUsuariPreview, userHasCompletedRoute = true, NavigationViewModel())
 }
-
+*/
 
 enum class ViewType {
     Details,
@@ -91,7 +93,8 @@ fun RouteDetailScreen(
     routesViewModel: RoutesViewModel,
     mainViewModel: MainViewModel,
     route: RutaUsuari,
-    userHasCompletedRoute: Boolean
+    userHasCompletedRoute: Boolean,
+    navegationviewmodel: NavigationViewModel
 ) {
     val fixedRating = route.RuteRating
     val cameraPositionState = rememberCameraPositionState {
@@ -133,7 +136,7 @@ fun RouteDetailScreen(
         }
 
         Spacer(Modifier.height(8.dp))
-        RouteHeader(route, userHasCompletedRoute, fixedRating)
+        RouteHeader(route, userHasCompletedRoute, fixedRating,mainViewModel,navegationviewmodel,puntosIntermedios)
         Box(modifier = Modifier.fillMaxSize()) {
             when (currentView) {
                 ViewType.Details -> DetailsView(routesViewModel, route, userHasCompletedRoute)
@@ -154,7 +157,7 @@ fun RouteDetailScreen(
 
 
 @Composable
-fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) {
+fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int, mainViewModel: MainViewModel,navegationviewmodel: NavigationViewModel,puntos: List<LatLng>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -172,7 +175,10 @@ fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int) 
         ) {
             Button(
                 onClick = {
+                    navegationviewmodel.mostrarRuta(puntos)
 
+                    mainViewModel.navigateTo(MyAppRoute.Map)
+                    mainViewModel.showBottomBar()
                 },
                 modifier = Modifier
                     .padding(16.dp)
