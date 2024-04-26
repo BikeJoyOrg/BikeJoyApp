@@ -25,7 +25,7 @@ class MascotesViewModel: ViewModel() {
 
     @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()
-        .baseUrl("https://6625332704457d4aaf9e28e3.mockapi.io/pes/v1/")
+        .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiService::class.java)

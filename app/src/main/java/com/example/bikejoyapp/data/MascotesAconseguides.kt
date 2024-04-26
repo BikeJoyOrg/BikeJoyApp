@@ -8,10 +8,10 @@ object MascotesAconseguides {
         MascotaAconseguida(mascotes[1],"a",1,false),
         MascotaAconseguida(mascotes[2],"a",1,false),
         MascotaAconseguida(mascotes[3],"a",1,false),
-        MascotaAconseguida(mascotes[0],"b",1,true),
+        MascotaAconseguida(mascotes[0],"b",0,true),
         MascotaAconseguida(mascotes[5],"b",1,false),
-        MascotaAconseguida(mascotes[2],"b",1,false),
-        MascotaAconseguida(mascotes[6],"b",1,false),
+        MascotaAconseguida(mascotes[2],"b",3,false),
+        MascotaAconseguida(mascotes[6],"b",2,false),
     )
     fun teMascota(nombreM: String, nombreU: String): Boolean {
         for (mascotaAconseguida in mascotesAconseguides) {

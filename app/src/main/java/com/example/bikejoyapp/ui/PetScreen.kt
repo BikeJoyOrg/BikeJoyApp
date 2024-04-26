@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +54,7 @@ import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 
 
+
 val user = "b"
 var nom = ""
 
@@ -79,7 +81,10 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                 modifier = Modifier.fillMaxWidth()
                     .width(230.dp)
                     .padding(10.dp),
-                onClick = { if (MascotesAconseguides.teMascota(pet.name, user)) { selectedPet = true; nom = pet.name } }
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+                onClick = { if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) != 0)) { selectedPet = true; nom = pet.name } }
             ) {
                 Column(
                     modifier = Modifier
@@ -89,7 +94,13 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                 ) {
                     if (MascotesAconseguides.teMascota(pet.name, user)) {
                         Image(
-                            painter = painterResource(id = MascotaImatges.numDrawables[pet.img1]),
+                            painter = painterResource(id = when(MascotesAconseguides.getNivell(pet.name, user)) {
+                                0 -> MascotaImatges.numDrawables[pet.imgEgg]
+                                1 -> MascotaImatges.numDrawables[pet.img1]
+                                2 -> MascotaImatges.numDrawables[pet.img2]
+                                3 -> MascotaImatges.numDrawables[pet.img3]
+                                else -> MascotaImatges.numDrawables[pet.img1]
+                            }),
                             contentDescription = pet.name,
                             modifier = Modifier
                                 .height(130.dp)
@@ -109,7 +120,7 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (MascotesAconseguides.teMascota(pet.name, user)) {
+                    if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) != 0)) {
                         if (MascotesAconseguides.estaEquipat(pet.name, user)) {
                             Text(
                                 text = "Equipped",
@@ -123,7 +134,15 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                    } else {
+                    }
+                    else if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) == 0)) {
+                        Text(
+                            text = "Egg",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    else {
                         Text(
                             text = "Locked",
                             fontSize = 20.sp,
@@ -137,214 +156,6 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
     if(selectedPet) {
         InfoPetWidget (MascotesAconseguides.getMascotaAconseguida(nom, user), onDismiss = {selectedPet = false})
     }
-    /*LazyColumn(
-        verticalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxSize()
-    )
-    {
-        for (j in 0..2) {
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    for (i in j * 3..j * 3 + 2) {
-                        Column(modifier = Modifier)
-                        {
-                            if (MascotesAconseguides.teMascota(pets[i].name, user)) {
-                                if (MascotesAconseguides.estaEquipat(
-                                        pets[i].name,
-                                        user
-                                    )
-                                ) {
-                                    if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 1
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img1]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier
-                                                .height(130.dp)
-                                                .border(
-                                                    width = 5.dp,
-                                                    color = Color.Green
-                                                )
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    } else if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 2
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img2]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier
-                                                .height(130.dp)
-                                                .border(
-                                                    width = 5.dp,
-                                                    color = Color.Green
-                                                )
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    } else if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 3
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img3]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier
-                                                .height(130.dp)
-                                                .border(
-                                                    width = 5.dp,
-                                                    color = Color.Green
-                                                )
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 1
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img1]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier
-                                                .height(130.dp)
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    } else if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 2
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img2]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier.height(130.dp)
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    } else if (MascotesAconseguides.getNivell(
-                                            pets[i].name,
-                                            user
-                                        ) == 3
-                                    ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.Center,
-                                            modifier = Modifier.width(130.dp)
-                                        ) {
-                                            Text(
-                                                text = pets[i].name,
-                                                fontSize = 30.sp
-                                            )
-                                        }
-                                        Image(
-                                            painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img3]),
-                                            contentDescription = pets[i].name,
-                                            modifier = Modifier.height(130.dp)
-                                        )
-                                        Box(modifier = Modifier.width(130.dp)) {
-                                            Button(onClick = { selectedPet = true; nom = pets[i].name }, modifier = Modifier.width(130.dp)) {
-                                                Text(text = "Info")
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                Spacer(modifier = Modifier.height(30.dp))
-                                Image(
-                                    painter = painterResource(id = MascotaImatges.numDrawables[pets[i].img1l]),
-                                    contentDescription = "Josep",
-                                    modifier = Modifier.height(130.dp)
-                                )
-                                Text(
-                                    text = "Locked",
-                                    modifier = Modifier.width(130.dp),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-                    if(selectedPet) {
-                        InfoPetWidget (MascotesAconseguides.getMascotaAconseguida(nom, user), onDismiss = {selectedPet = false})
-                    }
-                }
-            }
-        }
-    }*/
 }
 
 

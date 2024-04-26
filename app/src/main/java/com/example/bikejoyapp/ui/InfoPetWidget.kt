@@ -25,17 +25,23 @@ import com.example.bikejoyapp.data.Mascotes
 import com.example.bikejoyapp.data.MascotesAconseguides
 
 @Composable
-fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
+fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = { /*TODO*/ },
         modifier = Modifier.height((800.dp)),
 
         title = {
-            Row(modifier = Modifier.fillMaxWidth(),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = mascotaAconseguida.mascota.name, fontSize = 32.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text(
+                    text = mascotaAconseguida.mascota.name,
+                    fontSize = 32.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
             }
         },
 
@@ -55,66 +61,59 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss:()->Unit) {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Evo")
                 }
                 item {
-                    if (mascotaAconseguida.nivell >= 2) {
                         Image(
-                            painter = painterResource(
-                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2]
-                            ),
+                            painter = painterResource(id = if (mascotaAconseguida.nivell >= 2) MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2] else MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2l]),
                             contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
-                    }
-                    else {
-                        Image(
-                            painter = painterResource(
-                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2l]
-                            ),
-                            contentDescription = mascotaAconseguida.mascota.name,
-                            modifier = Modifier.height(100.dp)
-                        )
-                    }
                 }
                 item {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Evo")
                 }
                 item {
-                    if (mascotaAconseguida.nivell >= 3) {
                         Image(
-                            painter = painterResource(
-                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3]
-                            ),
+                            painter = painterResource(id = if (mascotaAconseguida.nivell >= 3) MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3] else MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3l]),
                             contentDescription = mascotaAconseguida.mascota.name,
                             modifier = Modifier.height(100.dp)
                         )
-                    }
-                    else {
-                        Image(
-                            painter = painterResource(
-                                id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3l]
-                            ),
-                            contentDescription = mascotaAconseguida.mascota.name,
-                            modifier = Modifier.height(100.dp)
-                        )
-                    }
                 }
                 item {
-                    Text(text = "Nivell: "+ mascotaAconseguida.nivell.toString(), fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
+                    Text(
+                        text = "Nivell: " + mascotaAconseguida.nivell.toString(),
+                        fontSize = 32.sp,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
                 }
                 item {
-                    Text(text = "Bonus1: "+ ((mascotaAconseguida.mascota.bonus1.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
-                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
+                    Text(
+                        text = "Bonus1: " + ((mascotaAconseguida.mascota.bonus1.minus(1)).times(
+                            mascotaAconseguida.nivell
+                        ).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
+                    )
                 }
                 item {
-                    Text(text = "Bonus2: "+ ((mascotaAconseguida.mascota.bonus2.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
-                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp))
+                    Text(
+                        text = "Bonus2: " + ((mascotaAconseguida.mascota.bonus2.minus(1)).times(
+                            mascotaAconseguida.nivell
+                        ).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
+                    )
                 }
                 item {
-                    Text(text = "Bonus3: "+ ((mascotaAconseguida.mascota.bonus3.minus(1)).times(mascotaAconseguida.nivell).times(100).toInt()).toString() + "%",
-                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+                    Text(
+                        text = "Bonus3: " + ((mascotaAconseguida.mascota.bonus3.minus(1)).times(
+                            mascotaAconseguida.nivell
+                        ).times(100).toInt()).toString() + "%",
+                        fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
+                    )
                 }
                 item {
                     Button(onClick = {
-                        MascotesAconseguides.equipar(mascotaAconseguida.mascota.name, mascotaAconseguida.nicknameUsuari)
+                        MascotesAconseguides.equipar(
+                            mascotaAconseguida.mascota.name,
+                            mascotaAconseguida.nicknameUsuari
+                        )
                         onDismiss()
                     }) {
                         Text(text = "Equipar")
