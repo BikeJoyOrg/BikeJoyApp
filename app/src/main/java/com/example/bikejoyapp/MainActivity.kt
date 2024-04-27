@@ -151,7 +151,6 @@ class MainActivity : ComponentActivity() {
             retrofit.create(ApiRetrofit::class.java)
         }
         val userViewModel: UserViewModel by viewModels()
-        val userState by lazy { UserState(userViewModel) }
 
         val achievementViewModel: AchievementViewModel by viewModels()
 
@@ -187,7 +186,7 @@ class MainActivity : ComponentActivity() {
                     shopViewModel = shopViewModel,
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
-                    userState = userState
+                    userViewModel = userViewModel
                 )
             }
         }
@@ -204,7 +203,7 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    userState: UserState,
+    userViewModel: UserViewModel,
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel
@@ -214,7 +213,7 @@ fun MyAppContent(
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val user by userState.userLiveData.observeAsState()
+    val user by userViewModel.user.observeAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -310,7 +309,7 @@ fun MyAppContent(
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen(userState, mainViewModel)
+                    HomeScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
                     AchievementScreen(achievementViewModel)
@@ -331,10 +330,10 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable(MyAppRoute.Login.route) {
-                    LoginScreen(userState, mainViewModel)
+                    LoginScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Register.route) {
-                    RegisterScreen(userState, mainViewModel)
+                    RegisterScreen(userViewModel, mainViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
                     val userHasCompletedRoute = true

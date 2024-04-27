@@ -18,7 +18,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.KeyboardType
-import com.example.bikejoyapp.UserState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,10 +32,11 @@ import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
+import com.example.bikejoyapp.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun RegisterScreen(userState: UserState, mainViewModel: MainViewModel) {
+fun RegisterScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password1 by remember { mutableStateOf("") }
@@ -171,7 +171,7 @@ fun RegisterScreen(userState: UserState, mainViewModel: MainViewModel) {
                 modifier = Modifier.padding(20.dp),
                 onClick = {
                 coroutineScope.launch {
-                    status = userState.register(
+                    status = userViewModel.register(
                         username,
                         email,
                         password1,
@@ -189,7 +189,7 @@ fun RegisterScreen(userState: UserState, mainViewModel: MainViewModel) {
                 .fillMaxWidth()
         ) {
             Text("Status: $status")
-            if(status == "success register") {
+            if(status == "Success") {
                 mainViewModel.navigateTo(MyAppRoute.Login)
             }
         }

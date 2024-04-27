@@ -17,10 +17,10 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import org.json.JSONObject
 import retrofit2.Response
 
 class UserViewModel : ViewModel() {
-    var status: String = ""
     var token: String? = null
     private val _user = MutableLiveData<User>()
     val user: LiveData<User> = _user
@@ -36,31 +36,52 @@ class UserViewModel : ViewModel() {
         .build()
         .create(ApiRetrofit::class.java)
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String): String {
+        var result: String
         runBlocking {
             val response: Response<LoginResponse> = retrofit.login(username, password)
-            //if (response.isSuccessful) {
-                status = response.body()?.status ?: ""
-                token = response.body()?.token
-                _user.postValue(response.body()?.user)
-            //}
-            //println("error loggin in: ${response.errorBody()?.string()}")
+
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                token = responseBody?.token
+                _user.postValue(responseBody?.user)
+                result = "Success"
+            } else {
+                val errorBody = response.errorBody()!!.string()
+                val jsonObject = JSONObject(errorBody)
+                result = jsonObject.getString("error")
+            }
         }
+        return result
     }
 
-    fun register(username: String, email: String, password1: String, password2: String) {
+    fun register(username: String, email: String, password1: String, password2: String): String {
+        var result: String
         runBlocking {
             val response = retrofit.register(username, email, password1, password2)
-            status = response.body()?.status as String
+            result = if (response.isSuccessful) {
+                "Success"
+            } else {
+                val errorBody = response.errorBody()!!.string()
+                val jsonObject = JSONObject(errorBody)
+                jsonObject.getString("error")
+            }
         }
+        return result
     }
 
-    fun logout(token: String?) {
+    fun logout(token: String?): String {
+        var result: String
         runBlocking {
             val response = retrofit.logout(token)
-            status = if (response.body()?.status as String == "success logout") {
-                "success logout"
-            } else response.body()?.errors as String
+            result = if (response.isSuccessful) {
+                "Success"
+            } else {
+                val errorBody = response.errorBody()!!.string()
+                val jsonObject = JSONObject(errorBody)
+                jsonObject.getString("error")
+            }
         }
+        return result
     }
 }

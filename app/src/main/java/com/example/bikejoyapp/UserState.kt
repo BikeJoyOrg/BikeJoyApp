@@ -7,9 +7,8 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import com.example.bikejoyapp.data.User
 import kotlinx.coroutines.runBlocking
-
+/**
 class UserState(private val userViewModel: UserViewModel) {
-    private var status: String = ""
     val userLiveData: LiveData<User> = userViewModel.user
 
     fun login(username: String, password: String): String {
@@ -42,3 +41,4 @@ class UserState(private val userViewModel: UserViewModel) {
         return status
     }
 }
+*/

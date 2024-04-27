@@ -11,8 +11,5 @@ class User(
 )
 
 @Serializable
-data class LoginResponse(val status: String, val token: String, val user: User)
-
-@Serializable
-data class RegisterLogoutResponse(val status: String, val errors: String)
+data class LoginResponse(val token: String, val user: User)
 
