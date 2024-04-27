@@ -49,7 +49,6 @@ import kotlinx.coroutines.runBlocking
 fun HomeScreen(userState: UserState, mainViewModel: MainViewModel) {
     var status by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
-    var token by remember { mutableStateOf(SharedPrefUtils.getToken()) }
 
 
     Column(
