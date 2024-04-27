@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 class UserState(private val userViewModel: UserViewModel) {
     private var status: String = ""
 
-    suspend fun login(username: String, password: String): String {
+    fun login(username: String, password: String): String {
         userViewModel.login(username, password)
         status = userViewModel.status
         SharedPrefUtils.setToken(userViewModel.token)
