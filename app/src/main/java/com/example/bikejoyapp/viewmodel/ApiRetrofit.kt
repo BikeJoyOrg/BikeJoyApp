@@ -1,7 +1,9 @@
 package com.example.bikejoyapp.viewmodel
 
+import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.PuntsInterRuta
 import com.example.bikejoyapp.data.PuntsRuta
+import com.example.bikejoyapp.data.RegisterLogoutResponse
 import com.example.bikejoyapp.data.RouteResponse
 import com.example.bikejoyapp.data.RutaUsuari
 import kotlinx.serialization.json.Json
@@ -42,7 +44,7 @@ interface ApiRetrofit {
     suspend fun login(
         @Field("username") username: String,
         @Field("password") password: String
-    ): Response<Map<String, Any>>
+    ): Response<LoginResponse>
 
     @FormUrlEncoded
     @POST("users/register/")
@@ -51,12 +53,12 @@ interface ApiRetrofit {
         @Field("email") email: String,
         @Field("password1") password1: String,
         @Field("password2") password2: String
-    ): Response<Map<String, Any>>
+    ): Response<RegisterLogoutResponse>
 
     @POST("users/logout/")
     suspend fun logout(
         @Header("Authorization") token: String?
-    ): Response<Map<String, Any>>
+    ): Response<RegisterLogoutResponse>
 }
 
 

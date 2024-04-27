@@ -107,6 +107,7 @@ import com.example.bikejoyapp.data.SharedPrefUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.runtime.livedata.observeAsState
 
 
 class MainActivity : ComponentActivity() {
@@ -213,6 +214,8 @@ fun MyAppContent(
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
+    val user by userState.userLiveData.observeAsState()
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -259,7 +262,7 @@ fun MyAppContent(
                             println("currentRoute: $currentRoute")
                             println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("1000 ", fontSize = 20.sp)
+                                Text(user?.coins.toString(), fontSize = 20.sp)
                                 Icon(
                                     painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
                                     contentDescription = "Localized description",
