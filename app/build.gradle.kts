@@ -140,3 +140,4 @@ fun gradleLocalProperties(rootDir: File): Properties {
     localProperties.load(File(rootDir, "local.properties").inputStream())
     return localProperties
 }
+

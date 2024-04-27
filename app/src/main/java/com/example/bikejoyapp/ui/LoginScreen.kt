@@ -119,10 +119,8 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
             Button(
                 modifier = Modifier.padding(20.dp),
                 onClick = {
-                coroutineScope.launch {
                     status = userState.login(username, password)
-                    //mainViewModel.navigateTo(MyAppRoute.Home)
-                }
+
             }) {
                 Text("Login")
             }
@@ -133,11 +131,6 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
                 .fillMaxWidth()
         ) {
             Text("Status: $status")
-            if(status == "success login") {
-                mainViewModel.showBottomBar()
-                mainViewModel.showTopBar()
-                mainViewModel.navigateTo(MyAppRoute.Home)
-            }
         }
 
         Row (
@@ -159,5 +152,28 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
                 mainViewModel.navigateTo(MyAppRoute.Register)
             }
         }
+        Row (
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            ClickableText(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color.Blue)) {
+                        append("Entrar como invitado")
+                    }
+                },
+                modifier = Modifier
+                    .padding(start = 5.dp)
+                    .align(Alignment.CenterVertically)
+            ) {
+                status = "invitado"
+            }
+        }
+    }
+    if(status == "success login" || status == "invitado") {
+        mainViewModel.navigateTo(MyAppRoute.Map)
+        mainViewModel.showBottomBar()
+        mainViewModel.showTopBar()
     }
 }

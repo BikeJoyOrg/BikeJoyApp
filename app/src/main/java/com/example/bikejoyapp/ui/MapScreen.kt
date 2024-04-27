@@ -130,6 +130,7 @@ fun MapScreen(
     val primer_cop by navigationViewModel.primer_cop.observeAsState(true)
     val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
     val avis by navigationViewModel.avis.observeAsState(false)
+    val buscat by navigationViewModel.buscat.observeAsState(false)
 
 
     LaunchedEffect(Unit) {
@@ -278,26 +279,45 @@ fun MapScreen(
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
 
-                    selectedPlace?.let { place ->
-                        if (primer_cop){
+                    if (buscat) {
+                        selectedPlace?.let { place ->
+                            if (primer_cop) {
+                                val cameraPosition = CameraPosition.Builder()
+                                    .target(place.latLng)
+                                    .zoom(15f)
+                                    .build()
+                                cameraPositionState.position = cameraPosition
+                                navigationViewModel.primer_cop()
+                            }
+                            Marker(
+                                state = MarkerState(position = place.latLng),
+                                icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala),
+                                onClick = {
+                                    navigationViewModel.startNavigation()
+                                    mainViewModel.hideBottomBar()
+                                    mainViewModel.hideTopBar()
+                                    true
+                                }
+                            )
+
+                        }
+                    } else {
+                        if (primer_cop) {
                             val cameraPosition = CameraPosition.Builder()
-                                .target(place.latLng)
+                                .target(ruta?.first() ?: deviceLocation.value)
                                 .zoom(15f)
                                 .build()
                             cameraPositionState.position = cameraPosition
                             navigationViewModel.primer_cop()
                         }
                         Marker(
-                            state = MarkerState(position = place.latLng),
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE),
-                            onClick = {
-                                navigationViewModel.startNavigation()
-                                mainViewModel.hideBottomBar()
-                                mainViewModel.hideTopBar()
-                                true
-                            }
+                            state = MarkerState(position = ruta?.first() ?: deviceLocation.value),
+                            icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_inicit_escala)
                         )
-
+                        Marker(
+                            state = MarkerState(position = ruta?.last() ?: deviceLocation.value),
+                            icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala),
+                        )
                     }
                 }
             }

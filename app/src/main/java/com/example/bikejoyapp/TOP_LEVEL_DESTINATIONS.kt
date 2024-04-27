@@ -7,9 +7,9 @@ import com.example.bikejoyapp.data.MyAppTopLevelDestination
 val TOP_LEVEL_DESTINATIONS = listOf(
     MyAppTopLevelDestination(
         route = MyAppRoute.Home,
-        selectedIcon = R.drawable.home_icon_color,
+        selectedIcon = R.drawable.stats_icon_color,
         iconTextId = R.string.home,
-        unselectedIcon = R.drawable.home_icon_outlined
+        unselectedIcon = R.drawable.stats_icon_outlined
     ),
     MyAppTopLevelDestination(
         route = MyAppRoute.Routes,

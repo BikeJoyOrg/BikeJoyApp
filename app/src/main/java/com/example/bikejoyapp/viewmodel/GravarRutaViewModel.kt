@@ -59,6 +59,9 @@ open class GravarRutaViewModel : ViewModel(){
     private val _distanciaRuta = MutableLiveData<Double>()
     val distanciaRuta: LiveData<Double> = _distanciaRuta
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
     open fun onselected(s: String) {
         if (start) {
             start = false
@@ -127,7 +130,7 @@ open class GravarRutaViewModel : ViewModel(){
     }
 
     fun guardarRuta(mainViewModel: MainViewModel){
-
+        _isLoading.value = true
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 /*
@@ -184,6 +187,7 @@ open class GravarRutaViewModel : ViewModel(){
             } catch (e: Exception) {
                 Log.e("aris", "Error en la llamada API: ${e.message}")
             }
+            _isLoading.postValue(false)
         }
 
     }
