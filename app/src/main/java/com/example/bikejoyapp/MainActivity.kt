@@ -159,7 +159,7 @@ class MainActivity : ComponentActivity() {
         }
         placesClient = Places.createClient(this)
 
-        startDestination = if(SharedPrefUtils.getToken() != null) MyAppRoute.Home.route else MyAppRoute.Login.route
+        startDestination = if(SharedPrefUtils.getToken() != null) MyAppRoute.Map.route else MyAppRoute.Login.route
 
         setContent {
             BikeJoyAppTheme {

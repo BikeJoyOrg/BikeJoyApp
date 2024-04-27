@@ -121,7 +121,6 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
                 onClick = {
                 coroutineScope.launch {
                     status = userState.login(username, password)
-                    //mainViewModel.navigateTo(MyAppRoute.Home)
                 }
             }) {
                 Text("Login")
@@ -136,7 +135,7 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
             if(status == "success login") {
                 mainViewModel.showBottomBar()
                 mainViewModel.showTopBar()
-                mainViewModel.navigateTo(MyAppRoute.Home)
+                mainViewModel.navigateTo(MyAppRoute.Map)
             }
         }
 
