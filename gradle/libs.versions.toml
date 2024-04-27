@@ -5,6 +5,7 @@ androidMapsUtils = "2.2.0"
 androidMapsUtilsVersion = "3.2.3"
 androidxEspressoCore = "3.4.0"
 androidxJunit = "1.1.2"
+coilCompose = "2.6.0"
 composeBomVersion = "2024.04.01"
 converterGson = "2.9.0"
 coreKtxVersion = "1.7.0"
@@ -71,6 +72,7 @@ androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-runtime-livedata-v161 = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtimeLivedataVersion" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 io-mockk-mockk5 = { module = "io.mockk:mockk", version.ref = "ioMockkMockk3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

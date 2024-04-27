@@ -107,6 +107,7 @@ import com.example.bikejoyapp.data.SharedPrefUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.runtime.livedata.observeAsState
 
 
 class MainActivity : ComponentActivity() {
@@ -150,7 +151,6 @@ class MainActivity : ComponentActivity() {
             retrofit.create(ApiRetrofit::class.java)
         }
         val userViewModel: UserViewModel by viewModels()
-        val userState by lazy { UserState(userViewModel) }
 
         val achievementViewModel: AchievementViewModel by viewModels()
 
@@ -172,7 +172,6 @@ class MainActivity : ComponentActivity() {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
                             is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
                             is NavigationCommand.Back -> navController.popBackStack()
-                            else -> {}
                         }
                     }
                 }
@@ -186,7 +185,7 @@ class MainActivity : ComponentActivity() {
                     shopViewModel = shopViewModel,
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
-                    userState = userState
+                    userViewModel = userViewModel
                 )
             }
         }
@@ -203,7 +202,7 @@ fun MyAppContent(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    userState: UserState,
+    userViewModel: UserViewModel,
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel
@@ -212,6 +211,8 @@ fun MyAppContent(
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
+
+    val user by userViewModel.user.observeAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -256,16 +257,18 @@ fun MyAppContent(
                             }
                         },
                         actions = {
-                            println("currentRoute: $currentRoute")
-                            println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("1000 ", fontSize = 20.sp)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                    contentDescription = "Localized description",
-                                    modifier = Modifier.size(32.dp),
-                                    tint = Color(0xFFD4AF37)
-                                )
+                            if (user != null) {
+                                println("currentRoute: $currentRoute")
+                                println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(user?.coins.toString(), fontSize = 20.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color(0xFFD4AF37)
+                                    )
+                                }
                             }
                         },
                     )
@@ -307,7 +310,7 @@ fun MyAppContent(
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen(userState, mainViewModel)
+                    HomeScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
                     AchievementScreen(achievementViewModel)
@@ -328,10 +331,10 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable(MyAppRoute.Login.route) {
-                    LoginScreen(userState, mainViewModel)
+                    LoginScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Register.route) {
-                    RegisterScreen(userState, mainViewModel)
+                    RegisterScreen(userViewModel, mainViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
                     val userHasCompletedRoute = true

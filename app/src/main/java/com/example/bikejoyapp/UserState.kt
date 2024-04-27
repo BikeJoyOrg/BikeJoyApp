@@ -4,10 +4,12 @@ import android.content.Context
 import com.example.bikejoyapp.viewmodel.UserViewModel
 import com.example.bikejoyapp.data.SharedPrefUtils
 import androidx.core.content.edit
+import androidx.lifecycle.LiveData
+import com.example.bikejoyapp.data.User
 import kotlinx.coroutines.runBlocking
-
+/**
 class UserState(private val userViewModel: UserViewModel) {
-    private var status: String = ""
+    val userLiveData: LiveData<User> = userViewModel.user
 
     fun login(username: String, password: String): String {
         userViewModel.login(username, password)
@@ -39,3 +41,4 @@ class UserState(private val userViewModel: UserViewModel) {
         return status
     }
 }
+*/

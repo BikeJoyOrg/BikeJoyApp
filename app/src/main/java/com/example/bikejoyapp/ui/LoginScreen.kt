@@ -18,7 +18,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.KeyboardType
-import com.example.bikejoyapp.UserState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -36,10 +35,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.viewmodel.UserViewModel
 
 
 @Composable
-fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
+fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
@@ -119,18 +120,22 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
             Button(
                 modifier = Modifier.padding(20.dp),
                 onClick = {
-                    status = userState.login(username, password)
-
-            }) {
+                    coroutineScope.launch {
+                        status = userViewModel.login(username, password)
+                    }
+                }
+            ) {
                 Text("Login")
             }
         }
-        Row (
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text("Status: $status")
+        if (status == "Success" || status == "invitado") {
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(status)
+            }
         }
 
         Row (
@@ -171,7 +176,7 @@ fun LoginScreen(userState: UserState, mainViewModel: MainViewModel) {
             }
         }
     }
-    if(status == "success login" || status == "invitado") {
+    if(status == "Success" || status == "invitado") {
         mainViewModel.navigateTo(MyAppRoute.Map)
         mainViewModel.showBottomBar()
         mainViewModel.showTopBar()

@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import kotlinx.coroutines.launch
-import com.example.bikejoyapp.UserState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.Card
@@ -43,12 +42,13 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.SharedPrefUtils
 import com.example.bikejoyapp.viewmodel.MainViewModel
+import com.example.bikejoyapp.viewmodel.UserViewModel
 import kotlinx.coroutines.runBlocking
 
 @Composable
-fun HomeScreen(userState: UserState, mainViewModel: MainViewModel) {
-    var status by remember { mutableStateOf("") }
+fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
     val coroutineScope = rememberCoroutineScope()
+    val token by SharedPrefUtils.token.observeAsState()
 
 
     Column(
@@ -58,18 +58,18 @@ fun HomeScreen(userState: UserState, mainViewModel: MainViewModel) {
     ) {
         Text(text = "Home")
 
-        if(status != "success logout") {
+        if(token != null) {
             Button(
                 modifier = Modifier.padding(20.dp),
                 onClick = {
                     coroutineScope.launch {
-                        status = userState.logout()
+                        val status = userViewModel.logout(SharedPrefUtils.getToken())
+                        println("Status: $status")
                     }
                 }
             ) {
                 Text("Logout")
             }
         }
-        Text(text = "Status: $status")
     }
 }
