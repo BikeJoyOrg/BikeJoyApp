@@ -16,4 +16,7 @@ val Gray = Color(rgb(217, 217, 217))
 val colorAzulClaro = Color(0xFFADD8E6)
 val magentaClaroCrema = Color(0xFFF5B0CB)
 val magentaOscuroCrema = Color(0xFF8B008B)
+val Bronze = Color(205, 127, 50)
+val Silver = Color(192, 192, 192)
+val Gold = Color(255, 223, 0)
 

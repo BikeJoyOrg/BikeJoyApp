@@ -44,36 +44,53 @@ import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Achievement
 import com.example.bikejoyapp.data.AchievementsIcons.achievementsIcons
 import android.media.MediaPlayer
-
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.Dp
+import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.ui.theme.Bronze
+import com.example.bikejoyapp.ui.theme.Gold
+import com.example.bikejoyapp.ui.theme.Silver
+import com.example.bikejoyapp.viewmodel.MainViewModel
 
 @Composable
-fun AchievementScreen(achievementViewModel: AchievementViewModel) {
-    val achievements by achievementViewModel.achievements.observeAsState(initial = emptyMap())
+fun AchievementScreen(achievementViewModel: AchievementViewModel, mainViewModel: MainViewModel) {
+    val achievements by achievementViewModel.achievements.observeAsState(emptyList())
     AchievementList(
-        achievements = achievements.values.toList(),
+        achievements = achievements,
         onRewardClaimed = { name, levelIndex ->
             achievementViewModel.claimReward(name, levelIndex)
+        },
+        onAchievementClicked = { name ->
+            val route = MyAppRoute.Achievement.createRoute(name)
+            mainViewModel.navigateToDynamic(route)
         })
 }
 
 @Composable
-fun AchievementList(achievements: List<Achievement>, onRewardClaimed: (String, Int) -> Unit) {
+fun AchievementList(
+    achievements: List<Achievement>,
+    onRewardClaimed: (String, Int) -> Unit,
+    onAchievementClicked: (String) -> Unit
+) {
     LazyColumn {
         itemsIndexed(achievements) { _, achievement ->
-            AchievementItem(achievement) { levelIndex ->
-                onRewardClaimed(achievement.name, levelIndex)
-            }
+            AchievementItem(achievement, onRewardClaimed, onAchievementClicked)
         }
     }
 }
 
-
-val Bronze = Color(205, 127, 50)
-val Silver = Color(192, 192, 192)
-val Gold = Color(255, 223, 0)
-
 @Composable
-fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
+fun AchievementItem(
+    achievement: Achievement,
+    onRewardClaimed: (String, Int) -> Unit,
+    onAchievementClicked: (String) -> Unit
+) {
     val achievementState = remember { mutableStateOf(achievement) }
     var lastAchievedLevel =
         achievement.levels.lastOrNull { it.isAchieved && it.isRedeemed }?.level ?: 0
@@ -95,7 +112,10 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .size(width = 240.dp, height = 130.dp)
-            .padding(bottom = 2.dp, start = 2.dp, end = 2.dp, top = 2.dp),
+            .padding(bottom = 2.dp, start = 2.dp, end = 2.dp, top = 2.dp)
+            .clickable {
+                onAchievementClicked(achievement.name)
+            },
     ) {
         Row() {
             Column(
@@ -168,7 +188,9 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                     }
                 }
             }
-            Column(Modifier.fillMaxSize()) {
+            Column(
+                Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 if (!completed) {
                     Row(
                         modifier = Modifier
@@ -185,8 +207,10 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                                 .size(30.dp),
 
                             )
-                        Text(achievement.levels[lastAchievedLevel].coinReward.toString(),
-                        modifier = Modifier.padding(start = 4.dp))
+                        Text(
+                            achievement.levels[lastAchievedLevel].coinReward.toString(),
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
                     }
                     Row(
                         modifier = Modifier
@@ -201,38 +225,59 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             contentDescription = "xp",
                             modifier = Modifier
                                 .size(30.dp),
-                            )
-                        Text(achievement.levels[lastAchievedLevel].xpReward.toString(),
-                            modifier = Modifier.padding(start = 2.dp))
+                        )
+                        Text(
+                            achievement.levels[lastAchievedLevel].xpReward.toString(),
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
                     }
                     if (achievement.levels[lastAchievedLevel].isAchieved && !achievement.levels[lastAchievedLevel].isRedeemed) {
                         val context = LocalContext.current
-                        Button(
-                            onClick = {
-                                onRewardClaimed(lastAchievedLevel)
-                                //Irrellevant
-                                achievementState.value = achievementState.value.copy()
-                                reloadTrigger.intValue += 1
-                                val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
-                                mediaPlayer.start()
-                            },
-                            modifier = Modifier
+                        val transition = rememberInfiniteTransition(label = "")
+                        val widthAnimated by transition.animateValue(
+                            initialValue = 70.dp,
+                            targetValue = 80.dp,
+                            typeConverter = Dp.VectorConverter,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(500), repeatMode = RepeatMode.Reverse
+                            ), label = ""
+                        )
+                        val heightAnimated by transition.animateValue(
+                            initialValue = 25.dp,
+                            targetValue = 30.dp,
+                            typeConverter = Dp.VectorConverter,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(500), repeatMode = RepeatMode.Reverse
+                            ), label = ""
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Button(
+                                onClick = {
+                                    onRewardClaimed(achievement.name, lastAchievedLevel)
+                                    //Irrellevanta
+                                    achievementState.value = achievementState.value.copy()
+                                    reloadTrigger.intValue += 1
+                                    val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
+                                    mediaPlayer.start()
+                                },
+                                modifier = Modifier
 
-                                .size(
-                                    80.dp,
-                                    30.dp
-                                ),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                Color(
-                                    40,
-                                    210,
-                                    10
+                                    .size(
+                                        widthAnimated,
+                                        heightAnimated
+                                    ),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    Color(
+                                        40,
+                                        210,
+                                        10
+                                    )
                                 )
-                            )
-                        ) {
-                            Text("Reclamar")
+                            ) {
+                                Text("Reclamar")
+                            }
                         }
 
                     }

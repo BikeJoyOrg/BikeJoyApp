@@ -6,14 +6,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,14 +19,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,46 +37,28 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.AccountScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
 import com.example.bikejoyapp.ui.ShopScreen
-import com.example.bikejoyapp.ui.SocialScreen
 import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.lifecycle.ViewModelProvider
 import com.example.bikejoyapp.ui.AchievementScreen
-import android.graphics.Color.rgb
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
@@ -105,8 +83,8 @@ import com.example.bikejoyapp.viewmodel.ShopViewModel
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
+import com.example.bikejoyapp.ui.components.SpecificAchievementWidget
 
 
 class MainActivity : ComponentActivity() {
@@ -166,7 +144,10 @@ class MainActivity : ComponentActivity() {
                     mainViewModel.navigationCommands.collect { command ->
                         when (command) {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
-                            is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
+                            is NavigationCommand.ToDynamicDestination -> navController.navigate(
+                                command.destination
+                            )
+
                             is NavigationCommand.Back -> navController.popBackStack()
                             else -> {}
                         }
@@ -226,14 +207,22 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
+                            if (currentRoute == MyAppRoute.Item.route
+                                || currentRoute == MyAppRoute.Station.route
+                                || currentRoute == MyAppRoute.RouteDetail.route
+                                || currentRoute == MyAppRoute.Achievement.route
+                            ) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
-                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                                        contentDescription = "Back",
+                                        Modifier.size(32.dp)
+                                    )
                                 }
-                            }
-                            else {
+                            } else {
                                 IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                    val iconBackground = if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                    val iconBackground =
+                                        if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                                     Box(
                                         modifier = Modifier
                                             .background(color = iconBackground, shape = CircleShape)
@@ -295,7 +284,12 @@ fun MyAppContent(
                 navController = navController, startDestination = MyAppRoute.Map.route
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
+                    MapScreen(
+                        stationViewModel,
+                        mainViewModel,
+                        navigationViewModel,
+                        bikeLanesViewModel
+                    )
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
@@ -304,7 +298,13 @@ fun MyAppContent(
                     HomeScreen()
                 }
                 composable(MyAppRoute.Social.route) {
-                    AchievementScreen(achievementViewModel)
+                    AchievementScreen(achievementViewModel, mainViewModel)
+                }
+                composable(
+                    route = MyAppRoute.Achievement.route,
+                    arguments = listOf(navArgument("achievementName") { type = NavType.StringType })
+                ) {
+                    SpecificAchievementWidget(navController, mainViewModel, achievementViewModel)
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen(shopViewModel, mainViewModel)
@@ -313,7 +313,7 @@ fun MyAppContent(
                     PetScreen()
                 }
                 composable(MyAppRoute.GravarRuta.route) {
-                    GravarRutaScreen(GravarRutaViewModel(),mainViewModel)
+                    GravarRutaScreen(GravarRutaViewModel(), mainViewModel)
                 }
                 composable(
                     route = MyAppRoute.Station.route,
@@ -327,9 +327,16 @@ fun MyAppContent(
                 composable(MyAppRoute.Register.route) {
                     RegisterScreen(userState, mainViewModel)
                 }
-                composable (route = MyAppRoute.RouteDetail.route) {
+                composable(route = MyAppRoute.RouteDetail.route) {
                     val userHasCompletedRoute = true
-                    mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute) }
+                    mainViewModel.selectedRoute?.let { it1 ->
+                        RouteDetailScreen(
+                            RoutesViewModel(),
+                            mainViewModel,
+                            it1,
+                            userHasCompletedRoute
+                        )
+                    }
                 }
                 composable(
                     route = MyAppRoute.Item.route,
@@ -362,7 +369,8 @@ fun MyAppBottomNavigation(
                     mainViewModel.navigateTo(destination.route)
                 },
                 icon = {
-                    val iconBackground = if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                    val iconBackground =
+                        if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                     Box(
                         modifier = Modifier
                             .background(color = iconBackground, shape = CircleShape)

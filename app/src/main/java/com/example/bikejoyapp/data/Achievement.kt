@@ -1,5 +1,8 @@
 package com.example.bikejoyapp.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Level(
     val level: Int,
     val description: String,
@@ -11,6 +14,7 @@ data class Level(
     var isRedeemed: Boolean = false
 )
 
+@Serializable
 data class Achievement (
     val name: String,
     var currentValue: Int,
@@ -36,3 +40,9 @@ data class Achievement (
         return result
     }
 }
+
+
+@Serializable
+data class AchievementResponse(
+    val achievements: List<Achievement>
+)
