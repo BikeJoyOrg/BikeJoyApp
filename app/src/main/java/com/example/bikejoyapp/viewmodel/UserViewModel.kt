@@ -36,56 +36,51 @@ class UserViewModel : ViewModel() {
         .build()
         .create(ApiRetrofit::class.java)
 
-    fun login(username: String, password: String): String {
+    suspend fun login(username: String, password: String): String {
         var result: String
-        runBlocking {
-            val response: Response<LoginResponse> = retrofit.login(username, password)
+        val response: Response<LoginResponse> = retrofit.login(username, password)
 
-            if (response.isSuccessful) {
-                val responseBody = response.body()
-                val token = responseBody?.token
-                _user.postValue(responseBody?.user)
-                SharedPrefUtils.setToken(token)
-                result = "Success"
-            } else {
-                val errorBody = response.errorBody()!!.string()
-                val jsonObject = JSONObject(errorBody)
-                result = jsonObject.getString("error")
-            }
+        if (response.isSuccessful) {
+            val responseBody = response.body()
+            val token = responseBody?.token
+            _user.postValue(responseBody?.user)
+            SharedPrefUtils.setToken(token)
+            result = "Success"
+        } else {
+            val errorBody = response.errorBody()!!.string()
+            val jsonObject = JSONObject(errorBody)
+            result = jsonObject.getString("error")
         }
         return result
     }
 
-    fun register(username: String, email: String, password1: String, password2: String): String {
+    suspend fun register(username: String, email: String, password1: String, password2: String): String {
         var result: String
-        runBlocking {
-            val response = retrofit.register(username, email, password1, password2)
-            result = if (response.isSuccessful) {
-                "Success"
-            } else {
-                val errorBody = response.errorBody()!!.string()
-                val jsonObject = JSONObject(errorBody)
-                jsonObject.getString("error")
-            }
+        val response = retrofit.register(username, email, password1, password2)
+        if (response.isSuccessful) {
+            result = "Success"
+        } else {
+            val errorBody = response.errorBody()!!.string()
+            val jsonObject = JSONObject(errorBody)
+            result = jsonObject.getString("error")
+            println("Error: $result")
         }
         return result
     }
 
-    fun logout(token: String?): String {
+    suspend fun logout(token: String?): String {
         var result: String
-        runBlocking {
-            val response = retrofit.logout(token)
-            if (response.isSuccessful) {
-                _user.postValue(null)
+        val response = retrofit.logout(token)
+        if (response.isSuccessful) {
+            _user.postValue(null)
+            SharedPrefUtils.removeToken()
+            result = "Success"
+        } else {
+            val errorBody = response.errorBody()!!.string()
+            val jsonObject = JSONObject(errorBody)
+            result = jsonObject.getString("error")
+            if (result == "Invalid token") {
                 SharedPrefUtils.removeToken()
-                result = "Success"
-            } else {
-                val errorBody = response.errorBody()!!.string()
-                val jsonObject = JSONObject(errorBody)
-                result = jsonObject.getString("error")
-                if (result == "Invalid token") {
-                    SharedPrefUtils.removeToken()
-                }
             }
         }
         return result

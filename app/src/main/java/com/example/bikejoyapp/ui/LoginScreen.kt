@@ -35,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.viewmodel.UserViewModel
 
 
@@ -119,7 +120,9 @@ fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
             Button(
                 modifier = Modifier.padding(20.dp),
                 onClick = {
-                    status = userViewModel.login(username, password)
+                    coroutineScope.launch {
+                        status = userViewModel.login(username, password)
+                    }
                 }
             ) {
                 Text("Login")
