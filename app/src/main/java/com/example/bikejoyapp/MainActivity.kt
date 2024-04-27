@@ -172,7 +172,6 @@ class MainActivity : ComponentActivity() {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
                             is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
                             is NavigationCommand.Back -> navController.popBackStack()
-                            else -> {}
                         }
                     }
                 }
@@ -258,16 +257,18 @@ fun MyAppContent(
                             }
                         },
                         actions = {
-                            println("currentRoute: $currentRoute")
-                            println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(user?.coins.toString(), fontSize = 20.sp)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                    contentDescription = "Localized description",
-                                    modifier = Modifier.size(32.dp),
-                                    tint = Color(0xFFD4AF37)
-                                )
+                            if (user != null) {
+                                println("currentRoute: $currentRoute")
+                                println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(user?.coins.toString(), fontSize = 20.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color(0xFFD4AF37)
+                                    )
+                                }
                             }
                         },
                     )

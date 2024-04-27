@@ -47,9 +47,8 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
-    var status by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
-    var token by remember { mutableStateOf(SharedPrefUtils.getToken()) }
+    val token by SharedPrefUtils.token.observeAsState()
 
 
     Column(
@@ -59,21 +58,18 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
     ) {
         Text(text = "Home")
 
-        if(status != "success logout") {
+        if(token != null) {
             Button(
                 modifier = Modifier.padding(20.dp),
                 onClick = {
                     coroutineScope.launch {
-                        status = userViewModel.logout(SharedPrefUtils.getToken())
-                        if (status == "Invalid token") {
-                            SharedPrefUtils.removeToken()
-                        }
+                        val status = userViewModel.logout(SharedPrefUtils.getToken())
+                        println("Status: $status")
                     }
                 }
             ) {
                 Text("Logout")
             }
         }
-        Text(text = "Status: $status")
     }
 }

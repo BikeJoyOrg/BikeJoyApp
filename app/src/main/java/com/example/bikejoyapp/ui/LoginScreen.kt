@@ -125,12 +125,14 @@ fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
                 Text("Login")
             }
         }
-        Row (
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text("Status: $status")
+        if (status == "Success" || status == "invitado") {
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(status)
+            }
         }
 
         Row (

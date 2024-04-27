@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.bikejoyapp.api.ApiService
 import com.example.bikejoyapp.data.LoginResponse
+import com.example.bikejoyapp.data.SharedPrefUtils
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -21,9 +22,8 @@ import org.json.JSONObject
 import retrofit2.Response
 
 class UserViewModel : ViewModel() {
-    var token: String? = null
-    private val _user = MutableLiveData<User>()
-    val user: LiveData<User> = _user
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -43,8 +43,9 @@ class UserViewModel : ViewModel() {
 
             if (response.isSuccessful) {
                 val responseBody = response.body()
-                token = responseBody?.token
+                val token = responseBody?.token
                 _user.postValue(responseBody?.user)
+                SharedPrefUtils.setToken(token)
                 result = "Success"
             } else {
                 val errorBody = response.errorBody()!!.string()
@@ -74,12 +75,17 @@ class UserViewModel : ViewModel() {
         var result: String
         runBlocking {
             val response = retrofit.logout(token)
-            result = if (response.isSuccessful) {
-                "Success"
+            if (response.isSuccessful) {
+                _user.postValue(null)
+                SharedPrefUtils.removeToken()
+                result = "Success"
             } else {
                 val errorBody = response.errorBody()!!.string()
                 val jsonObject = JSONObject(errorBody)
-                jsonObject.getString("error")
+                result = jsonObject.getString("error")
+                if (result == "Invalid token") {
+                    SharedPrefUtils.removeToken()
+                }
             }
         }
         return result
