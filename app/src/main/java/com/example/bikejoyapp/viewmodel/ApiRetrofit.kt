@@ -10,6 +10,7 @@ import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -52,8 +53,9 @@ interface ApiRetrofit {
         @Field("password2") password2: String
     ): Response<Map<String, Any>>
 
-    @POST("users/logout")
+    @POST("users/logout/")
     suspend fun logout(
+        @Header("Authorization") token: String?
     ): Response<Map<String, Any>>
 }
 

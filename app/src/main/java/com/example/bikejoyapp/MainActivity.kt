@@ -103,10 +103,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.bikejoyapp.data.SharedPrefUtils
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
+    private lateinit var startDestination: String
 
     private val navigationViewModel: NavigationViewModel by viewModels {
         NavigationViewModel.Factory(placesClient, this)
@@ -153,6 +155,9 @@ class MainActivity : ComponentActivity() {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
         }
         placesClient = Places.createClient(this)
+
+        startDestination = if(SharedPrefUtils.getToken() != null) MyAppRoute.Home.route else MyAppRoute.Login.route
+
         setContent {
             BikeJoyAppTheme {
                 val navController = rememberNavController()
@@ -170,6 +175,7 @@ class MainActivity : ComponentActivity() {
 
                 MyAppContent(
                     navController = navController,
+                    startDestination = startDestination,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
@@ -188,6 +194,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyAppContent(
     modifier: Modifier = Modifier,
+    startDestination: String,
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
@@ -277,7 +284,7 @@ fun MyAppContent(
                 .fillMaxSize()
         ) {
             NavHost(
-                navController = navController, startDestination = MyAppRoute.Login.route
+                navController = navController, startDestination = startDestination
             ) {
                 composable(MyAppRoute.Map.route) {
                     MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
@@ -286,7 +293,7 @@ fun MyAppContent(
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen()
+                    HomeScreen(userState, mainViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
                     AchievementScreen(achievementViewModel)
