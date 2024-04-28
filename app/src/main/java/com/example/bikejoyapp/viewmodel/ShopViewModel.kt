@@ -59,22 +59,20 @@ class ShopViewModel: ViewModel() {
         return _items.value?.find { it.id == itemId }
     }
 
-    fun buyItem(id: Int) {
-        viewModelScope.launch {
-            val token = SharedPrefUtils.getToken()
-            val user = LoggedUser.getLoggedUser()
-            val item = getItemById(id)
-            if (token != null && user != null && item != null && user.coins >= item.game_currency_price) {
-                val response = apiService.buyItem("Token $token", id)
-                if (response.isSuccessful) {
-                    println("Item purchase was successful")
-                    user.coins = (user.coins - item.game_currency_price)
-                    LoggedUser.setLoggedUser(user)
-                } else {
-                    println("Item purchase failed with status code: ${response.code()}")
-                    response.errorBody()?.let {
-                        println("Error body: ${it.string()}")
-                    }
+    suspend fun buyItem(id: Int) {
+        val token = SharedPrefUtils.getToken()
+        val user = LoggedUser.getLoggedUser()
+        val item = getItemById(id)
+        if (token != null && user != null && item != null && user.coins >= item.game_currency_price) {
+            val response = apiService.buyItem("Token $token", id)
+            if (response.isSuccessful) {
+                println("Item purchase was successful")
+                user.coins = (user.coins - item.game_currency_price)
+                LoggedUser.setLoggedUser(user)
+            } else {
+                println("Item purchase failed with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
                 }
             }
         }

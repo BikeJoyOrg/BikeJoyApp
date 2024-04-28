@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +40,8 @@ import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun ShopItemWidget(
@@ -46,6 +49,7 @@ fun ShopItemWidget(
     mainViewModel: MainViewModel,
     shopViewModel: ShopViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val itemId = remember { mutableStateOf<String?>(null) }
     itemId.value = navController.currentBackStackEntry?.arguments?.getString("itemId")
     val item = itemId.let { it.value?.let { it1 -> shopViewModel.getItemById(it1.toInt()) } }
@@ -117,11 +121,13 @@ fun ShopItemWidget(
                     focusedElevation = 4.dp
                 ),
                 onClick = {
-                    if (LoggedUser.isLoggedIn()) {
-                        shopViewModel.buyItem(item?.id ?: 0)
+                    coroutineScope.launch {
+                        if (LoggedUser.isLoggedIn()) {
+                            shopViewModel.buyItem(item?.id ?: 0)
+                        }
+                        shopViewModel.getStoreData()
+                        mainViewModel.navigateToDynamic("Shop")
                     }
-                    shopViewModel.getStoreData()
-                    mainViewModel.navigateToDynamic("Shop")
                 },
                 modifier = Modifier
                     .padding(horizontal = 24.dp, vertical = 16.dp)
