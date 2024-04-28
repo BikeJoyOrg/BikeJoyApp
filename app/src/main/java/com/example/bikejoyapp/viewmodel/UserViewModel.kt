@@ -70,7 +70,7 @@ class UserViewModel : ViewModel() {
 
     suspend fun logout(token: String?): String {
         var result: String
-        val response = retrofit.logout(token)
+        val response = retrofit.logout("Token $token")
         if (response.isSuccessful) {
             _user.postValue(null)
             SharedPrefUtils.removeToken()
