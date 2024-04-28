@@ -6,6 +6,7 @@ import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatusResponse
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -17,7 +18,12 @@ interface ApiService {
     suspend fun getStations(): Response<StationResponse>
 
     @GET("stations/{id}")
-    suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
+    suspend fun getStationById(
+        @Path("id") stationId: String
+    ): Response<StationStatusResponse>
     @POST("items/purchase/{id}/")
-    suspend fun buyItem(@Path("id") id: Int): Response<Item>
+    suspend fun buyItem(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Item>
 }

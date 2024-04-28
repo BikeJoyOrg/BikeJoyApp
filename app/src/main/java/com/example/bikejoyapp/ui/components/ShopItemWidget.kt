@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bikejoyapp.R
+import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
@@ -116,7 +117,9 @@ fun ShopItemWidget(
                     focusedElevation = 4.dp
                 ),
                 onClick = {
-                    shopViewModel.buyItem(item?.id ?: 0)
+                    if (LoggedUser.isLoggedIn()) {
+                        shopViewModel.buyItem(item?.id ?: 0)
+                    }
                     mainViewModel.navigateToDynamic("Shop")
                 },
                 modifier = Modifier

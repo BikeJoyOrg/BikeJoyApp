@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.ItemResponse
+import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.data.SharedPrefUtils
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,13 +61,20 @@ class ShopViewModel: ViewModel() {
 
     fun buyItem(id: Int) {
         viewModelScope.launch {
-            val response = apiService.buyItem(id)
-            if (response.isSuccessful) {
-                println("Item purchase was successful")
-            } else {
-                println("Item purchase failed with status code: ${response.code()}")
-                response.errorBody()?.let {
-                    println("Error body: ${it.string()}")
+            val token = SharedPrefUtils.getToken()
+            val user = LoggedUser.getLoggedUser()
+            val item = getItemById(id)
+            if (token != null && user != null && item != null && user.coins >= item.game_currency_price) {
+                val response = apiService.buyItem(token, id)
+                if (response.isSuccessful) {
+                    println("Item purchase was successful")
+                    user.coins = (user.coins - item.game_currency_price)
+                    LoggedUser.setLoggedUser(user)
+                } else {
+                    println("Item purchase failed with status code: ${response.code()}")
+                    response.errorBody()?.let {
+                        println("Error body: ${it.string()}")
+                    }
                 }
             }
         }

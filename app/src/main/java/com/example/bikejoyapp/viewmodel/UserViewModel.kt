@@ -12,6 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.SharedPrefUtils
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -22,8 +23,6 @@ import org.json.JSONObject
 import retrofit2.Response
 
 class UserViewModel : ViewModel() {
-    private val _user = MutableLiveData<User?>()
-    val user: LiveData<User?> = _user
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -43,12 +42,16 @@ class UserViewModel : ViewModel() {
         if (response.isSuccessful) {
             val responseBody = response.body()
             val token = responseBody?.token
-            _user.postValue(responseBody?.user)
+            val user = responseBody?.user
+
+            LoggedUser.setLoggedUser(user)
             SharedPrefUtils.setToken(token)
+
             result = "Success"
         } else {
             val errorBody = response.errorBody()!!.string()
             val jsonObject = JSONObject(errorBody)
+
             result = jsonObject.getString("error")
         }
         return result
@@ -72,7 +75,7 @@ class UserViewModel : ViewModel() {
         var result: String
         val response = retrofit.logout(token)
         if (response.isSuccessful) {
-            _user.postValue(null)
+            LoggedUser.clear()
             SharedPrefUtils.removeToken()
             result = "Success"
         } else {
