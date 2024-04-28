@@ -108,6 +108,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
+import com.example.bikejoyapp.data.LoggedUser
 
 
 class MainActivity : ComponentActivity() {
@@ -212,7 +213,7 @@ fun MyAppContent(
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val user by userViewModel.user.observeAsState()
+    val user by LoggedUser.user.observeAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
