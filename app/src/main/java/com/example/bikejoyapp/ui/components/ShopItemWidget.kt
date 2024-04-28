@@ -120,6 +120,7 @@ fun ShopItemWidget(
                     if (LoggedUser.isLoggedIn()) {
                         shopViewModel.buyItem(item?.id ?: 0)
                     }
+                    shopViewModel.getStoreData()
                     mainViewModel.navigateToDynamic("Shop")
                 },
                 modifier = Modifier

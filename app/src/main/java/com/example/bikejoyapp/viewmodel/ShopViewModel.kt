@@ -65,7 +65,7 @@ class ShopViewModel: ViewModel() {
             val user = LoggedUser.getLoggedUser()
             val item = getItemById(id)
             if (token != null && user != null && item != null && user.coins >= item.game_currency_price) {
-                val response = apiService.buyItem(token, id)
+                val response = apiService.buyItem("Token $token", id)
                 if (response.isSuccessful) {
                     println("Item purchase was successful")
                     user.coins = (user.coins - item.game_currency_price)

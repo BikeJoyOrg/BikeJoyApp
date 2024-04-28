@@ -8,7 +8,8 @@ object LoggedUser {
     val user: LiveData<User?> = _user
 
     fun setLoggedUser(loggedUser: User?) {
-        _user.value = loggedUser
+        _user.postValue(loggedUser)
+        println("user posted")
     }
 
     fun getLoggedUser(): User? {
@@ -20,6 +21,6 @@ object LoggedUser {
     }
 
     fun clear() {
-        _user.value = null
+        _user.postValue(null)
     }
 }

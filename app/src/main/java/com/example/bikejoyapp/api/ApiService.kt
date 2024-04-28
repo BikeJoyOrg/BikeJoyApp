@@ -25,5 +25,5 @@ interface ApiService {
     suspend fun buyItem(
         @Header("Authorization") token: String,
         @Path("id") id: Int
-    ): Response<Item>
+    ): Response<Void>
 }
