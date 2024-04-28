@@ -52,7 +52,7 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
-import com.example.bikejoyapp.data.Comment
+import com.example.bikejoyapp.data.Comentario
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
@@ -96,7 +96,7 @@ fun RouteDetailScreen(
     userHasCompletedRoute: Boolean,
     navegationviewmodel: NavigationViewModel
 ) {
-    val fixedRating = route.RuteRating
+    val fixedRating by routesViewModel.fixedRating.observeAsState(0)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble()), 16f)
@@ -105,6 +105,7 @@ fun RouteDetailScreen(
     val puntosIntermedios by routesViewModel.puntosIntermedios.observeAsState(emptyList())
 
     routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
+    routesViewModel.getAverageRating(route.RuteId ?: 0)
 
     val puntFinalLatLng = puntosIntermedios.lastOrNull() ?: LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble())
 
@@ -136,7 +137,7 @@ fun RouteDetailScreen(
         }
 
         Spacer(Modifier.height(8.dp))
-        RouteHeader(route, userHasCompletedRoute, fixedRating,mainViewModel,navegationviewmodel,puntosIntermedios)
+        RouteHeader(route, userHasCompletedRoute,mainViewModel,navegationviewmodel,puntosIntermedios, fixedRating)
         Box(modifier = Modifier.fillMaxSize()) {
             when (currentView) {
                 ViewType.Details -> DetailsView(routesViewModel, route, userHasCompletedRoute)
@@ -157,7 +158,7 @@ fun RouteDetailScreen(
 
 
 @Composable
-fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int, mainViewModel: MainViewModel,navegationviewmodel: NavigationViewModel,puntos: List<LatLng>) {
+fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, mainViewModel: MainViewModel,navegationviewmodel: NavigationViewModel,puntos: List<LatLng>, rating: Int) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -371,13 +372,13 @@ fun DetailsView(
 }
 
 @Composable
-fun CommentItem(comment: Comment) {
+fun CommentItem(comment: Comentario) {
     // Reemplaza "Comment" por el modelo de comentario que estés utilizando
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(comment.author, style = MaterialTheme.typography.titleMedium)
+            Text(comment.user.username, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(comment.text, style = MaterialTheme.typography.bodyMedium)
         }
@@ -415,12 +416,13 @@ fun CommentsView(
     userHasCompletedRoute: Boolean
 ) {
     val routeComments by routesViewModel.routeComments.observeAsState(initial = emptyList())
+    routesViewModel.getComments(route.RuteId ?: 0)
     Column(modifier = Modifier.fillMaxSize()) {
         if (userHasCompletedRoute) {
             Card(modifier = Modifier.fillMaxWidth()) {
 
                 NewCommentSection(onCommentAdded = { commentText ->
-                    route.RuteId?.let { routesViewModel.addNewComment(it, commentText) }
+                    route.RuteId?.let { routesViewModel.addComment(it, commentText) }
                 })
             }
             Spacer(Modifier.height(16.dp))
