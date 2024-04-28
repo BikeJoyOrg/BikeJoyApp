@@ -5,6 +5,7 @@ androidMapsUtils = "2.2.0"
 androidMapsUtilsVersion = "3.2.3"
 androidxEspressoCore = "3.4.0"
 androidxJunit = "1.1.2"
+coilCompose = "2.6.0"
 converterGson = "2.9.0"
 coreKtxVersion = "1.7.0"
 coreTesting = "2.2.0"
@@ -67,6 +68,7 @@ androidx-runtime-livedata-v161 = { module = "androidx.compose.runtime:runtime-li
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 io-mockk-mockk5 = { module = "io.mockk:mockk", version.ref = "ioMockkMockk3" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

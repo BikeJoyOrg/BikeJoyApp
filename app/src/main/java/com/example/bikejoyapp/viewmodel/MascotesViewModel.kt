@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
 import com.example.bikejoyapp.data.Mascota
+import com.example.bikejoyapp.data.MascotaAconseguida
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,9 @@ private val json = Json {
 class MascotesViewModel: ViewModel() {
     private val _pets = MutableLiveData<List<Mascota>>(emptyList())
     val pets: MutableLiveData<List<Mascota>> = _pets
+    private val _petsAconseguides = MutableLiveData<List<MascotaAconseguida>>(emptyList())
+    val petsAconseguides: MutableLiveData<List<MascotaAconseguida>> = _petsAconseguides
+
 
     @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()

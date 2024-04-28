@@ -51,6 +51,6 @@ object MascotesAconseguides {
                 return mascotaAconseguida
             }
         }
-        return MascotaAconseguida(Mascota("Josep1",0, 1, 0,1,0,1,0,1,1.1f, 1.1f, 1.1f),"a",1,true)
+        return MascotaAconseguida(Mascota("Josep1","a", "a", "a","a","a","a","a","a",1.1f, 1.1f, 1.1f),"a",1,true)
     }
 }

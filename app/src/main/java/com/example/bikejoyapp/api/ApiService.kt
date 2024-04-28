@@ -19,6 +19,9 @@ interface ApiService {
     @GET("stations/{id}")
     suspend fun getStationById(@Path("id") stationId: String): Response<StationStatusResponse>
 
-    @GET("Mascota")
+    @GET("pets/getMascotas/")
     suspend fun getPets(): Response<List<Mascota>>
+
+    @GET("pets/getMascota/{name}/")
+    suspend fun getPet(@Path("name") nom: String): Response<Mascota>
 }

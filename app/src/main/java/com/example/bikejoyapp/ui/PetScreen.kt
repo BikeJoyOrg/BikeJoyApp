@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,7 +53,8 @@ import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
-
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 
 val user = "b"
@@ -93,22 +95,25 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (MascotesAconseguides.teMascota(pet.name, user)) {
-                        Image(
-                            painter = painterResource(id = when(MascotesAconseguides.getNivell(pet.name, user)) {
-                                0 -> MascotaImatges.numDrawables[pet.imgEgg]
-                                1 -> MascotaImatges.numDrawables[pet.img1]
-                                2 -> MascotaImatges.numDrawables[pet.img2]
-                                3 -> MascotaImatges.numDrawables[pet.img3]
-                                else -> MascotaImatges.numDrawables[pet.img1]
-                            }),
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(when (MascotesAconseguides.getNivell(pet.name, user)) {
+                                    0 -> pet.imgEgg
+                                    1 -> pet.img1
+                                    2 -> pet.img2
+                                    else -> pet.img3
+                                })
+                                .build(),
                             contentDescription = pet.name,
                             modifier = Modifier
                                 .height(130.dp)
                         )
                     }
                     else {
-                        Image(
-                            painter = painterResource(id = MascotaImatges.numDrawables[pet.imgEggl]),
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(pet.imgEggl)
+                                .build(),
                             contentDescription = pet.name,
                             modifier = Modifier
                                 .height(130.dp)

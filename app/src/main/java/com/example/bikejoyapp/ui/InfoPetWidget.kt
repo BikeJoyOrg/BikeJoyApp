@@ -15,10 +15,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.bikejoyapp.data.MascotaAconseguida
 import com.example.bikejoyapp.data.MascotaImatges
 import com.example.bikejoyapp.data.Mascotes
@@ -51,37 +54,39 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Image(
-                        painter = painterResource(id = MascotaImatges.numDrawables[mascotaAconseguida.mascota.img1]),
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(mascotaAconseguida.mascota.img1)
+                            .build(),
                         contentDescription = mascotaAconseguida.mascota.name,
-                        modifier = Modifier.height(100.dp)
+                        modifier = Modifier
+                            .height(130.dp)
                     )
                 }
                 item {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Evo")
                 }
                 item {
-                        Image(
-                            painter = painterResource(id = if (mascotaAconseguida.nivell >= 2) MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2] else MascotaImatges.numDrawables[mascotaAconseguida.mascota.img2l]),
-                            contentDescription = mascotaAconseguida.mascota.name,
-                            modifier = Modifier.height(100.dp)
-                        )
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(if (mascotaAconseguida.nivell >= 2) mascotaAconseguida.mascota.img2 else mascotaAconseguida.mascota.img2l)
+                            .build(),
+                        contentDescription = mascotaAconseguida.mascota.name,
+                        modifier = Modifier
+                            .height(130.dp)
+                    )
                 }
                 item {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Evo")
                 }
                 item {
-                        Image(
-                            painter = painterResource(id = if (mascotaAconseguida.nivell >= 3) MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3] else MascotaImatges.numDrawables[mascotaAconseguida.mascota.img3l]),
-                            contentDescription = mascotaAconseguida.mascota.name,
-                            modifier = Modifier.height(100.dp)
-                        )
-                }
-                item {
-                    Text(
-                        text = "Nivell: " + mascotaAconseguida.nivell.toString(),
-                        fontSize = 32.sp,
-                        modifier = Modifier.padding(top = 10.dp)
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(if (mascotaAconseguida.nivell >= 3) mascotaAconseguida.mascota.img3 else mascotaAconseguida.mascota.img3l)
+                            .build(),
+                        contentDescription = mascotaAconseguida.mascota.name,
+                        modifier = Modifier
+                            .height(130.dp)
                     )
                 }
                 item {
