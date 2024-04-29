@@ -100,18 +100,16 @@ class MascotesViewModel: ViewModel() {
     fun equiparMascota(name: String) {
         viewModelScope.launch {
             val token = SharedPrefUtils.getToken()
-            val user = LoggedUser.getLoggedUser()
-            if (token != null && user != null) {
-                val response = apiService.equiparMascota(name, "Token $token")
-                if (response.isSuccessful) {
-                    println("Mascota equipada correctament")
-                } else {
-                    println("Error al equipar mascota with status code: ${response.code()}")
-                    response.errorBody()?.let {
-                        println("Error body: ${it.string()}")
-                    }
+            val response = apiService.equiparMascota(name, "Token $token")
+            if (response.isSuccessful) {
+                println("Mascota equipada correctament")
+            } else {
+                println("Error al equipar mascota with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
                 }
             }
+
         }
     }
 
