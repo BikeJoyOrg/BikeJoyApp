@@ -111,7 +111,7 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                        } else if (mascotaBuscada.nivell == 0) {
+                        } else {
                             Text(
                                 text = "Egg",
                                 fontSize = 20.sp,
