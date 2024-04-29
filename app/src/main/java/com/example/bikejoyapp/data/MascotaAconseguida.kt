@@ -1,7 +1,7 @@
 package com.example.bikejoyapp.data
 
 data class MascotaAconseguida (
-    val nomMascota: String,
+    var mascota: Mascota,
     val nicknameUsuari: String,
     var nivell: Int,
     var equipada: Boolean

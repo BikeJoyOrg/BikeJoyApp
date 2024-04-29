@@ -2,22 +2,16 @@ package com.example.bikejoyapp.data
 
 object Mascotes {
     val mascotes = listOf(
-        Mascota(0,1,0,1,0,1,"Josep1", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep2", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep3", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep4", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep5", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep6", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep7", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep8", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep9", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep10", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep11", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep12", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep13", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep14", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep15", "% extra coins"),
-        Mascota(0,1,0,1,0,1,"Josep16", "% extra coins"),
+        Mascota("Horcycle", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("P", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Torroc", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Thundra", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Dragosaur", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Tubarao", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Subzedragon", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Diamoth", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Galaxagonal", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f),
+        Mascota("Josep10", "a", "a", "a","a","a","a","a","a", 1.1f, 1.1f, 1.1f)
     )
     fun getMascotaPorNombre(nombre: String): Mascota? {
         for (mascota in mascotes) {
