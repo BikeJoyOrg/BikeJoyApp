@@ -9,6 +9,7 @@ import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatusResponse
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -33,11 +34,11 @@ interface ApiService {
     suspend fun getPetsAconseguidesUsuari(): Response<List<MascotaAconseguida>>
 
     @PATCH("pets/equiparMascota/{name}/")
-    suspend fun equiparMascota(@Path("name") nom: String): Response<MascotaAconseguida>
+    suspend fun equiparMascota(@Path("name") nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
 
     @PATCH("pets/lvlUp/{name}/")
-    suspend fun lvlUp(@Path("name") nom: String): Response<MascotaAconseguida>
+    suspend fun lvlUp(@Path("name") nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
 
     @POST("pets/createMascotaAconseguida/{name}/")
-    suspend fun createMascotaAconseguida(@Path("name") nom: String): Response<MascotaAconseguida>
+    suspend fun createMascotaAconseguida(@Path("name", ) nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
 }

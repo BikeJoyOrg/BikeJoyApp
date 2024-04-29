@@ -56,7 +56,27 @@ class MascotesViewModel: ViewModel() {
         }
     }
 
-    //fun getItemById(itemId: String): Item? {
-    //    return _pets.value?.find { it.id == itemId }
-    //}
+    fun getPetByName(name: String): Mascota? {
+        return _pets.value?.find { it.name == name }
+    }
+
+    fun getMascota(name: String) {
+        viewModelScope.launch {
+            val token = SharedPrefUtils.getToken()
+            val user = LoggedUser.getLoggedUser()
+            val pet = getPetByName(name)
+            if (token != null && user != null && pet != null) {
+                val response = apiService.createMascotaAconseguida(name, "Token $token")
+                if (response.isSuccessful) {
+                    println("Mascota obtenida correctament")
+                    LoggedUser.setLoggedUser(user)
+                } else {
+                    println("Error al obtindre mascota with status code: ${response.code()}")
+                    response.errorBody()?.let {
+                        println("Error body: ${it.string()}")
+                    }
+                }
+            }
+        }
+    }
 }
