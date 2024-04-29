@@ -1,6 +1,5 @@
 package com.example.bikejoyapp.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,11 +22,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.MascotaAconseguida
-import com.example.bikejoyapp.data.MascotaAconseguidaF
-import com.example.bikejoyapp.data.MascotaImatges
-import com.example.bikejoyapp.data.Mascotes
-import com.example.bikejoyapp.data.MascotesAconseguides
-import com.example.bikejoyapp.data.SharedPrefUtils
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 @Composable

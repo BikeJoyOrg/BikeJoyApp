@@ -103,13 +103,13 @@ class MascotesViewModel: ViewModel() {
             val response = apiService.equiparMascota(name, "Token $token")
             if (response.isSuccessful) {
                 println("Mascota equipada correctament")
+                getMascotesAconseguidesUser()
             } else {
                 println("Error al equipar mascota with status code: ${response.code()}")
                 response.errorBody()?.let {
                     println("Error body: ${it.string()}")
                 }
             }
-
         }
     }
 
