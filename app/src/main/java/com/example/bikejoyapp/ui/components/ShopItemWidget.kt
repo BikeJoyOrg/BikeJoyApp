@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.Group
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,19 +53,11 @@ fun ShopItemWidget(
     mainViewModel: MainViewModel,
     shopViewModel: ShopViewModel
 ) {
+    shopViewModel.getStoreData()
     val coroutineScope = rememberCoroutineScope()
     val itemId = remember { mutableStateOf<String?>(null) }
-    itemId.value = navController.currentBackStackEntry?.arguments?.getString("itemId")
+    LaunchedEffect(true) { itemId.value = navController.currentBackStackEntry?.arguments?.getString("itemId") }
     val item = itemId.let { it.value?.let { it1 -> shopViewModel.getItemById(it1.toInt()) } }
-
-    LaunchedEffect(item) {
-        shopViewModel.getStoreData()
-        if (item == null) {
-            println("Item not found")
-            mainViewModel.navigateTo(MyAppRoute.Shop)
-        }
-        println("checking item: $itemId  $item")
-    }
 
 
     Column (
@@ -80,25 +76,16 @@ fun ShopItemWidget(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(24.dp))
-        if (item != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(item.image)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Item Image",
-                modifier = Modifier.fillMaxWidth().height(250.dp),
-                contentScale = ContentScale.Crop
-            )
-        }
-        else {
-            Image(
-                painter = painterResource(id = R.drawable.item_default),
-                contentDescription = "Item Image",
-                modifier = Modifier.fillMaxWidth().height(250.dp),
-                contentScale = ContentScale.Crop
-            )
-        }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(item?.image ?: "https://pes-bikejoy.s3.amazonaws.com/items/default.jpg")
+                .crossfade(true)
+                .build(),
+            contentDescription = "Item Image",
+            modifier = Modifier.fillMaxWidth().height(250.dp),
+            contentScale = ContentScale.Crop
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = item?.description ?: "descripció no disponible",
@@ -106,13 +93,41 @@ fun ShopItemWidget(
             modifier = Modifier.padding(horizontal = 16.dp),
             textAlign = TextAlign.Center
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Preu:",
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center
+            )
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = item?.game_currency_price.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                    contentDescription = "coin",
+                    modifier = Modifier.size(32.dp),
+                    tint = Color(0xFFD4AF37)
+                )
+            }
+        }
         Spacer(modifier = Modifier.weight(1f)) // This will push the button to the bottom
         Column(
             modifier = Modifier
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OutlinedButton(
+            ElevatedButton(
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 2.dp,
                     pressedElevation = 8.dp,
@@ -140,18 +155,10 @@ fun ShopItemWidget(
                     horizontal = 24.dp,
                     vertical = 10.dp
                 ),
-                border = BorderStroke(2.dp, Color.Black)
             ) {
                 Text(
-                    text = item?.game_currency_price.toString(),
+                    text = "Comprar",
                     style = MaterialTheme.typography.labelMedium,
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                    contentDescription = "coin",
-                    modifier = Modifier.size(32.dp),
-                    tint = Color(0xFFD4AF37)
                 )
             }
         }

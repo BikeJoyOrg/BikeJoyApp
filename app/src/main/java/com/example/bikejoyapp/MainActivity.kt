@@ -223,7 +223,7 @@ fun MyAppContent(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = stringResource(id = R.string.app_name),
+                                text = currentRoute ?: "BikeJoy",
                                 style = MaterialTheme.typography.titleMedium
                             )
                         },
