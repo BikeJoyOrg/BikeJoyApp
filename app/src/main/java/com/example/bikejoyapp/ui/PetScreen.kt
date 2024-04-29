@@ -55,14 +55,25 @@ import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.bikejoyapp.data.MascotaAconseguida
+import org.mockito.AdditionalMatchers.and
+import org.mockito.internal.matchers.Null
 
 
-val user = "b"
-var nom = ""
+var petG: Mascota = Mascota("G","G","G","G","G","G","G","G","G",1.0f,1.0f,1.0f)
+var petA: MascotaAconseguida = MascotaAconseguida(0,0,false,"A",0)
 
 @Composable
 fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel) {
     val pets = mascotesViewModel.pets.value ?: emptyList()
+    val petsAconseguides = mascotesViewModel.petsAconseguides.value ?: emptyList()
+    if (petsAconseguides.isEmpty()) {
+        println("vacia")
+    } else {
+        for (mascotaAconseguida in petsAconseguides) {
+            println(mascotaAconseguida.nomMascota)
+        }
+    }
     var selectedPet by remember { mutableStateOf(false) }
     var it = 0
     for (m in MascotesAconseguides.mascotesAconseguides) {
@@ -79,6 +90,8 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
     LazyRow(modifier = Modifier
         .fillMaxSize()) {
         items(pets) { pet ->
+            val mascotaBuscada = petsAconseguides.find { it.nomMascota == pet.name }
+
             Card(
                 modifier = Modifier.fillMaxWidth()
                     .width(230.dp)
@@ -86,7 +99,11 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
-                onClick = { if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) != 0)) { selectedPet = true; nom = pet.name } }
+                onClick = {
+                    if (mascotaBuscada != null) {
+                        if (mascotaBuscada.nivell != 0) { selectedPet = true; petA = mascotaBuscada; petG = pet }
+                    }
+                }
             ) {
                 Column(
                     modifier = Modifier
@@ -94,10 +111,10 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                         .padding(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (MascotesAconseguides.teMascota(pet.name, user)) {
+                    if (mascotaBuscada != null) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(when (MascotesAconseguides.getNivell(pet.name, user)) {
+                                .data(when (mascotaBuscada.nivell) {
                                     0 -> pet.imgEgg
                                     1 -> pet.img1
                                     2 -> pet.img2
@@ -125,27 +142,28 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) != 0)) {
-                        if (MascotesAconseguides.estaEquipat(pet.name, user)) {
+                    if (mascotaBuscada != null) {
+                        if (mascotaBuscada.nivell != 0) {
+                            if (mascotaBuscada.equipada) {
+                                Text(
+                                    text = "Equipped",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            } else {
+                                Text(
+                                    text = "Not equipped",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else if (mascotaBuscada.nivell == 0) {
                             Text(
-                                text = "Equipped",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        } else {
-                            Text(
-                                text = "Not equipped",
+                                text = "Egg",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                    else if (MascotesAconseguides.teMascota(pet.name, user) and (MascotesAconseguides.getNivell(pet.name, user) == 0)) {
-                        Text(
-                            text = "Egg",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                     else {
                         Text(
@@ -159,7 +177,11 @@ fun PetScreen(mascotesViewModel: MascotesViewModel, mainViewModel: MainViewModel
         }
     }
     if(selectedPet) {
-        InfoPetWidget (MascotesAconseguides.getMascotaAconseguida(nom, user), onDismiss = {selectedPet = false})
+        InfoPetWidget(
+            petA,
+            petG,
+            mascotesViewModel,
+            onDismiss = { selectedPet = false })
     }
 }
 

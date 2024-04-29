@@ -22,13 +22,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.MascotaAconseguida
+import com.example.bikejoyapp.data.MascotaAconseguidaF
 import com.example.bikejoyapp.data.MascotaImatges
 import com.example.bikejoyapp.data.Mascotes
 import com.example.bikejoyapp.data.MascotesAconseguides
+import com.example.bikejoyapp.data.SharedPrefUtils
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 @Composable
-fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit) {
+fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, mascota: Mascota, mascotesViewModel: MascotesViewModel,
+                  onDismiss: () -> Unit) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = { /*TODO*/ },
@@ -40,7 +45,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = mascotaAconseguida.mascota.name,
+                    text = mascotaAconseguida.nomMascota,
                     fontSize = 32.sp,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -56,9 +61,9 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 item {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(mascotaAconseguida.mascota.img1)
+                            .data(mascota.img1)
                             .build(),
-                        contentDescription = mascotaAconseguida.mascota.name,
+                        contentDescription = mascotaAconseguida.nomMascota,
                         modifier = Modifier
                             .height(130.dp)
                     )
@@ -69,9 +74,9 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 item {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(if (mascotaAconseguida.nivell >= 2) mascotaAconseguida.mascota.img2 else mascotaAconseguida.mascota.img2l)
+                            .data(if (mascotaAconseguida.nivell >= 2) mascota.img2 else mascota.img2l)
                             .build(),
-                        contentDescription = mascotaAconseguida.mascota.name,
+                        contentDescription = mascotaAconseguida.nomMascota,
                         modifier = Modifier
                             .height(130.dp)
                     )
@@ -82,16 +87,16 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 item {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(if (mascotaAconseguida.nivell >= 3) mascotaAconseguida.mascota.img3 else mascotaAconseguida.mascota.img3l)
+                            .data(if (mascotaAconseguida.nivell >= 3) mascota.img3 else mascota.img3l)
                             .build(),
-                        contentDescription = mascotaAconseguida.mascota.name,
+                        contentDescription = mascotaAconseguida.nomMascota,
                         modifier = Modifier
                             .height(130.dp)
                     )
                 }
                 item {
                     Text(
-                        text = "Bonus1: " + ((mascotaAconseguida.mascota.bonus1.minus(1)).times(
+                        text = "Bonus1: " + ((mascota.bonus1.minus(1)).times(
                             mascotaAconseguida.nivell
                         ).times(100).toInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
@@ -99,7 +104,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 }
                 item {
                     Text(
-                        text = "Bonus2: " + ((mascotaAconseguida.mascota.bonus2.minus(1)).times(
+                        text = "Bonus2: " + ((mascota.bonus2.minus(1)).times(
                             mascotaAconseguida.nivell
                         ).times(100).toInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
@@ -107,7 +112,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 }
                 item {
                     Text(
-                        text = "Bonus3: " + ((mascotaAconseguida.mascota.bonus3.minus(1)).times(
+                        text = "Bonus3: " + ((mascota.bonus3.minus(1)).times(
                             mascotaAconseguida.nivell
                         ).times(100).toInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
@@ -115,10 +120,7 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, onDismiss: () -> Unit)
                 }
                 item {
                     Button(onClick = {
-                        MascotesAconseguides.equipar(
-                            mascotaAconseguida.mascota.name,
-                            mascotaAconseguida.nicknameUsuari
-                        )
+                        mascotesViewModel.equiparMascota(mascotaAconseguida.nomMascota)
                         onDismiss()
                     }) {
                         Text(text = "Equipar")
