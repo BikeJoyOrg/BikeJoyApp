@@ -1,20 +1,31 @@
     package com.example.bikejoyapp.viewmodel
 
     import android.annotation.SuppressLint
+    import android.app.PendingIntent
+    import android.content.BroadcastReceiver
     import android.content.Context
+    import android.content.Intent
     import android.content.pm.PackageManager
+    import android.graphics.Bitmap
+    import android.graphics.Canvas
+    import android.graphics.ColorFilter
+    import android.graphics.LightingColorFilter
+    import android.graphics.Paint
+    import android.graphics.drawable.Drawable
     import android.location.Location
     import android.os.Looper
     import android.util.Log
     import android.widget.Toast
     import androidx.compose.runtime.mutableStateOf
     import androidx.core.content.ContextCompat
+    import androidx.core.graphics.drawable.toBitmap
     import androidx.lifecycle.LiveData
     import androidx.lifecycle.MutableLiveData
     import androidx.lifecycle.ViewModel
     import androidx.lifecycle.ViewModelProvider
     import androidx.lifecycle.viewModelScope
     import com.example.bikejoyapp.data.RouteResponse
+    import com.example.platform.location.geofencing.GeofenceManager
     import com.google.android.gms.location.FusedLocationProviderClient
     import com.google.android.gms.location.LocationCallback
     import com.google.android.gms.location.LocationRequest
@@ -41,6 +52,8 @@
     import retrofit2.converter.gson.GsonConverterFactory
 
     import com.google.android.gms.location.*
+    import com.google.android.gms.maps.model.BitmapDescriptor
+    import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
     open class NavigationViewModel(private val placesClient: PlacesClient, private val context: Context) : ViewModel()  {
@@ -63,7 +76,7 @@
 
         val _selectedPlace = MutableLiveData<Place?>()
         val selectedPlace: LiveData<Place?> = _selectedPlace
-
+        private val geofenceManager = GeofenceManager(context)
 
         fun onSearchQueryChanged(query: String) {
             _searchQuery.value = query
@@ -158,6 +171,14 @@
 
         private val _buscat = MutableLiveData<Boolean>()
         val buscat: LiveData<Boolean> = _buscat
+
+        private val _puntIntermedi = MutableLiveData<Int>()
+        val puntIntermedi: LiveData<Int> = _puntIntermedi
+        private val _puntIntermedi2 = MutableLiveData<Int>()
+        val puntIntermedi2: LiveData<Int> = _puntIntermedi2
+
+        private val _desvio = MutableLiveData<Boolean>()
+        val desvio: LiveData<Boolean> = _desvio
         fun PaintSearchFields() {
             _PaintSearchFields.value = true
         }
@@ -191,10 +212,15 @@
                 locationCallback,
                 null
             )
+            _avis.value = false
+            if(_consultarOpcio.value && _ruta.value?.size!! > 1){
+                _puntIntermedi.value = 1
+                _puntIntermedi2.value = 2
+            }
             lliure = coordfinish == null
             stop = false
             viewModelScope.launch {
-                while (_isNavigating.value!!) {
+                while (_isNavigating.value) {
                     delay(1000)
                     if (!stop) {
                         _navigationTime.value = (_navigationTime.value ?: 0) + 1
@@ -208,26 +234,66 @@
             override fun onLocationResult(p0: LocationResult) {
                 p0 ?: return
                 for (location in p0.locations) {
+                    val pos = LatLng(location.latitude, location.longitude)
                     if (primer == null) {
-                        primer = LatLng(location.latitude, location.longitude)
+                        primer = pos
                     }
-                    else if( _isNavigating.value && !lliure && distanceBetween(
-                            LatLng(location.latitude, location.longitude),
-                            coordfinish!!
-                        ) <= 50.0
-                    ){
+                    else if( _isNavigating.value && !lliure && distanceBetween(pos,coordfinish!!) <= 50.0){
                         Log.d("aris", "he arribat")
                         if (!_avis.value!!) {
                             rutacompleta()
                             stop = true
                         }
-
                     }
                     else {
+                        if (_isNavigating.value && !lliure && seguentpunt(pos)){
+
+                            if (_puntIntermedi.value!! < _ruta.value!!.size - 2) {
+                                _puntIntermedi.value = _puntIntermedi.value!! + 1
+                            }
+                            if (_puntIntermedi2.value!! < _ruta.value!!.size - 2) {
+                                _puntIntermedi2.value = _puntIntermedi2.value!! + 1
+                            }
+                        }
+                        else if(_isNavigating.value && !lliure && isdesvio(pos)){
+                            _desvio.value = true
+                            stop = true
+                        }
                         segon = LatLng(location.latitude, location.longitude)
                     }
                 }
             }
+        }
+
+        private var desvioStartTime: Long = 0
+
+        private fun isdesvio(pos: LatLng): Boolean {
+            val dist = _ruta.value?.let { distanceBetween(pos, it[_puntIntermedi.value!!]) }
+            val dist2 = _ruta.value?.let { distanceBetween(pos, it[_puntIntermedi.value!! -1]) }
+            if (dist != null) {
+                if (dist > 50.0 && dist2!! > 50.0) {
+                    if (desvioStartTime == 0L) {
+                        desvioStartTime = System.currentTimeMillis()
+                    } else if (System.currentTimeMillis() - desvioStartTime >= 15000) {
+                        // Han pasado 15 segundos desde que el usuario se desvió de la ruta
+                        desvioStartTime = 0L
+                        return true
+                    }
+
+                } else {
+                    // El usuario ha vuelto a la ruta, reseteamos el contador
+                    desvioStartTime = 0L
+                }
+            }
+            return false
+        }
+
+        private fun seguentpunt(pos: LatLng): Boolean {
+            val dist = _ruta.value?.let { distanceBetween(pos, it[_puntIntermedi.value!!]) }
+            if (dist != null) {
+                return dist <= 25.0
+            }
+            return false
         }
 
         private fun calcularDistancia() {
@@ -250,6 +316,8 @@
             stop = false
             coordfinish = null
             _buscat.value = false
+            _desvio.value = false
+            _puntIntermedi.value = 0
             if (rutaCompletada) {
                 _showRouteResume.value = false
             }
@@ -314,10 +382,17 @@
         fun continuar(){
             _avis.value = false
             stop = false
+            if(_desvio.value!!){
+                _desvio.value = false
+            }
         }
         fun mostrarRuta(puntos: List<LatLng>){
             _ruta.value = puntos.toMutableList()
             coordfinish = puntos.last()
             _consultarOpcio.value = true
+            _puntIntermedi.value = 1
+            if (_ruta.value!!.size > 2){
+                _puntIntermedi2.value = 2
+            }
         }
     }

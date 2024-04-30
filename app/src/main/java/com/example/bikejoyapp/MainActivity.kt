@@ -109,6 +109,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
+import com.example.platform.location.geofencing.GeofencingScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -306,6 +307,7 @@ fun MyAppContent(
             ) {
                 composable(MyAppRoute.Map.route) {
                     MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
+                    //GeofencingScreen()
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)

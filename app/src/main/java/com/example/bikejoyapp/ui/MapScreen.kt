@@ -72,6 +72,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -131,7 +132,8 @@ fun MapScreen(
     val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
     val avis by navigationViewModel.avis.observeAsState(false)
     val buscat by navigationViewModel.buscat.observeAsState(false)
-
+    val puntIntermedi by navigationViewModel.puntIntermedi.observeAsState()
+    val desvio by navigationViewModel.desvio.observeAsState(false)
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -156,6 +158,9 @@ fun MapScreen(
     }
     if (showRouteResume){
         Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+    }
+    if(desvio){
+        Dialog_desvio(navigationViewModel, mainViewModel)
     }
 
     val clickState = remember { mutableStateOf(false) }
@@ -318,6 +323,14 @@ fun MapScreen(
                             state = MarkerState(position = ruta?.last() ?: deviceLocation.value),
                             icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala),
                         )
+                        Circle(center = ruta?.last() ?: deviceLocation.value, radius = 50.0,
+                            strokeColor = Color(0xFF000000), strokeWidth = 0f, fillColor = magentaOscuroCrema.copy(alpha = 0.25f))
+                        Marker(
+                            state = MarkerState(position = ruta?.get(puntIntermedi!!) ?: deviceLocation.value),
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                        )
+                        Circle(center = ruta?.get(puntIntermedi!!) ?: deviceLocation.value, radius = 25.0,
+                            strokeColor = Color(0xFF000000), strokeWidth = 0f, fillColor = magentaOscuroCrema.copy(alpha = 0.25f))
                     }
                 }
             }
@@ -502,7 +515,8 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
                 Spacer(modifier = Modifier.height(16.dp))
                 TempsDistancia_vertical(distanciaRuta = distanciaRuta, tempsRuta = tempsRuta/60)
                 Row (     modifier = Modifier
-                    .fillMaxWidth().weight(1f),
+                    .fillMaxWidth()
+                    .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
                     TextButton(onClick = { navigationViewModel.stopNavigation(true)
                         mainViewModel.showBottomBar() }) {
@@ -536,11 +550,51 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row (     modifier = Modifier
-                    .fillMaxWidth().weight(1f),
+                    .fillMaxWidth()
+                    .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
                     TextButton(onClick = { navigationViewModel.stopNavigation(false)
                         mainViewModel.showBottomBar() }) {
                         Text("Finalitzar")
+                    }
+                    TextButton(onClick = { navigationViewModel.continuar() }) {
+                        Text("Continuar ruta")
+                    }
+
+                }
+            }
+        }
+    }
+}
+@Composable
+fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(16.dp)
+        ){
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ){
+                Row(     modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,) {
+                    Text("'No estas seguint la ruta, si us plau torna a la ruta marcada'",
+                        fontSize = 20.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row (     modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                    horizontalArrangement = Arrangement.Center,){
+                    TextButton(onClick = { navigationViewModel.stopNavigation(false)
+                        mainViewModel.showBottomBar() }) {
+                        Text("Finalitzar ruta")
                     }
                     TextButton(onClick = { navigationViewModel.continuar() }) {
                         Text("Continuar ruta")
