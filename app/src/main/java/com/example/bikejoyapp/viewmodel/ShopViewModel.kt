@@ -18,7 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
 
-private val json = Json {
+val json = Json {
     ignoreUnknownKeys = true
 }
 
@@ -69,6 +69,7 @@ class ShopViewModel: ViewModel() {
                 println("Item purchase was successful")
                 user.coins = (user.coins - item.game_currency_price)
                 LoggedUser.setLoggedUser(user)
+
             } else {
                 println("Item purchase failed with status code: ${response.code()}")
                 response.errorBody()?.let {

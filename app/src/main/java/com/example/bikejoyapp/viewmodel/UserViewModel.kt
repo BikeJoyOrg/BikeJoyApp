@@ -81,10 +81,12 @@ class UserViewModel : ViewModel() {
         } else {
             val errorBody = response.errorBody()!!.string()
             val jsonObject = JSONObject(errorBody)
-            result = jsonObject.getString("error")
-            if (result == "Invalid token") {
-                SharedPrefUtils.removeToken()
+            if (jsonObject.has("error")) {
+                result = jsonObject.getString("error")
+            } else {
+                result = "Unknown error"
             }
+            SharedPrefUtils.removeToken()
         }
         return result
     }

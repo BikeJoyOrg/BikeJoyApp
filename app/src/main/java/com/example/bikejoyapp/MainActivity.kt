@@ -6,14 +6,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,14 +19,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,46 +37,28 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.AccountScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
 import com.example.bikejoyapp.ui.ShopScreen
-import com.example.bikejoyapp.ui.SocialScreen
 import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.lifecycle.ViewModelProvider
 import com.example.bikejoyapp.ui.AchievementScreen
-import android.graphics.Color.rgb
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
@@ -109,6 +87,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.viewmodel.PerfilViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -153,6 +132,8 @@ class MainActivity : ComponentActivity() {
         }
         val userViewModel: UserViewModel by viewModels()
 
+        val perfilViewModel: PerfilViewModel by viewModels()
+
         val achievementViewModel: AchievementViewModel by viewModels()
 
         if (!Places.isInitialized()) {
@@ -186,7 +167,8 @@ class MainActivity : ComponentActivity() {
                     shopViewModel = shopViewModel,
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
-                    userViewModel = userViewModel
+                    userViewModel = userViewModel,
+                    perfilViewModel = perfilViewModel
                 )
             }
         }
@@ -206,7 +188,8 @@ fun MyAppContent(
     userViewModel: UserViewModel,
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
-    achievementViewModel: AchievementViewModel
+    achievementViewModel: AchievementViewModel,
+    perfilViewModel: PerfilViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -311,7 +294,7 @@ fun MyAppContent(
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen(userViewModel, mainViewModel)
+                    HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
                     AchievementScreen(achievementViewModel)

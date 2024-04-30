@@ -1,6 +1,6 @@
 package com.example.bikejoyapp.api
 
-import com.example.bikejoyapp.data.Item
+import com.example.bikejoyapp.data.ItemPurchasedResponse
 import com.example.bikejoyapp.data.ItemResponse
 import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatusResponse
@@ -26,4 +26,9 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Void>
+
+    @GET("user/purchases/{id}")
+    suspend fun getPurchasedItems(
+        @Path("id") username: String
+    ): Response<ItemPurchasedResponse>
 }
