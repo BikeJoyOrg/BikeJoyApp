@@ -1,5 +1,6 @@
 package com.example.bikejoyapp.ui
 
+import android.graphics.Color.rgb
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -46,6 +47,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -56,10 +58,15 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.ItemPurchased
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.MyAppRoute
@@ -127,72 +134,81 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel, perfi
         Dialog(
             onDismissRequest = {
                 showPopup.value = false // Oculta el popup cuando se cierra
-            }
+            },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
         ) {
-            Column(
+            Card(
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
-                    .size(500.dp, 600.dp)
-                    .padding(16.dp)
-                    .background(Color.White)
-                    .border(1.dp, Color.Gray)
+                    .fillMaxWidth(0.95f)
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(Color(rgb(20, 36, 53)))
             ) {
-                Text(
-                    text = "Historial de compras",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
+                Column {
+                    Text(
+                        text = "Historial de compras",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .align(Alignment.CenterHorizontally),
+                        color = Color(rgb(85, 149, 180))
+                    )
 
-                println("Purchased items: $purchasedItemsMap")
+                    println("Purchased items: $purchasedItemsMap")
 
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    modifier = Modifier.size(500.dp, 430.dp)
-                ) {
-                    purchasedItemsMap.entries.forEachIndexed { index, (month, purchasesPerMonth) ->
-                        stickyHeader {
-                            val dfs = DateFormatSymbols(Locale("es", "ES"))
-                            val monthName = dfs.months[month - 1].replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase(
-                                    Locale("es", "ES")
-                                ) else it.toString()
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        modifier = Modifier.size(500.dp, 430.dp)
+                    ) {
+                        purchasedItemsMap.entries.forEachIndexed { index, (month, purchasesPerMonth) ->
+                            stickyHeader {
+                                val dfs = DateFormatSymbols(Locale("es", "ES"))
+                                val monthName = dfs.months[month - 1].replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale("es", "ES")
+                                    ) else it.toString()
+                                }
+                                if (index != 0) Spacer(modifier = Modifier.height(10.dp))
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    shape = RectangleShape,
+                                    colors = CardDefaults.cardColors(Color(rgb(20, 36, 53)))
+                                ) {
+                                    Text(
+                                        text = monthName,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = Color(rgb(85, 149, 180)),
+                                        modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
+                                    )
+                                }
                             }
-                            if (index != 0) Spacer(modifier = Modifier.height(10.dp))
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 4.dp),
-                                shape = RectangleShape,
-                                colors = CardDefaults.cardColors(Color.White)
-                            ) {
-                                Text(text = monthName, style = MaterialTheme.typography.titleMedium)
+                            items(purchasesPerMonth.size) {
+                                PurchaseEntry(purchasesPerMonth[it])
                             }
-                            HorizontalDivider(color = Color.Black, thickness = 1.dp)
-                        }
-                        items(purchasesPerMonth.size) {
-                            PurchaseEntry(purchasesPerMonth[it])
                         }
                     }
-                }
-                FilledTonalIconButton(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .height(40.dp)
-                        .width(60.dp),
-                    onClick = {
-                        showPopup.value = false
-                    },
-                    shape = CircleShape,
-                    colors = IconButtonColors(
-                        contentColor = Color.Black,
-                        containerColor = Color(129, 195, 222),
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color(129, 195, 222),
-                    )
-                ) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                    FilledTonalIconButton(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .height(40.dp)
+                            .width(60.dp),
+                        onClick = {
+                            showPopup.value = false
+                        },
+                        shape = CircleShape,
+                        colors = IconButtonColors(
+                            contentColor = Color.Black,
+                            containerColor = Color(rgb(85, 149, 180)),
+                            disabledContentColor = Color.Black,
+                            disabledContainerColor = Color(rgb(85, 149, 180)),
+                        )
+                    ) {
+                        Icon(Icons.Filled.Close, contentDescription = "Close")
+                    }
                 }
             }
         }
@@ -204,9 +220,9 @@ fun PurchaseEntry(item: ItemPurchased) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(0.dp),
+            .padding(5.dp),
         shape = RectangleShape,
-        colors = CardDefaults.cardColors(Color.White)
+        colors = CardDefaults.cardColors(Color(rgb(68, 84, 104)))
     ) {
         Row(
             modifier = Modifier
@@ -214,8 +230,28 @@ fun PurchaseEntry(item: ItemPurchased) {
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = item.item_title)
-            Text(text = "${item.item_purchased_price}€")
+            Text(
+                text = item.item_title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(rgb(213, 221, 227))
+            )
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = item.item_purchased_price.toString(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = Color(rgb(213, 221, 227))
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                    contentDescription = "coin",
+                    modifier = Modifier.size(28.dp),
+                    tint = Color(0xFFD4AF37)
+                )
+            }
         }
     }
 }
