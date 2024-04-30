@@ -1,32 +1,15 @@
     package com.example.bikejoyapp.viewmodel
 
     import android.annotation.SuppressLint
-    import android.app.PendingIntent
-    import android.content.BroadcastReceiver
     import android.content.Context
-    import android.content.Intent
-    import android.content.pm.PackageManager
-    import android.graphics.Bitmap
-    import android.graphics.Canvas
-    import android.graphics.ColorFilter
-    import android.graphics.LightingColorFilter
-    import android.graphics.Paint
-    import android.graphics.drawable.Drawable
     import android.location.Location
-    import android.os.Looper
     import android.util.Log
-    import android.widget.Toast
-    import androidx.compose.runtime.mutableStateOf
-    import androidx.core.content.ContextCompat
-    import androidx.core.graphics.drawable.toBitmap
     import androidx.lifecycle.LiveData
     import androidx.lifecycle.MutableLiveData
     import androidx.lifecycle.ViewModel
     import androidx.lifecycle.ViewModelProvider
     import androidx.lifecycle.viewModelScope
     import com.example.bikejoyapp.data.RouteResponse
-    import com.example.platform.location.geofencing.GeofenceManager
-    import com.google.android.gms.location.FusedLocationProviderClient
     import com.google.android.gms.location.LocationCallback
     import com.google.android.gms.location.LocationRequest
     import com.google.android.gms.location.LocationResult
@@ -52,8 +35,6 @@
     import retrofit2.converter.gson.GsonConverterFactory
 
     import com.google.android.gms.location.*
-    import com.google.android.gms.maps.model.BitmapDescriptor
-    import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
     open class NavigationViewModel(private val placesClient: PlacesClient, private val context: Context) : ViewModel()  {
@@ -76,7 +57,6 @@
 
         val _selectedPlace = MutableLiveData<Place?>()
         val selectedPlace: LiveData<Place?> = _selectedPlace
-        private val geofenceManager = GeofenceManager(context)
 
         fun onSearchQueryChanged(query: String) {
             _searchQuery.value = query
