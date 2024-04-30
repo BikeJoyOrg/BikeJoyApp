@@ -58,6 +58,7 @@ fun GeofencingScreen() {
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
+    /*
     // Requires at least coarse permission
     PermissionBox(
         permissions = permissions,
@@ -135,9 +136,9 @@ private fun GeofencingControls() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = geofenceTransitionEventInfo)
-    }
+    }*/
 }
-
+/*
 @Composable
 fun GeofenceList(geofenceManager: GeofenceManager) {
     // for geofences
@@ -213,3 +214,4 @@ fun GeofenceList(geofenceManager: GeofenceManager) {
         Text(text = "Vatican City")
     }
 }
+*/
