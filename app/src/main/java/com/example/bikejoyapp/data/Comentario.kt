@@ -3,8 +3,8 @@ package com.example.bikejoyapp.data
 
 data class Comentario(
     val id: Int,
-    val ruta: RutaUsuari,
-    val user: User,
+    val ruta: Int,
+    val user: Int,
     val text: String,
 )
 data class RatingRequest(val mark: Int)

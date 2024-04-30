@@ -270,28 +270,28 @@ class RoutesViewModel : ViewModel() {
             @Path("ruteId") ruteId: Int
         ): Response<List<PuntoIntermedio>>
 
-        @POST("routes/rank/{rute_id}/")
+        @POST("routes/rank/{ruteId}/")
         suspend fun submitRating(
             @Header("Authorization") token: String,
-            @Path("rute_id") ruteId: Int,
+            @Path("ruteId") ruteId: Int,
             @Body ratingData: RatingRequest
         ): Response<Void>
 
-        @POST("routes/comment/{rute_id}/")
+        @POST("routes/comment/{ruteId}/")
         suspend fun addComment(
             @Header("Authorization") token: String,
-            @Path("rute_id") ruteId: Int,
+            @Path("ruteId") ruteId: Int,
             @Body commentData: CommentRequest
         ): Response<Void>
 
-        @GET ("routes/{rute_id}/comments/")
+        @GET ("routes/{ruteId}/comments/")
         suspend fun getComments(
-            @Path("rute_id") ruteId: Int
+            @Path("ruteId") ruteId: Int
         ): Response<List<Comentario>>
 
-        @GET ("routes/{rute_id}/average-rating/")
+        @GET ("routes/{ruteId}/average-rating/")
         suspend fun getAverageRating(
-            @Path("rute_id") ruteId: Int
+            @Path("ruteId") ruteId: Int
         ): Response<Int>
 
     }

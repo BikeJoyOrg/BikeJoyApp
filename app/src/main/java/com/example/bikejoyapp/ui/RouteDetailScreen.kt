@@ -372,15 +372,14 @@ fun DetailsView(
 }
 
 @Composable
-fun CommentItem(comment: Comentario) {
-    // Reemplaza "Comment" por el modelo de comentario que estés utilizando
+fun CommentItem(Comentario: Comentario) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(comment.user.username, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(comment.text, style = MaterialTheme.typography.bodyMedium)
+            //Text(Comentario.user.username, style = MaterialTheme.typography.titleMedium)
+            //Spacer(modifier = Modifier.height(4.dp))
+            Text(Comentario.text, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -434,14 +433,24 @@ fun CommentsView(
                     .padding(16.dp)
             ) {
                 item {
-                    Text(
-                        "Comentarios de la ruta",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    routeComments.forEach { comment ->
-                        CommentItem(comment)
+                    if (routeComments.isEmpty()) {
+                        Text(
+                            "No hay comentarios aún",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    else {
+                        Text(
+                            "Comentarios de la ruta",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        routeComments.forEach { comment ->
+                            CommentItem(comment)
+                        }
                     }
                 }
             }
