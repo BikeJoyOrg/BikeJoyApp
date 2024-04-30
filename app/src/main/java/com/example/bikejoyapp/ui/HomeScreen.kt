@@ -43,11 +43,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import com.example.bikejoyapp.data.ItemPurchased
 import com.example.bikejoyapp.data.LoggedUser
@@ -127,20 +138,19 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel, perfi
             ) {
                 Text(
                     text = "Historial de compras",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(20.dp)
                         .align(Alignment.CenterHorizontally)
                 )
 
                 println("Purchased items: $purchasedItemsMap")
 
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.size(500.dp, 420.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    modifier = Modifier.size(500.dp, 430.dp)
                 ) {
-                    purchasedItemsMap.forEach { (month, purchasesPerMonth) ->
+                    purchasedItemsMap.entries.forEachIndexed { index, (month, purchasesPerMonth) ->
                         stickyHeader {
                             val dfs = DateFormatSymbols(Locale("es", "ES"))
                             val monthName = dfs.months[month - 1].replaceFirstChar {
@@ -148,21 +158,41 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel, perfi
                                     Locale("es", "ES")
                                 ) else it.toString()
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = monthName, style = MaterialTheme.typography.titleMedium)
+                            if (index != 0) Spacer(modifier = Modifier.height(10.dp))
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 4.dp),
+                                shape = RectangleShape,
+                                colors = CardDefaults.cardColors(Color.White)
+                            ) {
+                                Text(text = monthName, style = MaterialTheme.typography.titleMedium)
+                            }
+                            HorizontalDivider(color = Color.Black, thickness = 1.dp)
                         }
                         items(purchasesPerMonth.size) {
                             PurchaseEntry(purchasesPerMonth[it])
                         }
                     }
                 }
-                Button(
-                    modifier = Modifier.padding(16.dp),
+                FilledTonalIconButton(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .height(40.dp)
+                        .width(60.dp),
                     onClick = {
                         showPopup.value = false
-                    }
+                    },
+                    shape = CircleShape,
+                    colors = IconButtonColors(
+                        contentColor = Color.Black,
+                        containerColor = Color(129, 195, 222),
+                        disabledContentColor = Color.Black,
+                        disabledContainerColor = Color(129, 195, 222),
+                    )
                 ) {
-                    Text("Cerrar")
+                    Icon(Icons.Filled.Close, contentDescription = "Close")
                 }
             }
         }
@@ -173,11 +203,14 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel, perfi
 fun PurchaseEntry(item: ItemPurchased) {
     Card(
         modifier = Modifier
-            .fillMaxWidth().padding(0.dp)
+            .fillMaxWidth()
+            .padding(0.dp),
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(Color.White)
     ) {
         Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(6.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
