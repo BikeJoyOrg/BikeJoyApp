@@ -38,6 +38,7 @@ class MascotesViewModel: ViewModel() {
 
     init {
         getStoreData()
+        getMascotesAconseguidesUser()
     }
 
     private fun getStoreData() {
@@ -58,22 +59,70 @@ class MascotesViewModel: ViewModel() {
         }
     }
 
+    fun getMascotesAconseguidesUser() {
+        viewModelScope.launch {
+            val token = SharedPrefUtils.getToken()
+            if (token != null) {
+                val response = apiService.getPetsAconseguidesUsuari("Token $token")
+                if (response.isSuccessful) {
+                    _petsAconseguides.postValue(response.body())
+                    println("Correct loading data Mascotes Aconseguides: ")
+                } else {
+                    println("Error loading data Mascotes Aconseguides: ${response.errorBody()}")
+                }
+            }
+        }
+    }
+
     fun getPetByName(name: String): Mascota? {
         return _pets.value?.find { it.name == name }
     }
 
-    fun getMascota(name: String) {
+    fun unlockMascota(name: String) {
         viewModelScope.launch {
             val token = SharedPrefUtils.getToken()
             val user = LoggedUser.getLoggedUser()
-            val pet = getPetByName(name)
-            if (token != null && user != null && pet != null) {
+            if (token != null && user != null) {
                 val response = apiService.createMascotaAconseguida(name, "Token $token")
                 if (response.isSuccessful) {
                     println("Mascota obtenida correctament")
                     LoggedUser.setLoggedUser(user)
                 } else {
                     println("Error al obtindre mascota with status code: ${response.code()}")
+                    response.errorBody()?.let {
+                        println("Error body: ${it.string()}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun equiparMascota(name: String) {
+        viewModelScope.launch {
+            val token = SharedPrefUtils.getToken()
+            val response = apiService.equiparMascota(name, "Token $token")
+            if (response.isSuccessful) {
+                println("Mascota equipada correctament")
+                getMascotesAconseguidesUser()
+            } else {
+                println("Error al equipar mascota with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
+                }
+            }
+        }
+    }
+
+    fun lvlUpMascota(name: String) {
+        viewModelScope.launch {
+            val token = SharedPrefUtils.getToken()
+            val user = LoggedUser.getLoggedUser()
+            if (token != null && user != null) {
+                val response = apiService.lvlUp(name, "Token $token")
+                if (response.isSuccessful) {
+                    println("Mascota nivelada correctament")
+                } else {
+                    println("Error al nivelar mascota with status code: ${response.code()}")
                     response.errorBody()?.let {
                         println("Error body: ${it.string()}")
                     }

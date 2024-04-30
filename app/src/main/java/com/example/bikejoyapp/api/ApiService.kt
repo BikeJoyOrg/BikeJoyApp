@@ -38,13 +38,13 @@ interface ApiService {
     suspend fun getPet(@Path("name") nom: String): Response<Mascota>
 
     @GET("pets/getMascotasAconseguidesUsuari/")
-    suspend fun getPetsAconseguidesUsuari(): Response<List<MascotaAconseguida>>
+    suspend fun getPetsAconseguidesUsuari(@Header("Authorization") token: String): Response<List<MascotaAconseguida>>
 
     @PATCH("pets/equiparMascota/{name}/")
-    suspend fun equiparMascota(@Path("name") nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
+    suspend fun equiparMascota(@Path("name") nom: String, @Header("Authorization") token: String,): Response<Unit>
 
     @PATCH("pets/lvlUp/{name}/")
-    suspend fun lvlUp(@Path("name") nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
+    suspend fun lvlUp(@Path("name") nom: String, @Header("Authorization") token: String,): Response<Unit>
 
     @POST("pets/createMascotaAconseguida/{name}/")
     suspend fun createMascotaAconseguida(@Path("name", ) nom: String, @Header("Authorization") token: String,): Response<MascotaAconseguida>
