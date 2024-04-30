@@ -133,6 +133,10 @@ class MainActivity : ComponentActivity() {
         }
         val userViewModel: UserViewModel by viewModels()
 
+        if(SharedPrefUtils.getToken() != null) {
+            userViewModel.getProfile(SharedPrefUtils.getToken()!!)
+        }
+
         val achievementViewModel: AchievementViewModel by viewModels()
 
         if (!Places.isInitialized()) {

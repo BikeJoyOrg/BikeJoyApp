@@ -88,4 +88,18 @@ class UserViewModel : ViewModel() {
         }
         return result
     }
+
+    fun getProfile(token: String?) {
+        val response = retrofit.getProfile("Token $token")
+        if(response.isSuccessful) {
+            LoggedUser.setLoggedUser(response.body())
+        } else {
+            val errorBody = response.errorBody()!!.string()
+            val jsonObject = JSONObject(errorBody)
+            val result = jsonObject.getString("error")
+            if (result == "Invalid token") {
+                SharedPrefUtils.removeToken()
+            }
+        }
+    }
 }
