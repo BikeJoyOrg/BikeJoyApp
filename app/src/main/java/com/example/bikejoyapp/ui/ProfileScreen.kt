@@ -49,15 +49,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.tooling.preview.Preview
 
-
 @Preview
 @Composable
 fun ProfileScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Box(modifier = Modifier
-                .padding(top = 16.dp)
-                .size(100.dp)) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .size(100.dp)
+            ) {
                 Canvas(modifier = Modifier.matchParentSize()) {
                     val purple = Color(206, 194, 242)
                     drawCircle(color = purple)
@@ -67,7 +68,7 @@ fun ProfileScreen() {
                     contentDescription = "Profile picture",
                     modifier = Modifier
                         .size(70.dp)
-                        .align(Alignment.Center) // Esto hace que la imagen sea redonda
+                        .align(Alignment.Center)
                 )
             }
         }
@@ -81,5 +82,53 @@ fun ProfileScreen() {
         )
         val level = "LEVEL X"
         Text(level, modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        Row() {
+            for (i in 1..4) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 40.dp, end = 40.dp, top = 16.dp)
+                        .size(30.dp)
+                ) {
+                    Button(onClick = {}) {
+
+                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.avatar_death),
+                        contentDescription = "Profile picture",
+                        modifier = Modifier
+                            .size(21.dp)
+                            .align(Alignment.Center) // Esto hace que la imagen sea redonda
+                    )
+                }
+            }
+        }
+
+        Text(
+            "Stats",
+            modifier = Modifier.padding(top = 8.dp, start = 12.dp, bottom = 8.dp),
+            fontSize = 24.sp
+        )
+        for (i in 1..5) {
+            Row(modifier = Modifier.padding(start = 30.dp)) {
+                Image(
+                    painter = painterResource(id = R.drawable.avatar_death),
+                    contentDescription = "Star icon",
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    "Distancia recorrida",
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .align(Alignment.CenterVertically)
+                )
+                Text(
+                    (i * 100).toString(),
+                    modifier = Modifier
+                        .padding(start = 20.dp)
+                        .align(Alignment.CenterVertically)
+                )
+            }
+        }
     }
 }
