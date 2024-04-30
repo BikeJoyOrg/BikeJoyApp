@@ -122,6 +122,7 @@ fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
                 onClick = {
                     coroutineScope.launch {
                         status = userViewModel.login(username, password)
+                        userViewModel.getCompletedRoutes()
                     }
                 }
             ) {

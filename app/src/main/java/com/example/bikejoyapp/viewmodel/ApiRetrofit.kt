@@ -1,5 +1,7 @@
 package com.example.bikejoyapp.viewmodel
 
+import com.example.bikejoyapp.data.Comentario
+import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.PuntsInterRuta
 import com.example.bikejoyapp.data.PuntsRuta
@@ -13,6 +15,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiRetrofit {
@@ -58,6 +61,11 @@ interface ApiRetrofit {
     suspend fun logout(
         @Header("Authorization") token: String?
     ): Response<Void>
+
+    @GET ("routes/completed-routes/")
+    suspend fun getCompletedRoutes(
+        @Header("Authorization") token: String,
+    ): Response<List<CompletedRoute>>
 }
 
 

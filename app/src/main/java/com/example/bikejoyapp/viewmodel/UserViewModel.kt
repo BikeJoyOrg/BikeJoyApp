@@ -1,6 +1,7 @@
 package com.example.bikejoyapp.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.SharedPrefUtils
@@ -27,6 +29,10 @@ class UserViewModel : ViewModel() {
     private val json = Json {
         ignoreUnknownKeys = true
     }
+
+    private val _completedRoutes = MutableLiveData<List<CompletedRoute>>()
+    val completedRoutes: LiveData<List<CompletedRoute>> = _completedRoutes
+
 
     @OptIn(ExperimentalSerializationApi::class)
     private val retrofit = Retrofit.Builder()
@@ -46,6 +52,7 @@ class UserViewModel : ViewModel() {
 
             LoggedUser.setLoggedUser(user)
             SharedPrefUtils.setToken(token)
+
 
             result = "Success"
         } else {
@@ -69,6 +76,24 @@ class UserViewModel : ViewModel() {
             println("Error: $result")
         }
         return result
+    }
+
+    fun getCompletedRoutes() {
+        viewModelScope.launch {
+            try {
+                val token = SharedPrefUtils.getToken()
+                if (token != null) {
+                    val response = retrofit.getCompletedRoutes("Token $token")
+                    if (response.isSuccessful && response.body() != null) {
+                        _completedRoutes.postValue(response.body())
+                    } else {
+                        Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+        }
     }
 
     suspend fun logout(token: String?): String {
