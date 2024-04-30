@@ -88,6 +88,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.viewmodel.PerfilViewModel
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -123,6 +124,7 @@ class MainActivity : ComponentActivity() {
         val mainViewModel: MainViewModel by viewModels()
         val bikeLanesViewModel: BikeLanesViewModel by viewModels()
         val shopViewModel: ShopViewModel by viewModels()
+        val mascotesViewModel: MascotesViewModel by viewModels()
         val retrofit = Retrofit.Builder()
             .baseUrl("https://mi-url-base.com/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -168,6 +170,7 @@ class MainActivity : ComponentActivity() {
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
                     userViewModel = userViewModel,
+                    mascotesViewModel = mascotesViewModel,
                     perfilViewModel = perfilViewModel
                 )
             }
@@ -189,7 +192,8 @@ fun MyAppContent(
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel,
-    perfilViewModel: PerfilViewModel
+    perfilViewModel: PerfilViewModel,
+    mascotesViewModel: MascotesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -303,7 +307,7 @@ fun MyAppContent(
                     ShopScreen(shopViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
-                    PetScreen()
+                    PetScreen(mascotesViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.GravarRuta.route) {
                     GravarRutaScreen(GravarRutaViewModel(),mainViewModel)

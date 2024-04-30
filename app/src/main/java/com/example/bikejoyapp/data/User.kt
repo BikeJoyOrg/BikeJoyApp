@@ -13,3 +13,6 @@ class User(
 @Serializable
 data class LoginResponse(val token: String, val user: User)
 
+@Serializable
+data class getProfileResponse(val user: User)
+

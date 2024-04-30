@@ -5,6 +5,7 @@ import com.example.bikejoyapp.data.PuntsInterRuta
 import com.example.bikejoyapp.data.PuntsRuta
 import com.example.bikejoyapp.data.RouteResponse
 import com.example.bikejoyapp.data.RutaUsuari
+import com.example.bikejoyapp.data.User
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import retrofit2.http.Body
@@ -58,6 +59,11 @@ interface ApiRetrofit {
     suspend fun logout(
         @Header("Authorization") token: String?
     ): Response<Void>
+
+    @GET("users/getProfile/")
+    fun getProfile(
+        @Header("Authorization") token: String?
+    ): Response<User>
 }
 
 
