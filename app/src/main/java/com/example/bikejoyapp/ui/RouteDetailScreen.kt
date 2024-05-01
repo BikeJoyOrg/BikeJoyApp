@@ -53,6 +53,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
 import com.example.bikejoyapp.data.Comentario
+import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
@@ -93,9 +94,16 @@ fun RouteDetailScreen(
     routesViewModel: RoutesViewModel,
     mainViewModel: MainViewModel,
     route: RutaUsuari,
-    userHasCompletedRoute: Boolean,
+    rutaCompletada: CompletedRoute?,
     navegationviewmodel: NavigationViewModel
 ) {
+    val userHasCompletedRoute = rutaCompletada != null
+
+    if (userHasCompletedRoute && rutaCompletada!!.rated) {
+        val isRated = rutaCompletada?.rated ?: false
+        routesViewModel.setRatingSent(isRated)
+    }
+
     val fixedRating by routesViewModel.fixedRating.observeAsState(0)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(

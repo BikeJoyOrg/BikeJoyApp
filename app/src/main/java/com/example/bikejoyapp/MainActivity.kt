@@ -200,6 +200,7 @@ fun MyAppContent(
         navController.currentBackStackEntryAsState().value?.destination?.route
 
     val user by LoggedUser.user.observeAsState()
+    //SharedPrefUtils.removeToken()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -324,11 +325,10 @@ fun MyAppContent(
                     RegisterScreen(userViewModel, mainViewModel)
                 }
                 composable (route = MyAppRoute.RouteDetail.route) {
-                    val userHasCompletedRoute = userViewModel.completedRoutes.value?.any { it.ruta_id == mainViewModel.selectedRoute?.RuteId }
+                    val rutasCompletadas = userViewModel.completedRoutes.value
+                    val rutaCompletada = rutasCompletadas?.find { it.ruta_id == mainViewModel.selectedRoute?.RuteId }
                     mainViewModel.selectedRoute?.let { it1 ->
-                        if (userHasCompletedRoute != null) {
-                            RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute, navigationViewModel)
-                        }
+                            RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, rutaCompletada, navigationViewModel)
                     }
                 }
                 composable(
