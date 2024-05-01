@@ -42,58 +42,52 @@ class UserViewModel : ViewModel() {
         .create(ApiRetrofit::class.java)
 
     suspend fun login(username: String, password: String): String {
-        var result: String
-        val response: Response<LoginResponse> = retrofit.login(username, password)
+        var result = ""
 
-        if (response.isSuccessful) {
-            val responseBody = response.body()
-            val token = responseBody?.token
-            val user = responseBody?.user
+        try {
+            val response: Response<LoginResponse> = retrofit.login(username, password)
 
-            LoggedUser.setLoggedUser(user)
-            SharedPrefUtils.setToken(token)
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                val token = responseBody?.token
+                val user = responseBody?.user
 
+                LoggedUser.setLoggedUser(user)
+                SharedPrefUtils.setToken(token)
 
-            result = "Success"
-        } else {
-            val errorBody = response.errorBody()!!.string()
-            val jsonObject = JSONObject(errorBody)
+                result = "Success"
+            } else {
 
-            result = jsonObject.getString("error")
+                val errorBody = response.errorBody()!!.string()
+                val jsonObject = JSONObject(errorBody)
+
+                result = jsonObject.getString("error")
+                println("Error: $result")
+            }
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
         }
+
         return result
     }
 
     suspend fun register(username: String, email: String, password1: String, password2: String): String {
-        var result: String
-        val response = retrofit.register(username, email, password1, password2)
-        if (response.isSuccessful) {
-            result = "Success"
-        } else {
-            val errorBody = response.errorBody()!!.string()
-            val jsonObject = JSONObject(errorBody)
-            result = jsonObject.getString("error")
-            println("Error: $result")
-        }
-        return result
-    }
-
-    fun getCompletedRoutes() {
-        viewModelScope.launch {
-            try {
-                val token = SharedPrefUtils.getToken()
-                if (token != null) {
-                    val response = retrofit.getCompletedRoutes("Token $token")
-                    if (response.isSuccessful && response.body() != null) {
-                        _completedRoutes.postValue(response.body())
-                    } else {
-                        Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("API Exception", "Error occurred: ${e.message}")
+        var result = ""
+        try {
+            val response = retrofit.register(username, email, password1, password2)
+            if (response.isSuccessful) {
+                result = "Success"
+            } else {
+                val errorBody = response.errorBody()!!.string()
+                val jsonObject = JSONObject(errorBody)
+                result = jsonObject.getString("error")
+                println("Error: $result")
             }
         }
+        catch (e: Exception) {
+            println("Error: ${e.message}")
+        }
+        return result
     }
 
     suspend fun logout(token: String?): String {
@@ -112,5 +106,37 @@ class UserViewModel : ViewModel() {
             }
         }
         return result
+    }
+
+    fun getProfile(token: String?) {
+        val response = retrofit.getProfile("Token $token")
+        if(response.isSuccessful) {
+            LoggedUser.setLoggedUser(response.body())
+        } else {
+            val errorBody = response.errorBody()!!.string()
+            val jsonObject = JSONObject(errorBody)
+            val result = jsonObject.getString("error")
+            if (result == "Invalid token") {
+                SharedPrefUtils.removeToken()
+            }
+        }
+    }
+
+    fun getCompletedRoutes() {
+        viewModelScope.launch {
+            try {
+                val token = SharedPrefUtils.getToken()
+                if (token != null) {
+                    val response = retrofit.getCompletedRoutes("Token $token")
+                    if (response.isSuccessful && response.body() != null) {
+                        _completedRoutes.postValue(response.body())
+                    } else {
+                        Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("API Exception", "Error occurred: ${e.message}")
+            }
+        }
     }
 }
