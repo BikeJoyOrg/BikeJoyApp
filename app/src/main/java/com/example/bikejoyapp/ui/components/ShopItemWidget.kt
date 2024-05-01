@@ -147,10 +147,10 @@ fun ShopItemWidget(
                 modifier = Modifier
                     .padding(horizontal = 24.dp, vertical = 16.dp)
                     .clip(RoundedCornerShape(50)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color(rgb(235, 235, 235)),
-                        contentColor = Color.Black
-                    ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color(rgb(235, 235, 235)),
+                    contentColor = Color.Black
+                ),
                 contentPadding = PaddingValues(
                     horizontal = 24.dp,
                     vertical = 10.dp

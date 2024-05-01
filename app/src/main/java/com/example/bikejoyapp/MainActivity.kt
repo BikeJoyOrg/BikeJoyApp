@@ -304,7 +304,7 @@ fun MyAppContent(
                     AchievementScreen(achievementViewModel)
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel, mainViewModel)
+                    ShopScreen(shopViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen(mascotesViewModel, mainViewModel)
