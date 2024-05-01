@@ -83,12 +83,13 @@ fun ProfileScreen() {
         val level = "LEVEL X"
         Text(level, modifier = Modifier.align(Alignment.CenterHorizontally))
 
+        val size = 40.dp
         Row() {
             for (i in 1..4) {
                 Box(
                     modifier = Modifier
-                        .padding(start = 40.dp, end = 40.dp, top = 16.dp)
-                        .size(30.dp)
+                        .padding(start = 30.dp, end = 25.dp, top = 16.dp)
+                        .size(size)
                 ) {
                     Button(onClick = {}) {
 
@@ -97,7 +98,7 @@ fun ProfileScreen() {
                         painter = painterResource(id = R.drawable.avatar_death),
                         contentDescription = "Profile picture",
                         modifier = Modifier
-                            .size(21.dp)
+                            .size(size.times(0.7f))
                             .align(Alignment.Center) // Esto hace que la imagen sea redonda
                     )
                 }
