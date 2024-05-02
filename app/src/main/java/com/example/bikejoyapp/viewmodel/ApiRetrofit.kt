@@ -9,6 +9,7 @@ import com.example.bikejoyapp.data.RouteResponse
 import com.example.bikejoyapp.data.RutaCompletada
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.data.User
+import com.example.bikejoyapp.data.UserResponse
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import retrofit2.http.Body
@@ -86,10 +87,10 @@ interface ApiRetrofit {
     ): Response<Void>
 
 
-    @GET("users/getProfile/")
-    fun getProfile(
-        @Header("Authorization") token: String?
-    ): Response<User>
+    @GET("users/getUser/")
+    suspend fun getProfile(
+        @Header("Authorization") token: String,
+    ): Response<UserResponse>
 
     @GET ("routes/completed-routes/")
     suspend fun getCompletedRoutes(

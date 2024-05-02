@@ -2,6 +2,7 @@ package com.example.bikejoyapp.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,12 +18,15 @@ import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.SharedPrefUtils
+import com.example.bikejoyapp.data.UserResponse
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import retrofit2.Response
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
 
@@ -30,16 +34,23 @@ class UserViewModel : ViewModel() {
         ignoreUnknownKeys = true
     }
 
-    private val _completedRoutes = MutableLiveData<List<CompletedRoute>>()
-    val completedRoutes: LiveData<List<CompletedRoute>> = _completedRoutes
-
-
     @OptIn(ExperimentalSerializationApi::class)
     private val retrofit = Retrofit.Builder()
         .baseUrl("http://nattech.fib.upc.edu:40360/")
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
         .create(ApiRetrofit::class.java)
+
+    private val _completedRoutes = MutableLiveData<List<CompletedRoute>>()
+    val completedRoutes: LiveData<List<CompletedRoute>> = _completedRoutes
+
+    init {
+        val token = SharedPrefUtils.getToken()
+        if (token != null) {
+            getCompletedRoutes()
+            viewModelScope.launch { getProfile(token) }
+        }
+    }
 
     suspend fun login(username: String, password: String): String {
         var result = ""
@@ -108,10 +119,10 @@ class UserViewModel : ViewModel() {
         return result
     }
 
-    fun getProfile(token: String?) {
-        val response = retrofit.getProfile("Token $token")
+    suspend fun getProfile(token: String) {
+        val response: Response<UserResponse> = retrofit.getProfile("Token $token")
         if(response.isSuccessful) {
-            LoggedUser.setLoggedUser(response.body())
+            LoggedUser.setLoggedUser(response.body()?.user)
         } else {
             val errorBody = response.errorBody()!!.string()
             val jsonObject = JSONObject(errorBody)
