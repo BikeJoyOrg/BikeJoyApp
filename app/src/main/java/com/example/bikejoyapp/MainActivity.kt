@@ -87,6 +87,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.ui.RankingScreen
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 
@@ -300,7 +301,8 @@ fun MyAppContent(
                     HomeScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
-                    AchievementScreen(achievementViewModel)
+                    //AchievementScreen(achievementViewModel)
+                    RankingScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen(shopViewModel, mainViewModel)
