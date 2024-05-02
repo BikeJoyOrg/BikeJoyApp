@@ -4,13 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class User(
-    var username: String?,
-    var coins: Int?,
-    var distance: Int?,
-    var xp: Int?,
-    var monthlyDistance: Int?,
-    var weeklyDistance: Int?,
-    var dailyDistance: Int?,
+    var username: String,
+    var coins: Int,
+    var distance: Int,
+    var xp: Int,
+    var monthlyDistance: Int,
+    var weeklyDistance: Int,
+    var dailyDistance: Int,
 )
 
 @Serializable

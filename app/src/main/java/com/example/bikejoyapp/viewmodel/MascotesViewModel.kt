@@ -18,9 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
 
-private val json = Json {
-    ignoreUnknownKeys = true
-}
+
 
 class MascotesViewModel: ViewModel() {
     private val _pets = MutableLiveData<List<Mascota>>(emptyList())
@@ -28,6 +26,9 @@ class MascotesViewModel: ViewModel() {
     private val _petsAconseguides = MutableLiveData<List<MascotaAconseguida>>(emptyList())
     val petsAconseguides: MutableLiveData<List<MascotaAconseguida>> = _petsAconseguides
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
 
     @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()

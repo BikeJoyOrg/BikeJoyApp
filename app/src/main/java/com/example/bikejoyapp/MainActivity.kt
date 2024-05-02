@@ -38,7 +38,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
@@ -69,7 +68,6 @@ import com.example.bikejoyapp.ui.RegisterScreen
 import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
-import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -88,6 +86,8 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.ui.RankingScreen
+import com.example.bikejoyapp.ui.components.EstacioBicingWidget
+import com.example.bikejoyapp.viewmodel.PerfilViewModel
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 
@@ -134,9 +134,7 @@ class MainActivity : ComponentActivity() {
         }
         val userViewModel: UserViewModel by viewModels()
 
-        /*if(SharedPrefUtils.getToken() != null) {
-            userViewModel.getProfile(SharedPrefUtils.getToken()!!)
-        }*/
+        val perfilViewModel: PerfilViewModel by viewModels()
 
         val achievementViewModel: AchievementViewModel by viewModels()
 
@@ -172,7 +170,8 @@ class MainActivity : ComponentActivity() {
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
                     userViewModel = userViewModel,
-                    mascotesViewModel = mascotesViewModel
+                    mascotesViewModel = mascotesViewModel,
+                    perfilViewModel = perfilViewModel
                 )
             }
         }
@@ -193,6 +192,7 @@ fun MyAppContent(
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel,
+    perfilViewModel: PerfilViewModel,
     mascotesViewModel: MascotesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
@@ -211,7 +211,7 @@ fun MyAppContent(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = stringResource(id = R.string.app_name),
+                                text = currentRoute ?: "BikeJoy",
                                 style = MaterialTheme.typography.titleMedium
                             )
                         },
@@ -222,7 +222,7 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
+                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
                                     Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
                                 }
@@ -299,14 +299,14 @@ fun MyAppContent(
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen(userViewModel, mainViewModel)
+                    HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
                     //AchievementScreen(achievementViewModel)
                     RankingScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel, mainViewModel)
+                    ShopScreen(shopViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
                     PetScreen(mascotesViewModel, mainViewModel)
@@ -332,12 +332,6 @@ fun MyAppContent(
                     mainViewModel.selectedRoute?.let { it1 ->
                             RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, rutaCompletada, navigationViewModel)
                     }
-                }
-                composable(
-                    route = MyAppRoute.Item.route,
-                    arguments = listOf(navArgument("itemId") { type = NavType.StringType })
-                ) {
-                    ShopItemWidget(navController, mainViewModel, shopViewModel)
                 }
             }
         }
