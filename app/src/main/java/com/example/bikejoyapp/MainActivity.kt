@@ -38,7 +38,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
@@ -69,7 +68,6 @@ import com.example.bikejoyapp.ui.RegisterScreen
 import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
-import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -87,6 +85,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.viewmodel.PerfilViewModel
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
@@ -221,7 +220,7 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Item.route || currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
+                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
                                     Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
                                 }
@@ -327,12 +326,6 @@ fun MyAppContent(
                 composable (route = MyAppRoute.RouteDetail.route) {
                     val userHasCompletedRoute = true
                     mainViewModel.selectedRoute?.let { it1 -> RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, userHasCompletedRoute, navigationViewModel) }
-                }
-                composable(
-                    route = MyAppRoute.Item.route,
-                    arguments = listOf(navArgument("itemId") { type = NavType.StringType })
-                ) {
-                    ShopItemWidget(navController, mainViewModel, shopViewModel)
                 }
             }
         }

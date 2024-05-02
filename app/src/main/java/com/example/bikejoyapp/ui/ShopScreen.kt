@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color.rgb
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,11 +31,17 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,7 +88,9 @@ fun ShopScreen(shopViewModel: ShopViewModel) {
     LaunchedEffect(Unit) {
         shopViewModel.getStoreData()
     }
+    var showSnackbar by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    var snackbarMessage by remember { mutableStateOf("") }
 
     val items = shopViewModel.items.value ?: emptyList()
     val showDialog = remember { mutableStateOf(false) }
@@ -115,6 +124,18 @@ fun ShopScreen(shopViewModel: ShopViewModel) {
             modifier = Modifier.align(Alignment.TopCenter),
             state = pullToRefreshState,
         )
+        if (showSnackbar) {
+            Snackbar(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(6.dp),
+                containerColor = Color.White,
+                contentColor = Color.Black,
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Text(snackbarMessage)
+            }
+        }
     }
     if (showDialog.value) {
         selectedItem.value?.let {
@@ -123,7 +144,11 @@ fun ShopScreen(shopViewModel: ShopViewModel) {
                 onDismiss = { showDialog.value = false },
                 onBuy = {
                     coroutineScope.launch {
-                        shopViewModel.buyItem(it.id)
+                        snackbarMessage = shopViewModel.buyItem(it.id)
+                        showSnackbar = true
+                        delay(2000)
+                        showSnackbar = false
+
                     }
                     showDialog.value = false
                 }
