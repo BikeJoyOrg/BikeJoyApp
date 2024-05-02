@@ -55,6 +55,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -272,45 +273,71 @@ fun ItemCard(index: Int, items: List<Item>, onItemClick: (Item) -> Unit) {
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            OutlinedCard(
-                modifier = Modifier
-                    .padding(8.dp, 8.dp, 8.dp, bottom = 0.dp)
-                    .fillMaxWidth()
-                    .height(150.dp),
-                border = BorderStroke(1.dp, Color.Gray)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(item.image ?: "https://pes-bikejoy.s3.amazonaws.com/items/default.jpg")
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Item Image",
+                OutlinedCard(
                     modifier = Modifier
-                        .height(150.dp)
-                        .fillMaxWidth(),
-                    contentScale = ContentScale.Crop
-                )
+                        .padding(8.dp, 8.dp, 8.dp, bottom = 0.dp)
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    border = BorderStroke(1.dp, Color.Gray)
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(
+                                item.image
+                                    ?: "https://pes-bikejoy.s3.amazonaws.com/items/default.jpg"
+                            )
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Item Image",
+                        modifier = Modifier
+                            .height(150.dp)
+                            .fillMaxWidth(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        text = item.game_currency_price.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                        contentDescription = "coin",
+                        modifier = Modifier.size(32.dp),
+                        tint = Color(0xFFD4AF37)
+                    )
+                }
             }
-            Row (
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Text(
-                    text = item.game_currency_price.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                    contentDescription = "coin",
-                    modifier = Modifier.size(32.dp),
-                    tint = Color(0xFFD4AF37)
-                )
+            if (item.stock_number < 20) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(14.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Red,
+                        disabledContentColor = Color.White,
+                    ),
+                ) {
+                    Text(
+                        text = "darrers ${item.stock_number}",
+                        modifier = Modifier.padding(4.dp),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
         }
     }
