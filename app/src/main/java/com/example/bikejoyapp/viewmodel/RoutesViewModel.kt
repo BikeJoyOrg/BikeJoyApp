@@ -106,6 +106,10 @@ class RoutesViewModel : ViewModel() {
         Log.d("Filters", "Duración cambiada a: $value")
     }
 
+    fun setRatingSent(value: Boolean) {
+        _ratingSent.value = value
+    }
+
     fun onDistanceChange(value: Float) {
         _distanceFilter.value = value
         Log.d("Filters", "Distancia cambiada a: $value")

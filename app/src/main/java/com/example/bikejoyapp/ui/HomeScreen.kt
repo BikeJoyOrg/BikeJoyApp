@@ -34,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.Card
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -59,16 +60,18 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
         Text(text = "Home")
 
         if(token != null) {
-            Button(
-                modifier = Modifier.padding(20.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        val status = userViewModel.logout(SharedPrefUtils.getToken())
-                        println("Status: $status")
+            Row {
+                Button(
+                    modifier = Modifier.padding(20.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            val status = userViewModel.logout(SharedPrefUtils.getToken())
+                            println("Status: $status")
+                        }
                     }
+                ) {
+                    Text("Logout")
                 }
-            ) {
-                Text("Logout")
             }
         }
     }

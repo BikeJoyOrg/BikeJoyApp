@@ -1,11 +1,15 @@
 package com.example.bikejoyapp.viewmodel
 
+import com.example.bikejoyapp.data.Comentario
+import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.LoginResponse
 import com.example.bikejoyapp.data.PuntsInterRuta
-import com.example.bikejoyapp.data.PuntsRuta
+import com.example.bikejoyapp.data.PuntsVisitats
 import com.example.bikejoyapp.data.RouteResponse
+import com.example.bikejoyapp.data.RutaCompletada
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.data.User
+import com.example.bikejoyapp.data.UserResponse
 import kotlinx.serialization.json.Json
 import retrofit2.Response
 import retrofit2.http.Body
@@ -14,6 +18,8 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface ApiRetrofit {
@@ -24,8 +30,9 @@ interface ApiRetrofit {
         @Query("end", encoded = true) end: String
     ):Response<RouteResponse>
 
-    @POST("rutes/")
+    @POST("addruta/")
     suspend fun postRoute(
+        @Header("Authorization") token: String,
         @Body rutaUsuari: RutaUsuari
     ):Response<RutaUsuari>
 /*
@@ -37,7 +44,7 @@ interface ApiRetrofit {
     @POST("puntsInterRuta/")
     suspend fun postPuntsInter(
         @Body puntsInterRuta: PuntsInterRuta
-    ):Response<PuntsInterRuta>
+    ):Response<Void>
 
     @FormUrlEncoded
     @POST("users/login/")
@@ -60,10 +67,35 @@ interface ApiRetrofit {
         @Header("Authorization") token: String?
     ): Response<Void>
 
-    @GET("users/getProfile/")
-    fun getProfile(
-        @Header("Authorization") token: String?
-    ): Response<User>
+    @POST("routes/completed/{rute_id}/")
+    suspend fun completedRoute(
+        @Header("Authorization") token: String,
+        @Path("rute_id") ruteid: Int,
+        @Body usuarirutacompletada: RutaCompletada
+    ): Response<Void>
+
+    @POST("routes/add_punt_visitat/")
+    suspend fun visitedPoint(
+        @Header("Authorization") token: String,
+        @Body puntsRuta: PuntsVisitats
+    ): Response<Void>
+
+    @PUT("users/updateStats/")
+    suspend fun updateStats(
+        @Header("Authorization") token: String,
+        @Body stats: User
+    ): Response<Void>
+
+
+    @GET("users/getUser/")
+    suspend fun getProfile(
+        @Header("Authorization") token: String,
+    ): Response<UserResponse>
+
+    @GET ("routes/completed-routes/")
+    suspend fun getCompletedRoutes(
+        @Header("Authorization") token: String,
+    ): Response<List<CompletedRoute>>
 }
 
 

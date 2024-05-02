@@ -3,6 +3,7 @@ package com.example.bikejoyapp.ui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -83,7 +84,10 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.clustering.Clustering
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -122,7 +126,7 @@ fun MapScreen(
 
 
     val selectedPlace by navigationViewModel.selectedPlace.observeAsState()
-    val consultarOpcio by navigationViewModel.consultarOpcio.collectAsState()
+    val consultarOpcio by navigationViewModel.consultarOpcio.observeAsState()
     val isNavigating by navigationViewModel.isNavigating.collectAsState()
     val PaintSearchFields by navigationViewModel.PaintSearchFields.collectAsState()
     val navigationTime by navigationViewModel.navigationTime.collectAsState()
@@ -280,7 +284,7 @@ fun MapScreen(
                 )
                 // Fi estacions
 
-                if (consultarOpcio) {
+                if (consultarOpcio == true) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
 
@@ -308,6 +312,7 @@ fun MapScreen(
                         }
                     } else {
                         if (primer_cop) {
+                            Log.d("aris", "Primer cop")
                             val cameraPosition = CameraPosition.Builder()
                                 .target(ruta?.first() ?: deviceLocation.value)
                                 .zoom(15f)
@@ -357,7 +362,7 @@ fun MapScreen(
                             modifier = Modifier.size(ButtonDefaults.IconSize)
                         )
                         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        if (consultarOpcio){
+                        if (consultarOpcio == true){
                             Text(
                                 text = "Iniciar navegació",
                             )
@@ -518,8 +523,12 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
                     .fillMaxWidth()
                     .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
-                    TextButton(onClick = { navigationViewModel.stopNavigation(true)
-                        mainViewModel.showBottomBar() }) {
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(true)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
                         Text("Acceptar")
                     }
                 }
@@ -553,8 +562,12 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
                     .fillMaxWidth()
                     .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
-                    TextButton(onClick = { navigationViewModel.stopNavigation(false)
-                        mainViewModel.showBottomBar() }) {
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(false)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
                         Text("Finalitzar")
                     }
                     TextButton(onClick = { navigationViewModel.continuar() }) {
@@ -592,8 +605,12 @@ fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: Main
                     .fillMaxWidth()
                     .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
-                    TextButton(onClick = { navigationViewModel.stopNavigation(false)
-                        mainViewModel.showBottomBar() }) {
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(false)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
                         Text("Finalitzar ruta")
                     }
                     TextButton(onClick = { navigationViewModel.continuar() }) {
