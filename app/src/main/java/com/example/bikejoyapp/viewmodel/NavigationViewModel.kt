@@ -402,7 +402,7 @@
             Log.d("aris", "entroactualitzarestadistiques")
             try{
                 val token = SharedPrefUtils.getToken()
-                val stats = User(null, null,_navigationKm.value.toInt(),null)
+                val stats = User(null, null,_navigationKm.value.toInt(),null, null, null, null)
                 val response = apiRetrofit.updateStats("Token $token", stats)
                 if (response.isSuccessful) {
                     Log.d("aris", "stats actualitzades")
