@@ -166,6 +166,8 @@
 
         private val _desvio = MutableLiveData<Boolean>()
         val desvio: LiveData<Boolean> = _desvio
+
+        private val puntsVisitatslliure = mutableListOf<LatLng>()
         fun PaintSearchFields() {
             _PaintSearchFields.value = true
         }
@@ -245,12 +247,21 @@
                             _desvio.value = true
                             stop = true
                         }
+                        if (lliure){
+                            if (lliureStartTime == 0L) {
+                                lliureStartTime = System.currentTimeMillis()
+                            } else if (System.currentTimeMillis() - lliureStartTime >= 15000) {
+                                // Han pasado 15 segundos desde que el usuario se desvió de la ruta
+                                puntsVisitatslliure.add(LatLng(location.latitude, location.longitude))
+                                lliureStartTime = 0L
+                            }
+                        }
                         segon = LatLng(location.latitude, location.longitude)
                     }
                 }
             }
         }
-
+        private var lliureStartTime: Long = 0
         private var desvioStartTime: Long = 0
 
         private fun isdesvio(pos: LatLng): Boolean {
@@ -295,6 +306,7 @@
                 Log.d("aris", "ruta completada")
                 _showRouteResume.value = false
                 usuariRutaCompletada(true)
+                coordfinish = null
             }
             else{
                 _avis.value = false
@@ -311,7 +323,7 @@
             _buscat.value = false
             _desvio.value = false
             _puntIntermedi.value = 0
-            //actualitzarestadistiques()
+            actualitzarestadistiques()
             Log.d("aris", _isNavigating.value.toString())
         }
 
@@ -387,13 +399,18 @@
             }
         }
         private suspend fun actualitzarestadistiques() {
-            val token = SharedPrefUtils.getToken()
-            val stats = User(null, null,_navigationKm.value.toInt(),null)
-            val response = apiRetrofit.updateStats("Token $token", stats)
-            if (response.isSuccessful) {
-                Log.d("aris", "stats actualitzades")
-            } else {
-                Log.d("aris", "stats no actualitzades")
+            Log.d("aris", "entroactualitzarestadistiques")
+            try{
+                val token = SharedPrefUtils.getToken()
+                val stats = User(null, null,_navigationKm.value.toInt(),null)
+                val response = apiRetrofit.updateStats("Token $token", stats)
+                if (response.isSuccessful) {
+                    Log.d("aris", "stats actualitzades")
+                } else {
+                    Log.d("aris", "stats no actualitzades")
+                }
+            }catch (e: Exception){
+                Log.d("aris", "error" + e.toString())
             }
         }
 
@@ -420,31 +437,39 @@
                 Log.d("aris", "error" + e.toString())
             }
             Log.d("aris", "surtusuari rutacompletada")
-            try{
-                CoroutineScope(Dispatchers.IO).launch {
-                    try{
-                        Log.d("aris", "entro a guardar putns visitats")
-                        if(_consultarOpcio.value == true){
-                            Log.d("aris", "entro a guardar putns visitats 2")
-                            for (punt in _ruta.value!!){
-                                Log.d("aris", "entro a guardar putns visitats 3")
-                                val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
-                                val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
-                                if (response.isSuccessful) {
-                                    Log.d("aris", "punt afegit")
-                                } else {
-                                    Log.d("aris", "punt no afegit")
-                                }
+            CoroutineScope(Dispatchers.IO).launch {
+                try{
+                    Log.d("aris", "entro a guardar putns visitats")
+                    if(_consultarOpcio.value == true){
+                        Log.d("aris", "entro a guardar putns visitats 2")
+                        for (punt in _ruta.value!!){
+                            Log.d("aris", "entro a guardar putns visitats 3")
+                            val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
+                            val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
+                            if (response.isSuccessful) {
+                                Log.d("aris", "punt afegit")
+                            } else {
+                                Log.d("aris", "punt no afegit")
                             }
-                            _ruta.postValue(mutableListOf())
-                            _consultarOpcio.postValue(false)
                         }
-                    }catch (e: Exception){
-                        Log.d("aris", "error" + e.toString())
+                        _ruta.postValue(mutableListOf())
+                        _consultarOpcio.postValue(false)
                     }
+                    else{
+                        for (punt in puntsVisitatslliure){
+                            Log.d("aris", "entro a guardar putns visitats 3")
+                            val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
+                            val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
+                            if (response.isSuccessful) {
+                                Log.d("aris", "punt afegit")
+                            } else {
+                                Log.d("aris", "punt no afegit")
+                            }
+                        }
+                    }
+                }catch (e: Exception){
+                    Log.d("aris", "error" + e.toString())
                 }
-            }catch (e: Exception){
-                Log.d("aris", "error" + e.toString())
             }
         }
 
