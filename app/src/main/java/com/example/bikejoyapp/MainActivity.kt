@@ -38,7 +38,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
@@ -69,7 +68,6 @@ import com.example.bikejoyapp.ui.RegisterScreen
 import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
-import com.example.bikejoyapp.ui.components.ShopItemWidget
 import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.NavigationCommand
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
@@ -81,14 +79,21 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.bikejoyapp.data.SharedPrefUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
-import com.example.bikejoyapp.ui.components.SpecificAchievementWidget
+import androidx.compose.runtime.livedata.observeAsState
+import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.ui.RankingScreen
+import com.example.bikejoyapp.ui.components.EstacioBicingWidget
+import com.example.bikejoyapp.viewmodel.PerfilViewModel
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
+    private lateinit var startDestination: String
 
     private val navigationViewModel: NavigationViewModel by viewModels {
         NavigationViewModel.Factory(placesClient, this)
@@ -119,6 +124,7 @@ class MainActivity : ComponentActivity() {
         val mainViewModel: MainViewModel by viewModels()
         val bikeLanesViewModel: BikeLanesViewModel by viewModels()
         val shopViewModel: ShopViewModel by viewModels()
+        val mascotesViewModel: MascotesViewModel by viewModels()
         val retrofit = Retrofit.Builder()
             .baseUrl("https://mi-url-base.com/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -127,7 +133,8 @@ class MainActivity : ComponentActivity() {
             retrofit.create(ApiRetrofit::class.java)
         }
         val userViewModel: UserViewModel by viewModels()
-        val userState by lazy { UserState(userViewModel) }
+
+        val perfilViewModel: PerfilViewModel by viewModels()
 
         val achievementViewModel: AchievementViewModel by viewModels()
 
@@ -135,6 +142,9 @@ class MainActivity : ComponentActivity() {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
         }
         placesClient = Places.createClient(this)
+
+        startDestination = if(SharedPrefUtils.getToken() != null) MyAppRoute.Map.route else MyAppRoute.Login.route
+
         setContent {
             BikeJoyAppTheme {
                 val navController = rememberNavController()
@@ -144,25 +154,24 @@ class MainActivity : ComponentActivity() {
                     mainViewModel.navigationCommands.collect { command ->
                         when (command) {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
-                            is NavigationCommand.ToDynamicDestination -> navController.navigate(
-                                command.destination
-                            )
-
+                            is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
                             is NavigationCommand.Back -> navController.popBackStack()
-                            else -> {}
                         }
                     }
                 }
 
                 MyAppContent(
                     navController = navController,
+                    startDestination = startDestination,
                     stationViewModel = stationViewModel,
                     mainViewModel = mainViewModel,
                     navigationViewModel = navigationViewModel,
                     shopViewModel = shopViewModel,
                     bikeLanesViewModel = bikeLanesViewModel,
                     achievementViewModel = achievementViewModel,
-                    userState = userState
+                    userViewModel = userViewModel,
+                    mascotesViewModel = mascotesViewModel,
+                    perfilViewModel = perfilViewModel
                 )
             }
         }
@@ -174,19 +183,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyAppContent(
     modifier: Modifier = Modifier,
+    startDestination: String,
     navController: NavHostController,
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    userState: UserState,
+    userViewModel: UserViewModel,
     shopViewModel: ShopViewModel,
     bikeLanesViewModel: BikeLanesViewModel,
-    achievementViewModel: AchievementViewModel
+    achievementViewModel: AchievementViewModel,
+    perfilViewModel: PerfilViewModel,
+    mascotesViewModel: MascotesViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
+
+    val user by LoggedUser.user.observeAsState()
+    //SharedPrefUtils.removeToken()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -196,7 +211,7 @@ fun MyAppContent(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = stringResource(id = R.string.app_name),
+                                text = currentRoute ?: "BikeJoy",
                                 style = MaterialTheme.typography.titleMedium
                             )
                         },
@@ -207,22 +222,14 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Item.route
-                                || currentRoute == MyAppRoute.Station.route
-                                || currentRoute == MyAppRoute.RouteDetail.route
-                                || currentRoute == MyAppRoute.Achievement.route
-                            ) {
+                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
-                                    Icon(
-                                        Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                        contentDescription = "Back",
-                                        Modifier.size(32.dp)
-                                    )
+                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
                                 }
-                            } else {
+                            }
+                            else {
                                 IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                    val iconBackground =
-                                        if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                    val iconBackground = if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                                     Box(
                                         modifier = Modifier
                                             .background(color = iconBackground, shape = CircleShape)
@@ -239,16 +246,18 @@ fun MyAppContent(
                             }
                         },
                         actions = {
-                            println("currentRoute: $currentRoute")
-                            println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("1000 ", fontSize = 20.sp)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
-                                    contentDescription = "Localized description",
-                                    modifier = Modifier.size(32.dp),
-                                    tint = Color(0xFFD4AF37)
-                                )
+                            if (user != null) {
+                                println("currentRoute: $currentRoute")
+                                println("MyAppRoute.Shop.route: ${MyAppRoute.Shop.route}")
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(user?.coins.toString(), fontSize = 20.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.dollar_minimalistic_svgrepo_com),
+                                        contentDescription = "Localized description",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = Color(0xFFD4AF37)
+                                    )
+                                }
                             }
                         },
                     )
@@ -281,39 +290,29 @@ fun MyAppContent(
                 .fillMaxSize()
         ) {
             NavHost(
-                navController = navController, startDestination = MyAppRoute.Map.route
+                navController = navController, startDestination = startDestination
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(
-                        stationViewModel,
-                        mainViewModel,
-                        navigationViewModel,
-                        bikeLanesViewModel
-                    )
+                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
-                    HomeScreen()
+                    HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
-                    AchievementScreen(achievementViewModel, mainViewModel)
-                }
-                composable(
-                    route = MyAppRoute.Achievement.route,
-                    arguments = listOf(navArgument("achievementName") { type = NavType.StringType })
-                ) {
-                    SpecificAchievementWidget(navController, mainViewModel, achievementViewModel)
+                    //AchievementScreen(achievementViewModel)
+                    RankingScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel, mainViewModel)
+                    ShopScreen(shopViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
-                    PetScreen()
+                    PetScreen(mascotesViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.GravarRuta.route) {
-                    GravarRutaScreen(GravarRutaViewModel(), mainViewModel)
+                    GravarRutaScreen(GravarRutaViewModel(),mainViewModel)
                 }
                 composable(
                     route = MyAppRoute.Station.route,
@@ -322,27 +321,17 @@ fun MyAppContent(
                     EstacioBicingWidget(navController, mainViewModel, stationViewModel)
                 }
                 composable(MyAppRoute.Login.route) {
-                    LoginScreen(userState, mainViewModel)
+                    LoginScreen(userViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Register.route) {
-                    RegisterScreen(userState, mainViewModel)
+                    RegisterScreen(userViewModel, mainViewModel)
                 }
-                composable(route = MyAppRoute.RouteDetail.route) {
-                    val userHasCompletedRoute = true
+                composable (route = MyAppRoute.RouteDetail.route) {
+                    val rutasCompletadas = userViewModel.completedRoutes.value
+                    val rutaCompletada = rutasCompletadas?.find { it.ruta_id == mainViewModel.selectedRoute?.RuteId }
                     mainViewModel.selectedRoute?.let { it1 ->
-                        RouteDetailScreen(
-                            RoutesViewModel(),
-                            mainViewModel,
-                            it1,
-                            userHasCompletedRoute
-                        )
+                            RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, rutaCompletada, navigationViewModel)
                     }
-                }
-                composable(
-                    route = MyAppRoute.Item.route,
-                    arguments = listOf(navArgument("itemId") { type = NavType.StringType })
-                ) {
-                    ShopItemWidget(navController, mainViewModel, shopViewModel)
                 }
             }
         }
@@ -369,8 +358,7 @@ fun MyAppBottomNavigation(
                     mainViewModel.navigateTo(destination.route)
                 },
                 icon = {
-                    val iconBackground =
-                        if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                    val iconBackground = if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                     Box(
                         modifier = Modifier
                             .background(color = iconBackground, shape = CircleShape)
@@ -378,7 +366,7 @@ fun MyAppBottomNavigation(
                     ) {
                         Icon(
                             painter = painterResource(
-                                id = if (index == selected) destination.selectedIcon else destination.unselectedIcon
+                                id = if (index == selected && currentRoute != MyAppRoute.Account.route) destination.selectedIcon else destination.unselectedIcon
                             ),
                             contentDescription = stringResource(id = destination.iconTextId),
                             tint = if (index == selected) Color.Unspecified else MaterialTheme.colorScheme.onSurface
@@ -386,7 +374,7 @@ fun MyAppBottomNavigation(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color.Transparent, // Esto intenta hacer el indicador transparente
+                    indicatorColor = Color.Transparent,
                     selectedIconColor = Color.Transparent,
                     unselectedIconColor = Color.Transparent,
                     selectedTextColor = Color.Transparent,

@@ -58,7 +58,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,7 +77,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    //Map
+    //Mapa
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     //Location
@@ -132,6 +131,10 @@ dependencies {
     implementation(libs.maps.compose.utils)
     implementation(libs.maps.compose.widgets)
     implementation(platform(libs.androidx.compose.bom.v20240401))
+    implementation(libs.coil.compose)
+    implementation (libs.accompanist.permissions)
+
+    implementation(libs.androidx.palette)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {
@@ -139,6 +142,3 @@ fun gradleLocalProperties(rootDir: File): Properties {
     localProperties.load(File(rootDir, "local.properties").inputStream())
     return localProperties
 }
-//hola
-
-

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -77,79 +78,91 @@ fun  GravarRutaScreen(viewModel: GravarRutaViewModel,mainViewModel: MainViewMode
 
     val distanciaRuta: Double by viewModel.distanciaRuta.observeAsState(0.0)
     val tempsRuta: Int by viewModel.tempsRuta.observeAsState(0)
+    val isLoading: Boolean by viewModel.isLoading.observeAsState(false)
+
     if  (showDialog) {
         Dialog(onDismissRequest = { /*TODO*/ }) {
-            Card(
-                modifier = Modifier
-                    .width(500.dp)
-                    .height(400.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Column(
+            if (isLoading){
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            }
+            else {
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
+                        .width(500.dp)
+                        .height(400.dp),
+                    shape = RoundedCornerShape(16.dp),
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ){Text(
-                        text = "Introdueix nom de la ruta",
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-
-                    )}
-                    TextField(
-                        value = nomRuta,
-                        onValueChange = { viewModel.assignaNom(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(fontSize = 20.sp),
-                        maxLines = 1
-                    )
-                    Spacer(modifier = Modifier.height(30.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        ){
-                        Text(
-                            text = "Descrpció de la ruta",
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                        ){Text(
+                            text = "Introdueix nom de la ruta",
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
 
+                        )}
+                        TextField(
+                            value = nomRuta,
+                            onValueChange = { viewModel.assignaNom(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = TextStyle(fontSize = 20.sp),
+                            maxLines = 1
                         )
-                    }
-                    TextField(
-                        value = descRuta,
-                        onValueChange = { viewModel.assignaDesc(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(fontSize = 20.sp),
-                        maxLines = 3
-                        )
-                    Spacer(modifier = Modifier.weight(1f))
-                    TempsDistancia_vertical(distanciaRuta = distanciaRuta, tempsRuta = tempsRuta)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth().weight(1f),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        TextButton(
-                            onClick = { viewModel.guardarRuta(mainViewModel) },
-                        ) {
-                            Text("Guardar", fontSize = 15.sp)
+                        Spacer(modifier = Modifier.height(30.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                        ){
+                            Text(
+                                text = "Descrpció de la ruta",
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+
+                            )
                         }
-                        TextButton(
-                                onClick = { viewModel.dialogGuardarRutaDismiss() },
+                        TextField(
+                            value = descRuta,
+                            onValueChange = { viewModel.assignaDesc(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = TextStyle(fontSize = 20.sp),
+                            maxLines = 3
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        TempsDistancia_vertical(distanciaRuta = distanciaRuta, tempsRuta = tempsRuta)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.Bottom
                         ) {
-                            Text("Cancel·lar", fontSize = 15.sp)
+                            TextButton(
+                                onClick = { viewModel.guardarRuta(mainViewModel) },
+                            ) {
+                                Text("Guardar", fontSize = 15.sp)
+                            }
+                            TextButton(
+                                onClick = { viewModel.dialogGuardarRutaDismiss() },
+                            ) {
+                                Text("Cancel·lar", fontSize = 15.sp)
+                            }
                         }
                     }
                 }
+
             }
+
         }
     }
 

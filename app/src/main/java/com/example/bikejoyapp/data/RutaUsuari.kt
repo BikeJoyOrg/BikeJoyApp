@@ -1,5 +1,9 @@
 package com.example.bikejoyapp.data
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class RutaUsuari(
     val RuteId: Int?,
     val RuteName: String?,
@@ -9,4 +13,5 @@ data class RutaUsuari(
     val RuteRating:Int,
     val PuntIniciLat: Float,
     val PuntIniciLong: Float,
+    val creador: Int?,
 )
