@@ -9,7 +9,11 @@
     import androidx.lifecycle.ViewModel
     import androidx.lifecycle.ViewModelProvider
     import androidx.lifecycle.viewModelScope
+    import com.example.bikejoyapp.data.PuntsVisitats
     import com.example.bikejoyapp.data.RouteResponse
+    import com.example.bikejoyapp.data.RutaCompletada
+    import com.example.bikejoyapp.data.SharedPrefUtils
+    import com.example.bikejoyapp.data.User
     import com.google.android.gms.location.LocationCallback
     import com.google.android.gms.location.LocationRequest
     import com.google.android.gms.location.LocationResult
@@ -34,7 +38,10 @@
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
 
-    import com.google.android.gms.location.*
+    import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+    import kotlinx.serialization.ExperimentalSerializationApi
+    import kotlinx.serialization.json.Json
+    import okhttp3.MediaType.Companion.toMediaType
 
 
     open class NavigationViewModel(private val placesClient: PlacesClient, private val context: Context) : ViewModel()  {
@@ -123,8 +130,8 @@
             return result[0].toDouble()
         }
 
-        private val _consultarOpcio = MutableStateFlow(false)
-        val consultarOpcio: StateFlow<Boolean> = _consultarOpcio
+        private val _consultarOpcio = MutableLiveData<Boolean>(false)
+        val consultarOpcio: LiveData<Boolean> = _consultarOpcio
 
         private val _isNavigating = MutableStateFlow(false)
         val isNavigating: StateFlow<Boolean> = _isNavigating
@@ -193,7 +200,7 @@
                 null
             )
             _avis.value = false
-            if(_consultarOpcio.value && _ruta.value?.size!! > 1){
+            if(_consultarOpcio.value == true && _ruta.value?.size!! > 1){
                 _puntIntermedi.value = 1
                 _puntIntermedi2.value = 2
             }
@@ -219,7 +226,6 @@
                         primer = pos
                     }
                     else if( _isNavigating.value && !lliure && distanceBetween(pos,coordfinish!!) <= 50.0){
-                        Log.d("aris", "he arribat")
                         if (!_avis.value!!) {
                             rutacompleta()
                             stop = true
@@ -283,13 +289,20 @@
                 primer = segon
             }
         }
-        fun stopNavigation(rutaCompletada: Boolean) {
+        suspend fun stopNavigation(rutaCompletada: Boolean) {
             Log.d("aris", "final")
+            if (rutaCompletada) {
+                Log.d("aris", "ruta completada")
+                _showRouteResume.value = false
+                usuariRutaCompletada(true)
+            }
+            else{
+                _avis.value = false
+            }
             _PaintSearchFields.value = true
             _isNavigating.value = false
             _selectedPlace.value = null
-            _ruta.value = mutableListOf()
-            _consultarOpcio.value = false
+
             _searchResults.value = emptyList()
             _searchQuery.value = ""
             _primer_cop.value = true
@@ -298,14 +311,10 @@
             _buscat.value = false
             _desvio.value = false
             _puntIntermedi.value = 0
-            if (rutaCompletada) {
-                _showRouteResume.value = false
-            }
-            else{
-                _avis.value = false
-            }
+            //actualitzarestadistiques()
             Log.d("aris", _isNavigating.value.toString())
         }
+
 
         open fun assignaPuntBusqueda(place: Place, value: LatLng) {
             _selectedPlace.value = place
@@ -366,7 +375,9 @@
                 _desvio.value = false
             }
         }
-        fun mostrarRuta(puntos: List<LatLng>){
+        private var ruta_id: Int? = null
+        fun mostrarRuta(puntos: List<LatLng>, rute_id: Int){
+            ruta_id = rute_id
             _ruta.value = puntos.toMutableList()
             coordfinish = puntos.last()
             _consultarOpcio.value = true
@@ -375,4 +386,77 @@
                 _puntIntermedi2.value = 2
             }
         }
+        private suspend fun actualitzarestadistiques() {
+            val token = SharedPrefUtils.getToken()
+            val stats = User(null, null,_navigationKm.value.toInt(),null)
+            val response = apiRetrofit.updateStats("Token $token", stats)
+            if (response.isSuccessful) {
+                Log.d("aris", "stats actualitzades")
+            } else {
+                Log.d("aris", "stats no actualitzades")
+            }
+        }
+
+        private suspend fun usuariRutaCompletada(b: Boolean) {
+            Log.d("aris", "entrousuari rutacompletada")
+            Log.d("aris", ruta_id.toString())
+            val token = SharedPrefUtils.getToken()
+            try{
+                val usaurairutacompletada =
+                    ruta_id?.let { RutaCompletada(null, it, null, _navigationTime.value/60) }
+                Log.d("aris", "Token $token")
+                val response = apiRetrofit.completedRoute("Token $token", ruta_id!!, usaurairutacompletada!!)
+                Log.d("aris", "hola2")
+                if (response.isSuccessful) {
+                    Log.d("aris", "ruta completada")
+                } else {
+                    Log.d("aris", "Error al guardar la ruta " + response.body().toString())
+                    Log.d("aris", response.code().toString())
+                    response.errorBody()?.let {
+                        Log.d("aris","Error body: ${it.string()}")
+                    }
+                }
+            }catch (e: Exception){
+                Log.d("aris", "error" + e.toString())
+            }
+            Log.d("aris", "surtusuari rutacompletada")
+            try{
+                CoroutineScope(Dispatchers.IO).launch {
+                    try{
+                        Log.d("aris", "entro a guardar putns visitats")
+                        if(_consultarOpcio.value == true){
+                            Log.d("aris", "entro a guardar putns visitats 2")
+                            for (punt in _ruta.value!!){
+                                Log.d("aris", "entro a guardar putns visitats 3")
+                                val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
+                                val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
+                                if (response.isSuccessful) {
+                                    Log.d("aris", "punt afegit")
+                                } else {
+                                    Log.d("aris", "punt no afegit")
+                                }
+                            }
+                            _ruta.postValue(mutableListOf())
+                            _consultarOpcio.postValue(false)
+                        }
+                    }catch (e: Exception){
+                        Log.d("aris", "error" + e.toString())
+                    }
+                }
+            }catch (e: Exception){
+                Log.d("aris", "error" + e.toString())
+            }
+        }
+
+        private val json = Json {
+            ignoreUnknownKeys = true
+        }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        private val apiRetrofit = Retrofit.Builder()
+            .baseUrl("http://nattech.fib.upc.edu:40360/")
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(ApiRetrofit::class.java)
+
     }
