@@ -126,9 +126,13 @@ class UserViewModel : ViewModel() {
         if(response.isSuccessful) {
             LoggedUser.setLoggedUser(response.body()?.user)
         } else {
-            val errorBody = response.errorBody()!!.string()
-            val jsonObject = JSONObject(errorBody)
-            val result = jsonObject.getString("error")
+            val errorBody = response.errorBody()?.string()
+            val jsonObject = errorBody?.let { JSONObject(it) }
+            val result = if (jsonObject?.has("error") == true) {
+                jsonObject.getString("error")
+            } else {
+                "Unknown error"
+            }
             if (result == "Invalid token") {
                 SharedPrefUtils.removeToken()
             }

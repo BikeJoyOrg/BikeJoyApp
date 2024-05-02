@@ -332,7 +332,7 @@ fun ItemCard(index: Int, items: List<Item>, onItemClick: (Item) -> Unit) {
                     ),
                 ) {
                     Text(
-                        text = "darrers ${item.stock_number}",
+                        text = "${item.stock_number} restants",
                         modifier = Modifier.padding(4.dp),
                         color = Color.White,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)

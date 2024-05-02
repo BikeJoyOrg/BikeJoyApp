@@ -323,7 +323,7 @@
             _buscat.value = false
             _desvio.value = false
             _puntIntermedi.value = 0
-            actualitzarestadistiques()
+            //actualitzarestadistiques()
             Log.d("aris", _isNavigating.value.toString())
         }
 
@@ -398,6 +398,7 @@
                 _puntIntermedi2.value = 2
             }
         }
+        /*
         private suspend fun actualitzarestadistiques() {
             Log.d("aris", "entroactualitzarestadistiques")
             try{
@@ -412,7 +413,7 @@
             }catch (e: Exception){
                 Log.d("aris", "error" + e.toString())
             }
-        }
+        } */
 
         private suspend fun usuariRutaCompletada(b: Boolean) {
             Log.d("aris", "entrousuari rutacompletada")

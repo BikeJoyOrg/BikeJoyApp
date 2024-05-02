@@ -25,13 +25,13 @@ interface ApiService {
         @Path("id") stationId: String
     ): Response<StationStatusResponse>
 
-    @POST("items/purchase/{id}/")
+    @POST("items/{id}/purchase/")
     suspend fun buyItem(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Void>
 
-    @GET("user/purchases/{id}")
+    @GET("user/{id}/purchases")
     suspend fun getPurchasedItems(
         @Path("id") username: String
     ): Response<ItemPurchasedResponse>
