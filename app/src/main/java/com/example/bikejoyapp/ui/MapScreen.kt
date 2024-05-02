@@ -64,7 +64,9 @@ import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
+import com.example.bikejoyapp.viewmodel.UserViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -81,7 +83,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.clustering.Clustering
 import kotlinx.coroutines.CoroutineScope
@@ -111,7 +112,9 @@ fun MapScreen(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    bikeLanesViewModel: BikeLanesViewModel
+    bikeLanesViewModel: BikeLanesViewModel,
+    mascotesViewModel: MascotesViewModel,
+    userViewModel: UserViewModel
 ) {
     val context = LocalContext.current
     val searchQuery by navigationViewModel.searchQuery.observeAsState("")
@@ -158,13 +161,13 @@ fun MapScreen(
     }
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
     if (avis){
-        Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+        Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel, mascotesViewModel,userViewModel)
     }
     if (showRouteResume){
-        Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+        Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel, mascotesViewModel,userViewModel)
     }
     if(desvio){
-        Dialog_desvio(navigationViewModel, mainViewModel)
+        Dialog_desvio(navigationViewModel, mainViewModel,mascotesViewModel,userViewModel)
     }
 
     val clickState = remember { mutableStateOf(false) }
@@ -491,7 +494,7 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
 }
 
 @Composable
-fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card (
             modifier = Modifier
@@ -525,7 +528,7 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
                     horizontalArrangement = Arrangement.Center,){
                     TextButton(onClick = {
                         CoroutineScope(Dispatchers.Main).launch {
-                            navigationViewModel.stopNavigation(true)
+                            navigationViewModel.stopNavigation(true,mascotesViewModel, userViewModel)
                             mainViewModel.showBottomBar()
                         }
                     }) {
@@ -537,7 +540,7 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
     }
 }
 @Composable
-fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card (
             modifier = Modifier
@@ -564,7 +567,7 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
                     horizontalArrangement = Arrangement.Center,){
                     TextButton(onClick = {
                         CoroutineScope(Dispatchers.Main).launch {
-                            navigationViewModel.stopNavigation(false)
+                            navigationViewModel.stopNavigation(false,mascotesViewModel, userViewModel)
                             mainViewModel.showBottomBar()
                         }
                     }) {
@@ -580,7 +583,7 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
     }
 }
 @Composable
-fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card (
             modifier = Modifier
@@ -607,7 +610,7 @@ fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: Main
                     horizontalArrangement = Arrangement.Center,){
                     TextButton(onClick = {
                         CoroutineScope(Dispatchers.Main).launch {
-                            navigationViewModel.stopNavigation(false)
+                            navigationViewModel.stopNavigation(false,mascotesViewModel, userViewModel)
                             mainViewModel.showBottomBar()
                         }
                     }) {

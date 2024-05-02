@@ -9,6 +9,7 @@
     import androidx.lifecycle.ViewModel
     import androidx.lifecycle.ViewModelProvider
     import androidx.lifecycle.viewModelScope
+    import com.example.bikejoyapp.data.LoggedUser
     import com.example.bikejoyapp.data.PuntsVisitats
     import com.example.bikejoyapp.data.RouteResponse
     import com.example.bikejoyapp.data.RutaCompletada
@@ -139,8 +140,8 @@
         private val _navigationTime = MutableStateFlow(0) // Tiempo en segundos
         val navigationTime: StateFlow<Int> = _navigationTime
 
-        private val _navigationKm = MutableStateFlow(0.0)
-        val navigationKm: MutableStateFlow<Double> = _navigationKm
+        private val _navigationM = MutableStateFlow(0.0)
+        val navigationKm: MutableStateFlow<Double> = _navigationM
 
         private val _PaintSearchFields = MutableStateFlow(true)
         val PaintSearchFields: StateFlow<Boolean> = _PaintSearchFields
@@ -195,7 +196,7 @@
             _PaintSearchFields.value = false
             _isNavigating.value = true
             _navigationTime.value = 0
-            _navigationKm.value = 0.0
+            _navigationM.value = 0.0
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
                 locationCallback,
@@ -296,11 +297,11 @@
         private fun calcularDistancia() {
             if (primer != null && segon != null) {
                 val distance = SphericalUtil.computeDistanceBetween(primer, segon)
-                _navigationKm.value = (_navigationKm.value ?: 0.0) + distance
+                _navigationM.value = (_navigationM.value ?: 0.0) + distance
                 primer = segon
             }
         }
-        suspend fun stopNavigation(rutaCompletada: Boolean) {
+        suspend fun stopNavigation(rutaCompletada: Boolean, mascotesViewModel: MascotesViewModel,userViewModel: UserViewModel) {
             Log.d("aris", "final")
             if (rutaCompletada) {
                 Log.d("aris", "ruta completada")
@@ -323,7 +324,7 @@
             _buscat.value = false
             _desvio.value = false
             _puntIntermedi.value = 0
-            //actualitzarestadistiques()
+            actualitzarestadistiques(mascotesViewModel, userViewModel)
             Log.d("aris", _isNavigating.value.toString())
         }
 
@@ -398,22 +399,32 @@
                 _puntIntermedi2.value = 2
             }
         }
-        /*
-        private suspend fun actualitzarestadistiques() {
+        private suspend fun actualitzarestadistiques(mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel) {
             Log.d("aris", "entroactualitzarestadistiques")
             try{
                 val token = SharedPrefUtils.getToken()
-                val stats = User(null, null,_navigationKm.value.toInt(),null, null, null, null)
-                val response = apiRetrofit.updateStats("Token $token", stats)
-                if (response.isSuccessful) {
-                    Log.d("aris", "stats actualitzades")
-                } else {
-                    Log.d("aris", "stats no actualitzades")
+
+                val user = LoggedUser.getLoggedUser()
+                val potenciadors = mascotesViewModel.getBonusMascota()
+                val bonus = potenciadors[0]
+                if (user != null){
+                    val coins = bonus*(_navigationM.value.toInt()/10)
+                    val distance = _navigationM.value.toInt()
+                    val xp = _navigationM.value.toInt()
+                    val stats = User(user.username, coins.toInt(),distance,xp,distance,distance,distance)
+                    val response = apiRetrofit.updateStats("Token $token", stats)
+                    if (response.isSuccessful) {
+                        Log.d("aris", "stats actualitzades")
+                    } else {
+                        Log.d("aris", "stats no actualitzades")
+                    }
+                    userViewModel.getProfile(token!!)
                 }
+
             }catch (e: Exception){
                 Log.d("aris", "error" + e.toString())
             }
-        } */
+        }
 
         private suspend fun usuariRutaCompletada(b: Boolean) {
             Log.d("aris", "entrousuari rutacompletada")
