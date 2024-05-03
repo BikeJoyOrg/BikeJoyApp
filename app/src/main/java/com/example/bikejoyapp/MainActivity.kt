@@ -85,6 +85,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
+import com.example.bikejoyapp.ui.ProfileScreen
 import com.example.bikejoyapp.ui.RankingScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
 import com.example.bikejoyapp.ui.components.SpecificAchievementWidget
@@ -144,7 +145,8 @@ class MainActivity : ComponentActivity() {
         }
         placesClient = Places.createClient(this)
 
-        startDestination = if(SharedPrefUtils.getToken() != null) MyAppRoute.Map.route else MyAppRoute.Login.route
+        startDestination =
+            if (SharedPrefUtils.getToken() != null) MyAppRoute.Map.route else MyAppRoute.Login.route
 
         setContent {
             BikeJoyAppTheme {
@@ -155,7 +157,10 @@ class MainActivity : ComponentActivity() {
                     mainViewModel.navigationCommands.collect { command ->
                         when (command) {
                             is NavigationCommand.ToDestination -> navController.navigate(command.destination.route)
-                            is NavigationCommand.ToDynamicDestination -> navController.navigate(command.destination)
+                            is NavigationCommand.ToDynamicDestination -> navController.navigate(
+                                command.destination
+                            )
+
                             is NavigationCommand.Back -> navController.popBackStack()
                         }
                     }
@@ -223,14 +228,23 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route || currentRoute == MyAppRoute.Achievement.route) {
+                            if (currentRoute == MyAppRoute.Station.route ||
+                                currentRoute == MyAppRoute.RouteDetail.route ||
+                                currentRoute == MyAppRoute.Achievement.route ||
+                                currentRoute == MyAppRoute.PurchaseHistory.route ||
+                                currentRoute == MyAppRoute.Pet.route
+                            ) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
-                                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                                        contentDescription = "Back",
+                                        Modifier.size(32.dp)
+                                    )
                                 }
-                            }
-                            else {
+                            } else {
                                 IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                    val iconBackground = if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                    val iconBackground =
+                                        if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                                     Box(
                                         modifier = Modifier
                                             .background(color = iconBackground, shape = CircleShape)
@@ -294,12 +308,23 @@ fun MyAppContent(
                 navController = navController, startDestination = startDestination
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel,mascotesViewModel, userViewModel)
+                    MapScreen(
+                        stationViewModel,
+                        mainViewModel,
+                        navigationViewModel,
+                        bikeLanesViewModel,
+                        mascotesViewModel,
+                        userViewModel
+                    )
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
                 }
                 composable(MyAppRoute.Home.route) {
+                    //HomeScreen(userViewModel, mainViewModel, perfilViewModel)
+                    RankingScreen()
+                }
+                composable(MyAppRoute.PurchaseHistory.route) {
                     HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
@@ -311,10 +336,13 @@ fun MyAppContent(
                     ShopScreen(shopViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
+                    ProfileScreen(mainViewModel)
+                }
+                composable(MyAppRoute.Pet.route) {
                     PetScreen(mascotesViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.GravarRuta.route) {
-                    GravarRutaScreen(GravarRutaViewModel(),mainViewModel)
+                    GravarRutaScreen(GravarRutaViewModel(), mainViewModel)
                 }
                 composable(
                     route = MyAppRoute.Station.route,
@@ -328,14 +356,21 @@ fun MyAppContent(
                 composable(MyAppRoute.Register.route) {
                     RegisterScreen(userViewModel, mainViewModel)
                 }
-                composable (route = MyAppRoute.RouteDetail.route) {
+                composable(route = MyAppRoute.RouteDetail.route) {
                     val rutasCompletadas = userViewModel.completedRoutes.value
-                    val rutaCompletada = rutasCompletadas?.find { it.ruta_id == mainViewModel.selectedRoute?.RuteId }
+                    val rutaCompletada =
+                        rutasCompletadas?.find { it.ruta_id == mainViewModel.selectedRoute?.RuteId }
                     mainViewModel.selectedRoute?.let { it1 ->
-                            RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, rutaCompletada, navigationViewModel)
+                        RouteDetailScreen(
+                            RoutesViewModel(),
+                            mainViewModel,
+                            it1,
+                            rutaCompletada,
+                            navigationViewModel
+                        )
                     }
                 }
-                composable (route = MyAppRoute.Achievement.route) {
+                composable(route = MyAppRoute.Achievement.route) {
                     SpecificAchievementWidget(
                         navController = navController,
                         mainViewModel = mainViewModel,
@@ -367,7 +402,8 @@ fun MyAppBottomNavigation(
                     mainViewModel.navigateTo(destination.route)
                 },
                 icon = {
-                    val iconBackground = if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                    val iconBackground =
+                        if (index == selected && currentRoute != MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
                     Box(
                         modifier = Modifier
                             .background(color = iconBackground, shape = CircleShape)

@@ -48,10 +48,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.viewmodel.MainViewModel
 
-@Preview
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(mainViewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Box(
@@ -130,6 +131,18 @@ fun ProfileScreen() {
                         .align(Alignment.CenterVertically)
                 )
             }
+        }
+        Button(onClick = {
+            val route = MyAppRoute.Pet.createRoute()
+            mainViewModel.navigateToDynamic(route)
+        }) {
+            Text("Mascotas")
+        }
+        Button(onClick = {
+            val route = MyAppRoute.PurchaseHistory.createRoute()
+            mainViewModel.navigateToDynamic(route)
+        }) {
+            Text("Historial de compras")
         }
     }
 }

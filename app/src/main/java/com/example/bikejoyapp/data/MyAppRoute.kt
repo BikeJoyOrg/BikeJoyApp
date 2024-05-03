@@ -18,4 +18,12 @@ sealed class MyAppRoute(val route: String) {
     data object Achievement : MyAppRoute("achievement/{achievementName}") {
         fun createRoute(achievementName: String) = "achievement/$achievementName"
     }
+
+    data object PurchaseHistory : MyAppRoute("purchaseHistory") {
+        fun createRoute() = "purchaseHistory"
+    }
+
+    data object Pet : MyAppRoute("pet") {
+        fun createRoute() = "pet"
+    }
 }
