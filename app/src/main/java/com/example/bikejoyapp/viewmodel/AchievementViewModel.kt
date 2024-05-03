@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.Achievement
 import com.example.bikejoyapp.data.AchievementProgress
 import com.example.bikejoyapp.data.AchievementProgressResponse
@@ -42,51 +43,6 @@ class AchievementViewModel : ViewModel() {
     private val _achievementsProgress = MutableLiveData<Map<String, AchievementProgress>>()
     val achievementsProgress: LiveData<Map<String, AchievementProgress>> = _achievementsProgress
 
-    interface ApiService {
-        @GET("achievements")
-        suspend fun getAchievements(): Response<AchievementResponse>
-
-        @GET("achievementsProgress")
-        suspend fun getAchievementsProgress(
-            @Header("Authorization") token: String
-        ): Response<AchievementProgressResponse>
-
-
-        @PATCH("achievements/{achievementName}/update_value/")
-        suspend fun updateAchievementValueStatus(
-            @Path("achievementName") achievementName: String,
-            @Body current_value: Int
-            //@Body body: RedeemBody
-        ): Response<Unit>
-
-        @PATCH("achievements/{achievementName}/levels/{levelIndex}/update_achieved/")
-        suspend fun updateAchievementAchievedStatus(
-            @Path("achievementName") achievementName: String,
-            @Path("levelIndex") levelIndex: Int,
-            @Body is_achieved: Boolean
-            //@Body body: RedeemBody
-        ): Response<Unit>
-
-        @PATCH("achievements/{achievementName}/levels/{levelIndex}/update_redeemed/")
-        suspend fun updateAchievementRedeemedStatus(
-            @Path("achievementName") achievementName: String,
-            @Path("levelIndex") levelIndex: Int,
-            @Body is_redeemed: RequestBody
-            //@Body body: HashMap<String, Boolean>
-        ): Response<Unit>
-    }
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
-
     init {
         getAchievementsData()
         getAchievementsProgressData()
@@ -96,7 +52,7 @@ class AchievementViewModel : ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<AchievementResponse> = apiService.getAchievements()
+                    val response: Response<AchievementResponse> = ApiServiceFactory.apiServiceSerializer.getAchievements()
                     if (response.isSuccessful) {
                         val achievements = response.body()?.achievements ?: emptyList()
                         _achievements.postValue(achievements)
@@ -118,7 +74,7 @@ class AchievementViewModel : ViewModel() {
                 try {
                     val token = SharedPrefUtils.getToken()
                     val response: Response<AchievementProgressResponse> =
-                        apiService.getAchievementsProgress("Token $token")
+                        ApiServiceFactory.apiServiceSerializer.getAchievementsProgress("Token $token")
                     if (response.isSuccessful) {
                         val achievementsProgressList =
                             response.body()?.achievementsProgress ?: emptyList()
@@ -178,7 +134,7 @@ class AchievementViewModel : ViewModel() {
 
     private fun patchAchievementValue(achievementName: String, value: Int) {
         viewModelScope.launch {
-            val response = apiService.updateAchievementValueStatus(achievementName, value)
+            val response = ApiServiceFactory.apiServiceSerializer.updateAchievementValueStatus(achievementName, value)
             if (response.isSuccessful) {
                 println("Achievement value update was successful")
             } else {
@@ -202,7 +158,7 @@ class AchievementViewModel : ViewModel() {
                     jsonObject.toString().toRequestBody("application/json".toMediaTypeOrNull())
                 //opcio 3 new_value = request.data
                 //val is_redeemed = true
-                val response = apiService.updateAchievementRedeemedStatus(
+                val response = ApiServiceFactory.apiServiceSerializer.updateAchievementRedeemedStatus(
                     achievementName,
                     levelIndex + 1,
                     requestBody

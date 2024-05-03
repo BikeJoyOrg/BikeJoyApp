@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.ItemResponse
 import com.example.bikejoyapp.data.LoggedUser
@@ -18,21 +19,10 @@ import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
 
-val json = Json {
-    ignoreUnknownKeys = true
-}
 
 class ShopViewModel: ViewModel() {
     private val _items = MutableLiveData<List<Item>>(emptyList())
     val items: MutableLiveData<List<Item>> = _items
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
-
     init {
         getStoreData()
     }
@@ -41,7 +31,7 @@ class ShopViewModel: ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<ItemResponse> = apiService.getItems()
+                    val response: Response<ItemResponse> = ApiServiceFactory.apiServiceSerializer.getItems()
                     if (response.isSuccessful) {
                         _items.postValue(response.body()?.items ?: emptyList())
                         println("Correct loading data: ")
@@ -72,7 +62,7 @@ class ShopViewModel: ViewModel() {
         else if (user.coins < item.game_currency_price) {
             return "No tens prous monedes"
         }
-        val response = apiService.buyItem("Token $token", id)
+        val response = ApiServiceFactory.apiServiceSerializer.buyItem("Token $token", id)
         if (response.isSuccessful) {
             user.coins = (user.coins - item.game_currency_price)
             LoggedUser.setLoggedUser(user)

@@ -26,21 +26,10 @@ import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import retrofit2.Response
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.bikejoyapp.api.ApiServiceFactory
 import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiRetrofit::class.java)
-
     private val _completedRoutes = MutableLiveData<List<CompletedRoute>>()
     val completedRoutes: LiveData<List<CompletedRoute>> = _completedRoutes
 
@@ -56,7 +45,7 @@ class UserViewModel : ViewModel() {
         var result = ""
 
         try {
-            val response: Response<LoginResponse> = retrofit.login(username, password)
+            val response: Response<LoginResponse> = ApiServiceFactory.apiServiceSerializer.login(username, password)
 
             if (response.isSuccessful) {
                 val responseBody = response.body()
@@ -85,7 +74,7 @@ class UserViewModel : ViewModel() {
     suspend fun register(username: String, email: String, password1: String, password2: String): String {
         var result = ""
         try {
-            val response = retrofit.register(username, email, password1, password2)
+            val response = ApiServiceFactory.apiServiceSerializer.register(username, email, password1, password2)
             if (response.isSuccessful) {
                 result = "Success"
             } else {
@@ -103,7 +92,7 @@ class UserViewModel : ViewModel() {
 
     suspend fun logout(token: String?): String {
         var result: String
-        val response = retrofit.logout("Token $token")
+        val response = ApiServiceFactory.apiServiceSerializer.logout("Token $token")
         if (response.isSuccessful) {
             LoggedUser.clear()
             SharedPrefUtils.removeToken()
@@ -122,7 +111,7 @@ class UserViewModel : ViewModel() {
     }
 
     suspend fun getProfile(token: String) {
-        val response: Response<UserResponse> = retrofit.getProfile("Token $token")
+        val response: Response<UserResponse> = ApiServiceFactory.apiServiceSerializer.getProfile("Token $token")
         if(response.isSuccessful) {
             LoggedUser.setLoggedUser(response.body()?.user)
         } else {
@@ -144,7 +133,7 @@ class UserViewModel : ViewModel() {
             try {
                 val token = SharedPrefUtils.getToken()
                 if (token != null) {
-                    val response = retrofit.getCompletedRoutes("Token $token")
+                    val response = ApiServiceFactory.apiServiceSerializer.getCompletedRoutes("Token $token")
                     if (response.isSuccessful && response.body() != null) {
                         _completedRoutes.postValue(response.body())
                     } else {

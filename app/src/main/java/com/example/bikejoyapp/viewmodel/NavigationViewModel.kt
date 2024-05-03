@@ -9,6 +9,7 @@
     import androidx.lifecycle.ViewModel
     import androidx.lifecycle.ViewModelProvider
     import androidx.lifecycle.viewModelScope
+    import com.example.bikejoyapp.api.ApiServiceFactory
     import com.example.bikejoyapp.data.LoggedUser
     import com.example.bikejoyapp.data.PuntsVisitats
     import com.example.bikejoyapp.data.RouteResponse
@@ -344,7 +345,7 @@
         private fun createRute(){
             Log.d("aris", "heloooo2222222")
             CoroutineScope(Dispatchers.IO).launch {
-                val call = getRetrofit().create(ApiRetrofit::class.java)
+                val call = ApiServiceFactory.apiServiceOpenRoute
                     .getRoute("5b3ce3597851110001cf6248ffd3a14535d041289931632bc575ecbf", start, finish)
                 if(call.isSuccessful){
                     drawRoute(call.body())
@@ -356,12 +357,6 @@
                     Log.d("aris", finish)
                 }
             }
-        }
-        private fun getRetrofit(): Retrofit {
-            return Retrofit.Builder()
-                .baseUrl("https://api.openrouteservice.org/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
         }
         private fun drawRoute(routeResponse: RouteResponse?) {
             val aux = mutableListOf<LatLng>()
@@ -412,7 +407,7 @@
                     val distance = _navigationM.value.toInt()
                     val xp = _navigationM.value.toInt()
                     val stats = User(user.username, coins.toInt(),distance,xp,distance,distance,distance)
-                    val response = apiRetrofit.updateStats("Token $token", stats)
+                    val response = ApiServiceFactory.apiServiceSerializer.updateStats("Token $token", stats)
                     if (response.isSuccessful) {
                         Log.d("aris", "stats actualitzades")
                     } else {
@@ -434,7 +429,7 @@
                 val usaurairutacompletada =
                     ruta_id?.let { RutaCompletada(null, it, null, _navigationTime.value/60) }
                 Log.d("aris", "Token $token")
-                val response = apiRetrofit.completedRoute("Token $token", ruta_id!!, usaurairutacompletada!!)
+                val response = ApiServiceFactory.apiServiceSerializer.completedRoute("Token $token", ruta_id!!, usaurairutacompletada!!)
                 Log.d("aris", "hola2")
                 if (response.isSuccessful) {
                     Log.d("aris", "ruta completada")
@@ -457,7 +452,7 @@
                         for (punt in _ruta.value!!){
                             Log.d("aris", "entro a guardar putns visitats 3")
                             val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
-                            val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
+                            val response = ApiServiceFactory.apiServiceSerializer.visitedPoint("Token $token", puntsVisitats)
                             if (response.isSuccessful) {
                                 Log.d("aris", "punt afegit")
                             } else {
@@ -471,7 +466,7 @@
                         for (punt in puntsVisitatslliure){
                             Log.d("aris", "entro a guardar putns visitats 3")
                             val puntsVisitats = PuntsVisitats("", punt.latitude, punt.longitude)
-                            val response = apiRetrofit.visitedPoint("Token $token", puntsVisitats)
+                            val response = ApiServiceFactory.apiServiceSerializer.visitedPoint("Token $token", puntsVisitats)
                             if (response.isSuccessful) {
                                 Log.d("aris", "punt afegit")
                             } else {
@@ -488,12 +483,5 @@
         private val json = Json {
             ignoreUnknownKeys = true
         }
-
-        @OptIn(ExperimentalSerializationApi::class)
-        private val apiRetrofit = Retrofit.Builder()
-            .baseUrl("http://nattech.fib.upc.edu:40360/")
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .build()
-            .create(ApiRetrofit::class.java)
 
     }

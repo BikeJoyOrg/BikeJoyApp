@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.ItemPurchased
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.SharedPrefUtils
@@ -21,20 +22,12 @@ class PerfilViewModel: ViewModel() {
     init {
         getItemsPurchased()
     }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
-
     fun getItemsPurchased() {
         viewModelScope.launch {
             val user = LoggedUser.getLoggedUser()
             if (user != null) {
                 try {
-                    val response = apiService.getPurchasedItems(
+                    val response = ApiServiceFactory.apiServiceSerializer.getPurchasedItems(
                         username = user.username
                     )
                     if (response.isSuccessful) {

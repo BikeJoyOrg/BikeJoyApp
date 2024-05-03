@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.data.PuntsInterRuta
 import com.example.bikejoyapp.data.RouteResponse
@@ -83,7 +84,7 @@ open class GravarRutaViewModel : ViewModel(){
 
     private fun createRute(){
         CoroutineScope(Dispatchers.IO).launch {
-            val call = getRetrofit().create(ApiRetrofit::class.java)
+            val call = ApiServiceFactory.apiServiceOpenRoute
                 .getRoute("5b3ce3597851110001cf6248ffd3a14535d041289931632bc575ecbf", first, second)
             if(call.isSuccessful){
                 first = second
@@ -154,7 +155,7 @@ open class GravarRutaViewModel : ViewModel(){
                     Log.d("aris", token.toString())
                     val rutaUsuari = RutaUsuari(null,_nomRuta.value,_descRuta.value,dist,timebicycle(dist),0,ruta.first().latitude.toFloat(),ruta.first().longitude.toFloat(),null)
                     Log.d("aris", "entro3")
-                    val call = apiRetrofit.postRoute("Token $token",rutaUsuari)
+                    val call = ApiServiceFactory.apiServiceSerializer.postRoute("Token $token",rutaUsuari)
 
                     Log.d("aris", call.isSuccessful.toString())
                     if (call.isSuccessful) {
@@ -165,7 +166,7 @@ open class GravarRutaViewModel : ViewModel(){
                             val puntsInterRuta = PuntsInterRuta("",i,it.latitude.toFloat(),it.longitude.toFloat(),id_ruta)
                             ++i
                             Log.d("aris", "Punt guardat $puntsInterRuta $i")
-                            val call2 = apiRetrofit.postPuntsInter(puntsInterRuta)
+                            val call2 = ApiServiceFactory.apiServiceSerializer.postPuntsInter(puntsInterRuta)
                             if (call2.isSuccessful){
                                 Log.d("aris", "Punt guardathelñllekfkasdjfk")
                                 Log.d("aris", call2.body().toString())
@@ -197,13 +198,6 @@ open class GravarRutaViewModel : ViewModel(){
     private val json = Json {
         ignoreUnknownKeys = true
     }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiRetrofit = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiRetrofit::class.java)
 
     fun totalDistance(points: List<LatLng>): Double {
         if (points.isEmpty()) {

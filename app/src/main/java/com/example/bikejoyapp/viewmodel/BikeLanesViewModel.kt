@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.BikeLane
 import com.example.bikejoyapp.data.BikeLaneResponse
 import com.google.android.gms.maps.model.LatLng
@@ -22,23 +23,6 @@ class BikeLanesViewModel: ViewModel() {
     private val _bikeLanes = MutableLiveData<List<BikeLane>>(emptyList())
     val bikeLanes: LiveData<List<BikeLane>> = _bikeLanes
 
-
-    interface ApiService {
-        @GET("bikelanes")
-        suspend fun getBikeLanes(): Response<BikeLaneResponse>
-    }
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
-
     init {
         getBikeLaneData()
     }
@@ -47,7 +31,7 @@ class BikeLanesViewModel: ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<BikeLaneResponse> = apiService.getBikeLanes()
+                    val response: Response<BikeLaneResponse> = ApiServiceFactory.apiServiceSerializer.getBikeLanes()
                     if (response.isSuccessful) {
                         val serverBikeLanes = response.body()?.bikelanes ?: emptyList()
                         val bikeLanes = serverBikeLanes.map { serverBikeLane ->

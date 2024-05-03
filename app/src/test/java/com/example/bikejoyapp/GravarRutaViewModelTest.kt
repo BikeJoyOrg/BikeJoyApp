@@ -1,23 +1,14 @@
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
-import com.example.bikejoyapp.data.Feature
-import com.example.bikejoyapp.data.Geometry
 import com.example.bikejoyapp.data.RouteResponse
-import com.example.bikejoyapp.data.RutaUsuari
-import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.GravarRutaViewModel
 import com.google.android.gms.maps.model.LatLng
 import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -25,12 +16,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
-import retrofit2.Call
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi

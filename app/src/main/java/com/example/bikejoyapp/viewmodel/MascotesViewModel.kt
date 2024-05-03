@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.MascotaAconseguida
@@ -19,23 +20,11 @@ import retrofit2.Response
 import retrofit2.Retrofit
 
 
-
 class MascotesViewModel: ViewModel() {
     private val _pets = MutableLiveData<List<Mascota>>(emptyList())
     val pets: MutableLiveData<List<Mascota>> = _pets
     private val _petsAconseguides = MutableLiveData<List<MascotaAconseguida>>(emptyList())
     val petsAconseguides: MutableLiveData<List<MascotaAconseguida>> = _petsAconseguides
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
 
     init {
         getStoreData()
@@ -46,7 +35,7 @@ class MascotesViewModel: ViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<List<Mascota>> = apiService.getPets()
+                    val response: Response<List<Mascota>> = ApiServiceFactory.apiServiceSerializer.getPets()
                     if (response.isSuccessful) {
                         _pets.postValue(response.body())
                         println("Correct loading data Mascotes: ")
@@ -64,7 +53,7 @@ class MascotesViewModel: ViewModel() {
         viewModelScope.launch {
             val token = SharedPrefUtils.getToken()
             if (token != null) {
-                val response = apiService.getPetsAconseguidesUsuari("Token $token")
+                val response = ApiServiceFactory.apiServiceSerializer.getPetsAconseguidesUsuari("Token $token")
                 if (response.isSuccessful) {
                     _petsAconseguides.postValue(response.body())
                     println("Correct loading data Mascotes Aconseguides: ")
@@ -84,7 +73,7 @@ class MascotesViewModel: ViewModel() {
             val token = SharedPrefUtils.getToken()
             val user = LoggedUser.getLoggedUser()
             if (token != null && user != null) {
-                val response = apiService.createMascotaAconseguida(name, "Token $token")
+                val response = ApiServiceFactory.apiServiceSerializer.createMascotaAconseguida(name, "Token $token")
                 if (response.isSuccessful) {
                     println("Mascota obtenida correctament")
                     LoggedUser.setLoggedUser(user)
@@ -101,7 +90,7 @@ class MascotesViewModel: ViewModel() {
     fun equiparMascota(name: String) {
         viewModelScope.launch {
             val token = SharedPrefUtils.getToken()
-            val response = apiService.equiparMascota(name, "Token $token")
+            val response = ApiServiceFactory.apiServiceSerializer.equiparMascota(name, "Token $token")
             if (response.isSuccessful) {
                 println("Mascota equipada correctament")
                 getMascotesAconseguidesUser()
@@ -119,7 +108,7 @@ class MascotesViewModel: ViewModel() {
             val token = SharedPrefUtils.getToken()
             val user = LoggedUser.getLoggedUser()
             if (token != null && user != null) {
-                val response = apiService.lvlUp(name, "Token $token")
+                val response = ApiServiceFactory.apiServiceSerializer.lvlUp(name, "Token $token")
                 if (response.isSuccessful) {
                     println("Mascota nivelada correctament")
                 } else {

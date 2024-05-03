@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.api.ApiService
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.EstacioBicing
 import com.example.bikejoyapp.data.StationResponse
 import com.example.bikejoyapp.data.StationStatus
@@ -33,18 +34,6 @@ class EstacionsViewModel : ViewModel() {
     val loading: LiveData<Boolean> = _loading
     private val stationStatusCache = mutableMapOf<String, Pair<StationStatus?, LocalDateTime>>()
 
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    @OptIn(ExperimentalSerializationApi::class)
-    private val apiService = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
-        .create(ApiService::class.java)
-
     init {
         getStationData()
     }
@@ -54,7 +43,7 @@ class EstacionsViewModel : ViewModel() {
             _loading.value = true
             withContext(Dispatchers.IO) {
                 try {
-                    val response: Response<StationResponse> = apiService.getStations()
+                    val response: Response<StationResponse> = ApiServiceFactory.apiServiceSerializer.getStations()
                     if (response.isSuccessful) {
                         _estacions.postValue(response.body()?.stations ?: emptyList())
                         println("Correct loading data: ")
@@ -83,7 +72,7 @@ class EstacionsViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val response: Response<StationStatusResponse> = apiService.getStationById(stationId)
+                val response: Response<StationStatusResponse> = ApiServiceFactory.apiServiceSerializer.getStationById(stationId)
                 if (response.isSuccessful) {
                     val stationStatus = response.body()?.state
                     val address = getStationAddress(stationId)

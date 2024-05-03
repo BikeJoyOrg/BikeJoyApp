@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bikejoyapp.api.ApiServiceFactory
 import com.example.bikejoyapp.data.Comentario
 import com.example.bikejoyapp.data.CommentRequest
 import com.example.bikejoyapp.data.LoggedUser
@@ -93,14 +94,6 @@ class RoutesViewModel : ViewModel() {
     val ratingSent: LiveData<Boolean> = _ratingSent
 
 
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("http://nattech.fib.upc.edu:40360/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val apiService = retrofit.create(ApiService::class.java)
-
     fun onDurationChange(value: Float) {
         _durationFilter.value = value
         Log.d("Filters", "Duración cambiada a: $value")
@@ -150,7 +143,7 @@ class RoutesViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val startLocation = startLocationFilter.value ?: "Cualquier zona"
-                val response = apiService.searchRoutes(null, distanceFilter.value, durationFilter.value?.toInt(), startLocation)
+                val response = ApiServiceFactory.apiServiceGson.searchRoutes(null, distanceFilter.value, durationFilter.value?.toInt(), startLocation)
                 if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
@@ -165,7 +158,7 @@ class RoutesViewModel : ViewModel() {
     fun performSearch() {
         viewModelScope.launch {
             try {
-                val response = apiService.searchRoutes(searchQuery.value, null, null, "Cualquier zona")
+                val response = ApiServiceFactory.apiServiceGson.searchRoutes(searchQuery.value, null, null, "Cualquier zona")
                 if (response.isSuccessful && response.body() != null) {
                     _routes.postValue(response.body())
                 } else {
@@ -181,7 +174,7 @@ class RoutesViewModel : ViewModel() {
     fun getPuntosIntermedios(ruteId: Int) {
         viewModelScope.launch {
             try {
-                val response = apiService.getPuntosIntermedios(ruteId)
+                val response = ApiServiceFactory.apiServiceGson.getPuntosIntermedios(ruteId)
                 if (response.isSuccessful && response.body() != null) {
                     val puntosLatLng = response.body()!!.map { LatLng(it.lat.toDouble(), it.lng.toDouble()) }
                     _puntosIntermedios.postValue(puntosLatLng)
@@ -202,7 +195,7 @@ class RoutesViewModel : ViewModel() {
             val user = LoggedUser.getLoggedUser()
             if (token != null && user != null) {
                 val ratingRequest = RatingRequest(mark = rating)
-                val response = apiService.submitRating("Token $token", ruteId, ratingRequest)
+                val response = ApiServiceFactory.apiServiceGson.submitRating("Token $token", ruteId, ratingRequest)
                 if (response.isSuccessful) {
                     _ratingSent.value = true
                 } else {
@@ -218,7 +211,7 @@ class RoutesViewModel : ViewModel() {
             val user = LoggedUser.getLoggedUser()
             if (token != null && user != null) {
                 val commentRequest = CommentRequest(text = comment)
-                val response = apiService.addComment("Token $token", ruteId, commentRequest)
+                val response = ApiServiceFactory.apiServiceGson.addComment("Token $token", ruteId, commentRequest)
                 if (response.isSuccessful) {
                     Log.d("API", "Comment added successfully")
                 } else {
@@ -231,7 +224,7 @@ class RoutesViewModel : ViewModel() {
     fun getComments(ruteId: Int) {
         viewModelScope.launch {
             try {
-                val response = apiService.getComments(ruteId)
+                val response = ApiServiceFactory.apiServiceGson.getComments(ruteId)
                 if (response.isSuccessful && response.body() != null) {
                     _routeComments.postValue(response.body())
                 } else {
@@ -246,7 +239,7 @@ class RoutesViewModel : ViewModel() {
     fun getAverageRating(ruteId: Int) {
         viewModelScope.launch {
             try {
-                val response = apiService.getAverageRating(ruteId)
+                val response = ApiServiceFactory.apiServiceGson.getAverageRating(ruteId)
                 if (response.isSuccessful && response.body() != null) {
                     _fixedRating.postValue(response.body())
                     Log.d("API", "Average rating: ${response.body()}")
@@ -257,46 +250,5 @@ class RoutesViewModel : ViewModel() {
                 Log.e("API Exception", "Error occurred: ${e.message}")
             }
         }
-    }
-
-    interface ApiService {
-        @GET("rutes/")
-        suspend fun searchRoutes(
-            @Query("query") query: String?,
-            @Query("distance") distance: Float?,
-            @Query("duration") duration: Int?,
-            @Query("nombreZona") nombreZona: String,
-        ): Response<List<RutaUsuari>>
-
-
-        @GET("routes/{ruteId}/puntos-intermedios/")
-        suspend fun getPuntosIntermedios(
-            @Path("ruteId") ruteId: Int
-        ): Response<List<PuntoIntermedio>>
-
-        @POST("routes/{ruteId}/rank/")
-        suspend fun submitRating(
-            @Header("Authorization") token: String,
-            @Path("ruteId") ruteId: Int,
-            @Body ratingData: RatingRequest
-        ): Response<Void>
-
-        @POST("routes/{ruteId}/comment/")
-        suspend fun addComment(
-            @Header("Authorization") token: String,
-            @Path("ruteId") ruteId: Int,
-            @Body commentData: CommentRequest
-        ): Response<Void>
-
-        @GET ("routes/{ruteId}/comments/")
-        suspend fun getComments(
-            @Path("ruteId") ruteId: Int
-        ): Response<List<Comentario>>
-
-        @GET ("routes/{ruteId}/average-rating/")
-        suspend fun getAverageRating(
-            @Path("ruteId") ruteId: Int
-        ): Response<Int>
-
     }
 }

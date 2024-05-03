@@ -65,7 +65,6 @@ import com.example.bikejoyapp.ui.GravarRutaScreen
 import com.example.bikejoyapp.ui.LoginScreen
 import com.example.bikejoyapp.ui.PetScreen
 import com.example.bikejoyapp.ui.RegisterScreen
-import com.example.bikejoyapp.viewmodel.ApiRetrofit
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.ui.RouteDetailScreen
 import com.example.bikejoyapp.viewmodel.MainViewModel
@@ -131,9 +130,7 @@ class MainActivity : ComponentActivity() {
             .baseUrl("https://mi-url-base.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        val apiRetrofit: ApiRetrofit by lazy {
-            retrofit.create(ApiRetrofit::class.java)
-        }
+
         val userViewModel: UserViewModel by viewModels()
 
         val perfilViewModel: PerfilViewModel by viewModels()
