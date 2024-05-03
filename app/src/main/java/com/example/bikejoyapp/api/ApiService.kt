@@ -222,4 +222,7 @@ interface ApiService {
         @Body is_redeemed: RequestBody
         //@Body body: HashMap<String, Boolean>
     ): Response<Unit>
+
+    @GET("users/getUsers/")
+    suspend fun getUsers(): Response<List<User>>
 }
