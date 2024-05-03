@@ -67,7 +67,7 @@ interface ApiRetrofit {
         @Header("Authorization") token: String?
     ): Response<Void>
 
-    @POST("routes/completed/{rute_id}/")
+    @POST("routes/{rute_id}/completed/")
     suspend fun completedRoute(
         @Header("Authorization") token: String,
         @Path("rute_id") ruteid: Int,
