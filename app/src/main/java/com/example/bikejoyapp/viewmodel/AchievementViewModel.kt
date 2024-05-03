@@ -1,5 +1,6 @@
 package com.example.bikejoyapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import com.example.bikejoyapp.data.BikeLane
 import com.example.bikejoyapp.data.BikeLaneResponse
 import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.Level
+import com.example.bikejoyapp.data.SharedPrefUtils
 import com.google.android.gms.maps.model.LatLng
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +40,7 @@ class AchievementViewModel : ViewModel() {
     private val _achievements = MutableLiveData<List<Achievement>>()
     val achievements: LiveData<List<Achievement>> = _achievements
     private val _achievementsProgress = MutableLiveData<Map<String, AchievementProgress>>()
+    val achievementsProgress: LiveData<Map<String, AchievementProgress>> = _achievementsProgress
 
     interface ApiService {
         @GET("achievements")
@@ -97,7 +100,7 @@ class AchievementViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         val achievements = response.body()?.achievements ?: emptyList()
                         _achievements.postValue(achievements)
-                        println("Correct loading data: ")
+                        println("Correct loading data: Achievements")
                     } else {
                         val errorBody = response.errorBody()?.string()
                         println("Error fetching data: $errorBody")
@@ -109,11 +112,11 @@ class AchievementViewModel : ViewModel() {
         }
     }
 
-    private fun getAchievementsProgressData() {
+    fun getAchievementsProgressData() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    //val token: SharedPrefUtils.getToken()
+                    val token = SharedPrefUtils.getToken()
                     val response: Response<AchievementProgressResponse> =
                         apiService.getAchievementsProgress("Token $token")
                     if (response.isSuccessful) {
@@ -122,7 +125,7 @@ class AchievementViewModel : ViewModel() {
                         val achievementsProgressMap: Map<String, AchievementProgress> =
                             achievementsProgressList.associateBy { it.achievement }
                         _achievementsProgress.postValue(achievementsProgressMap)
-                        println("Correct loading data: ")
+                        println("Correct loading data: AchievementsProgress")
                     } else {
                         val errorBody = response.errorBody()?.string()
                         println("Error fetching data: $errorBody")

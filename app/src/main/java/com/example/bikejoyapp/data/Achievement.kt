@@ -39,7 +39,7 @@ data class Achievement (
 @Serializable
 data class AchievementProgress(
     val achievement: String,
-    val lastLevelAchieved: Int,
+    val lastAchievedLevel: Int,
     val currentValue: Int,
     val isAchieved: Boolean,
     val isRedeemed: Boolean

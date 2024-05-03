@@ -73,13 +73,15 @@ fun SpecificAchievementWidget(
         val achievementName =
             remember { navController.currentBackStackEntry?.arguments?.getString("achievementName") }
         val achievement = achievementName?.let { achievementViewModel.getAchievementByName(it) }
+        val achievementsProgress by achievementViewModel.achievementsProgress.observeAsState(emptyMap())
+        val achievementProgress = achievementsProgress[achievementName]
         AchievementItem(achievement = achievement!!,
+            achievementProgress = achievementProgress!!,
             onRewardClaimed = { name, levelIndex ->
                 achievementViewModel.claimReward(name, levelIndex)
             },
             onAchievementClicked = { })
-        val lastAchievedLevel =
-            achievement.levels.lastOrNull { it.isAchieved && it.isRedeemed }?.level ?: 0
+        val lastAchievedLevel = achievementProgress.lastAchievedLevel
 
         Row(modifier = Modifier.padding(top = 6.dp)) {
             var star: Int

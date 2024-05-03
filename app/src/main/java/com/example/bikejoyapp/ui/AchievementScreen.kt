@@ -52,6 +52,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.Dp
+import com.example.bikejoyapp.data.AchievementProgress
 import com.example.bikejoyapp.data.MyAppRoute
 import com.example.bikejoyapp.ui.theme.Bronze
 import com.example.bikejoyapp.ui.theme.Gold
@@ -61,8 +62,10 @@ import com.example.bikejoyapp.viewmodel.MainViewModel
 @Composable
 fun AchievementScreen(achievementViewModel: AchievementViewModel, mainViewModel: MainViewModel) {
     val achievements by achievementViewModel.achievements.observeAsState(emptyList())
+    val achievementsProgress by achievementViewModel.achievementsProgress.observeAsState(emptyMap())
     AchievementList(
         achievements = achievements,
+        achievementsProgress = achievementsProgress,
         onRewardClaimed = { name, levelIndex ->
             achievementViewModel.claimReward(name, levelIndex)
         },
@@ -75,12 +78,16 @@ fun AchievementScreen(achievementViewModel: AchievementViewModel, mainViewModel:
 @Composable
 fun AchievementList(
     achievements: List<Achievement>,
+    achievementsProgress: Map<String, AchievementProgress>,
     onRewardClaimed: (String, Int) -> Unit,
     onAchievementClicked: (String) -> Unit
 ) {
     LazyColumn {
         itemsIndexed(achievements) { _, achievement ->
-            AchievementItem(achievement, onRewardClaimed, onAchievementClicked)
+            achievementsProgress[achievement.name]?.let {
+                AchievementItem(achievement,
+                    it,onRewardClaimed, onAchievementClicked)
+            }
         }
     }
 }
@@ -88,12 +95,12 @@ fun AchievementList(
 @Composable
 fun AchievementItem(
     achievement: Achievement,
+    achievementProgress: AchievementProgress,
     onRewardClaimed: (String, Int) -> Unit,
     onAchievementClicked: (String) -> Unit
 ) {
     val achievementState = remember { mutableStateOf(achievement) }
-    var lastAchievedLevel =
-        achievement.levels.lastOrNull { it.isAchieved && it.isRedeemed }?.level ?: 0
+    var lastAchievedLevel = achievementProgress.lastAchievedLevel
     val cardColor = when (lastAchievedLevel) {
         1 -> Bronze
         2 -> Silver
@@ -135,7 +142,7 @@ fun AchievementItem(
             }
             Column() {
                 var textName: String = achievement.name
-                for (i in 0..<lastAchievedLevel) {
+                for (i in 0..<achievementProgress.lastAchievedLevel) {
                     textName += " ★"
                 }
                 if (lastAchievedLevel == 3) {
@@ -169,7 +176,7 @@ fun AchievementItem(
                             .padding(top = 8.dp, bottom = 0.dp, start = 12.dp, end = 12.dp)
                     ) {
                         val progress =
-                            achievement.currentValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
+                            achievementProgress.currentValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier
@@ -180,7 +187,7 @@ fun AchievementItem(
                             color = Color(2, 160, 235),
                         )
                         Text(
-                            text = "${achievement.currentValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
+                            text = "${achievementProgress.currentValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
                             fontSize = 10.sp,
                             modifier = Modifier
                                 .align(Alignment.Center)
@@ -231,7 +238,7 @@ fun AchievementItem(
                             modifier = Modifier.padding(start = 2.dp)
                         )
                     }
-                    if (achievement.levels[lastAchievedLevel].isAchieved && !achievement.levels[lastAchievedLevel].isRedeemed) {
+                    if (achievementProgress.isAchieved && !achievementProgress.isRedeemed) {
                         val context = LocalContext.current
                         val transition = rememberInfiniteTransition(label = "")
                         val widthAnimated by transition.animateValue(

@@ -87,6 +87,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.data.LoggedUser
 import com.example.bikejoyapp.ui.RankingScreen
 import com.example.bikejoyapp.ui.components.EstacioBicingWidget
+import com.example.bikejoyapp.ui.components.SpecificAchievementWidget
 import com.example.bikejoyapp.viewmodel.PerfilViewModel
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
 
@@ -222,7 +223,7 @@ fun MyAppContent(
                             actionIconContentColor = Color.White
                         ),
                         navigationIcon = {
-                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route) {
+                            if (currentRoute == MyAppRoute.Station.route || currentRoute == MyAppRoute.RouteDetail.route || currentRoute == MyAppRoute.Achievement.route) {
                                 IconButton(onClick = { mainViewModel.navigateBack() }) {
                                     Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Back", Modifier.size(32.dp))
                                 }
@@ -302,8 +303,9 @@ fun MyAppContent(
                     HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
-                    //AchievementScreen(achievementViewModel)
-                    RankingScreen()
+                    achievementViewModel.getAchievementsProgressData()
+                    AchievementScreen(achievementViewModel, mainViewModel)
+                    //RankingScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen(shopViewModel)
@@ -332,6 +334,13 @@ fun MyAppContent(
                     mainViewModel.selectedRoute?.let { it1 ->
                             RouteDetailScreen(RoutesViewModel(), mainViewModel, it1, rutaCompletada, navigationViewModel)
                     }
+                }
+                composable (route = MyAppRoute.Achievement.route) {
+                    SpecificAchievementWidget(
+                        navController = navController,
+                        mainViewModel = mainViewModel,
+                        achievementViewModel = achievementViewModel
+                    )
                 }
             }
         }
