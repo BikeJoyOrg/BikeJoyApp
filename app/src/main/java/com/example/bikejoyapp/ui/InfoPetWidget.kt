@@ -23,10 +23,12 @@ import coil.request.ImageRequest
 import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.MascotaAconseguida
 import com.example.bikejoyapp.viewmodel.MascotesViewModel
+import kotlin.math.roundToInt
 
 @Composable
 fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, mascota: Mascota, mascotesViewModel: MascotesViewModel,
                   onDismiss: () -> Unit) {
+    val bonus = mascotesViewModel.getBonusMascotaByName(mascotaAconseguida.nomMascota)
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = { /*TODO*/ },
@@ -89,25 +91,19 @@ fun InfoPetWidget(mascotaAconseguida: MascotaAconseguida, mascota: Mascota, masc
                 }
                 item {
                     Text(
-                        text = "Bonus1: " + ((mascota.bonus1.minus(1)).times(
-                            mascotaAconseguida.nivell
-                        ).times(100).toInt()).toString() + "%",
+                        text = "Bonus1: " + (((bonus[0].toDouble()-1)*100).roundToInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
                     )
                 }
                 item {
                     Text(
-                        text = "Bonus2: " + ((mascota.bonus2.minus(1)).times(
-                            mascotaAconseguida.nivell
-                        ).times(100).toInt()).toString() + "%",
+                        text = "Bonus2: " + (((bonus[1].toDouble()-1)*100).roundToInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp)
                     )
                 }
                 item {
                     Text(
-                        text = "Bonus3: " + ((mascota.bonus3.minus(1)).times(
-                            mascotaAconseguida.nivell
-                        ).times(100).toInt()).toString() + "%",
+                        text = "Bonus3: " + (((bonus[2].toDouble()-1)*100).roundToInt()).toString() + "%",
                         fontSize = 32.sp, modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
                     )
                 }

@@ -1,9 +1,6 @@
 package com.example.bikejoyapp.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -12,36 +9,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bikejoyapp.viewmodel.MainViewModel
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.RutaUsuari
 import com.example.bikejoyapp.viewmodel.RoutesViewModel
-import com.google.android.gms.maps.CameraUpdate
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -51,15 +37,14 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberMarkerState
-import com.example.bikejoyapp.data.Comment
+import com.example.bikejoyapp.data.Comentario
+import com.example.bikejoyapp.data.CompletedRoute
 import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.data.PuntoIntermedio
 import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
-
+/*
 val rutaUsuariPreview = RutaUsuari(
     RuteId = 1,
     RuteName = "Ruta por Montjuïc",
@@ -70,7 +55,7 @@ val rutaUsuariPreview = RutaUsuari(
     PuntIniciLat = 41.3851f,
     PuntIniciLong = 2.1734f
 )
-
+*/
 /*
 @Preview(showBackground = true)
 @Composable
@@ -93,10 +78,17 @@ fun RouteDetailScreen(
     routesViewModel: RoutesViewModel,
     mainViewModel: MainViewModel,
     route: RutaUsuari,
-    userHasCompletedRoute: Boolean,
+    rutaCompletada: CompletedRoute?,
     navegationviewmodel: NavigationViewModel
 ) {
-    val fixedRating = route.RuteRating
+    val userHasCompletedRoute = rutaCompletada != null
+
+    if (userHasCompletedRoute && rutaCompletada!!.rated) {
+        val isRated = rutaCompletada?.rated ?: false
+        routesViewModel.setRatingSent(isRated)
+    }
+
+    val fixedRating by routesViewModel.fixedRating.observeAsState(0)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble()), 16f)
@@ -105,6 +97,7 @@ fun RouteDetailScreen(
     val puntosIntermedios by routesViewModel.puntosIntermedios.observeAsState(emptyList())
 
     routesViewModel.getPuntosIntermedios(route.RuteId ?: 0)
+    routesViewModel.getAverageRating(route.RuteId ?: 0)
 
     val puntFinalLatLng = puntosIntermedios.lastOrNull() ?: LatLng(route.PuntIniciLat.toDouble(), route.PuntIniciLong.toDouble())
 
@@ -136,7 +129,7 @@ fun RouteDetailScreen(
         }
 
         Spacer(Modifier.height(8.dp))
-        RouteHeader(route, userHasCompletedRoute, fixedRating,mainViewModel,navegationviewmodel,puntosIntermedios)
+        RouteHeader(route, userHasCompletedRoute,mainViewModel,navegationviewmodel,puntosIntermedios, fixedRating)
         Box(modifier = Modifier.fillMaxSize()) {
             when (currentView) {
                 ViewType.Details -> DetailsView(routesViewModel, route, userHasCompletedRoute)
@@ -157,7 +150,7 @@ fun RouteDetailScreen(
 
 
 @Composable
-fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int, mainViewModel: MainViewModel,navegationviewmodel: NavigationViewModel,puntos: List<LatLng>) {
+fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, mainViewModel: MainViewModel,navegationviewmodel: NavigationViewModel,puntos: List<LatLng>, rating: Int) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -175,7 +168,7 @@ fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, rating: Int, 
         ) {
             Button(
                 onClick = {
-                    navegationviewmodel.mostrarRuta(puntos)
+                    navegationviewmodel.mostrarRuta(puntos, route.RuteId ?: 0)
 
                     mainViewModel.navigateTo(MyAppRoute.Map)
                     mainViewModel.showBottomBar()
@@ -371,15 +364,14 @@ fun DetailsView(
 }
 
 @Composable
-fun CommentItem(comment: Comment) {
-    // Reemplaza "Comment" por el modelo de comentario que estés utilizando
+fun CommentItem(Comentario: Comentario) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(comment.author, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(comment.text, style = MaterialTheme.typography.bodyMedium)
+            //Text(Comentario.user.username, style = MaterialTheme.typography.titleMedium)
+            //Spacer(modifier = Modifier.height(4.dp))
+            Text(Comentario.text, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -415,12 +407,13 @@ fun CommentsView(
     userHasCompletedRoute: Boolean
 ) {
     val routeComments by routesViewModel.routeComments.observeAsState(initial = emptyList())
+    routesViewModel.getComments(route.RuteId ?: 0)
     Column(modifier = Modifier.fillMaxSize()) {
         if (userHasCompletedRoute) {
             Card(modifier = Modifier.fillMaxWidth()) {
 
                 NewCommentSection(onCommentAdded = { commentText ->
-                    route.RuteId?.let { routesViewModel.addNewComment(it, commentText) }
+                    route.RuteId?.let { routesViewModel.addComment(it, commentText) }
                 })
             }
             Spacer(Modifier.height(16.dp))
@@ -432,14 +425,24 @@ fun CommentsView(
                     .padding(16.dp)
             ) {
                 item {
-                    Text(
-                        "Comentarios de la ruta",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    routeComments.forEach { comment ->
-                        CommentItem(comment)
+                    if (routeComments.isEmpty()) {
+                        Text(
+                            "No hay comentarios aún",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    else {
+                        Text(
+                            "Comentarios de la ruta",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        routeComments.forEach { comment ->
+                            CommentItem(comment)
+                        }
                     }
                 }
             }

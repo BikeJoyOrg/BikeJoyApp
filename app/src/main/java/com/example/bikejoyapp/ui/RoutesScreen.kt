@@ -187,7 +187,7 @@ fun FilterForm(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = location,
-                                    color = if (location == tempSelectedLocation) Color.Green else Color.Black, // Cambia el color del texto
+                                    color = if (location == tempSelectedLocation) Color.Green else Color.Black,
                                     modifier = Modifier.weight(1f)
                                 )
                             }

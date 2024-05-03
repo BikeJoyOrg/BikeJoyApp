@@ -132,6 +132,9 @@ dependencies {
     implementation(libs.maps.compose.widgets)
     implementation(platform(libs.androidx.compose.bom.v20240401))
     implementation(libs.coil.compose)
+    implementation (libs.accompanist.permissions)
+
+    implementation(libs.androidx.palette)
 }
 
 fun gradleLocalProperties(rootDir: File): Properties {

@@ -1,7 +1,9 @@
 package com.example.bikejoyapp.data
 
-data class PuntsRuta(
-    val PuntId: Int?,
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class PuntsVisitats(
     val PuntName: String,
     val PuntLat: Double,
     val PuntLong: Double

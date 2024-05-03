@@ -1,6 +1,6 @@
 package com.example.bikejoyapp.api
 
-import com.example.bikejoyapp.data.Item
+import com.example.bikejoyapp.data.ItemPurchasedResponse
 import com.example.bikejoyapp.data.ItemResponse
 import com.example.bikejoyapp.data.Mascota
 import com.example.bikejoyapp.data.MascotaAconseguida
@@ -25,11 +25,16 @@ interface ApiService {
         @Path("id") stationId: String
     ): Response<StationStatusResponse>
 
-    @POST("items/purchase/{id}/")
+    @POST("items/{id}/purchase/")
     suspend fun buyItem(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Void>
+
+    @GET("user/{id}/purchases")
+    suspend fun getPurchasedItems(
+        @Path("id") username: String
+    ): Response<ItemPurchasedResponse>
 
     @GET("pets/getMascotas/")
     suspend fun getPets(): Response<List<Mascota>>

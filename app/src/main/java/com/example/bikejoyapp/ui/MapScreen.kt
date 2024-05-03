@@ -3,6 +3,7 @@ package com.example.bikejoyapp.ui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -63,7 +64,9 @@ import com.example.bikejoyapp.ui.theme.magentaOscuroCrema
 import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import com.example.bikejoyapp.viewmodel.MainViewModel
+import com.example.bikejoyapp.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.viewmodel.NavigationViewModel
+import com.example.bikejoyapp.viewmodel.UserViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -72,6 +75,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -79,10 +83,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.clustering.Clustering
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -106,7 +112,9 @@ fun MapScreen(
     stationViewModel: EstacionsViewModel,
     mainViewModel: MainViewModel,
     navigationViewModel: NavigationViewModel,
-    bikeLanesViewModel: BikeLanesViewModel
+    bikeLanesViewModel: BikeLanesViewModel,
+    mascotesViewModel: MascotesViewModel,
+    userViewModel: UserViewModel
 ) {
     val context = LocalContext.current
     val searchQuery by navigationViewModel.searchQuery.observeAsState("")
@@ -121,7 +129,7 @@ fun MapScreen(
 
 
     val selectedPlace by navigationViewModel.selectedPlace.observeAsState()
-    val consultarOpcio by navigationViewModel.consultarOpcio.collectAsState()
+    val consultarOpcio by navigationViewModel.consultarOpcio.observeAsState()
     val isNavigating by navigationViewModel.isNavigating.collectAsState()
     val PaintSearchFields by navigationViewModel.PaintSearchFields.collectAsState()
     val navigationTime by navigationViewModel.navigationTime.collectAsState()
@@ -131,7 +139,8 @@ fun MapScreen(
     val showRouteResume by navigationViewModel.showRouteResume.observeAsState(false)
     val avis by navigationViewModel.avis.observeAsState(false)
     val buscat by navigationViewModel.buscat.observeAsState(false)
-
+    val puntIntermedi by navigationViewModel.puntIntermedi.observeAsState()
+    val desvio by navigationViewModel.desvio.observeAsState(false)
 
     LaunchedEffect(Unit) {
         fusedLocationClient.requestLocationUpdates(
@@ -152,10 +161,13 @@ fun MapScreen(
     }
     val bottomPadding = if (isNavigating) 80.dp else 0.dp
     if (avis){
-        Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+        Dialog_avis(navigationKm, navigationTime,navigationViewModel, mainViewModel, mascotesViewModel,userViewModel)
     }
     if (showRouteResume){
-        Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel)
+        Dialog_Resume(navigationKm, navigationTime,navigationViewModel, mainViewModel, mascotesViewModel,userViewModel)
+    }
+    if(desvio){
+        Dialog_desvio(navigationViewModel, mainViewModel,mascotesViewModel,userViewModel)
     }
 
     val clickState = remember { mutableStateOf(false) }
@@ -275,7 +287,7 @@ fun MapScreen(
                 )
                 // Fi estacions
 
-                if (consultarOpcio) {
+                if (consultarOpcio == true) {
 
                     ruta?.let { Polyline(points = it, color = magentaOscuroCrema, width = 15.0f) }
 
@@ -303,6 +315,7 @@ fun MapScreen(
                         }
                     } else {
                         if (primer_cop) {
+                            Log.d("aris", "Primer cop")
                             val cameraPosition = CameraPosition.Builder()
                                 .target(ruta?.first() ?: deviceLocation.value)
                                 .zoom(15f)
@@ -318,6 +331,14 @@ fun MapScreen(
                             state = MarkerState(position = ruta?.last() ?: deviceLocation.value),
                             icon = BitmapDescriptorFactory.fromResource(R.mipmap.bandera_start_escala),
                         )
+                        Circle(center = ruta?.last() ?: deviceLocation.value, radius = 50.0,
+                            strokeColor = Color(0xFF000000), strokeWidth = 0f, fillColor = magentaOscuroCrema.copy(alpha = 0.25f))
+                        Marker(
+                            state = MarkerState(position = ruta?.get(puntIntermedi!!) ?: deviceLocation.value),
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                        )
+                        Circle(center = ruta?.get(puntIntermedi!!) ?: deviceLocation.value, radius = 25.0,
+                            strokeColor = Color(0xFF000000), strokeWidth = 0f, fillColor = magentaOscuroCrema.copy(alpha = 0.25f))
                     }
                 }
             }
@@ -344,7 +365,7 @@ fun MapScreen(
                             modifier = Modifier.size(ButtonDefaults.IconSize)
                         )
                         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        if (consultarOpcio){
+                        if (consultarOpcio == true){
                             Text(
                                 text = "Iniciar navegació",
                             )
@@ -473,7 +494,7 @@ fun SearchResultsList(navigationViewModel: NavigationViewModel, mainViewModel: M
 }
 
 @Composable
-fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card (
             modifier = Modifier
@@ -502,10 +523,15 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
                 Spacer(modifier = Modifier.height(16.dp))
                 TempsDistancia_vertical(distanciaRuta = distanciaRuta, tempsRuta = tempsRuta/60)
                 Row (     modifier = Modifier
-                    .fillMaxWidth().weight(1f),
+                    .fillMaxWidth()
+                    .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
-                    TextButton(onClick = { navigationViewModel.stopNavigation(true)
-                        mainViewModel.showBottomBar() }) {
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(true,mascotesViewModel, userViewModel)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
                         Text("Acceptar")
                     }
                 }
@@ -514,7 +540,7 @@ fun Dialog_Resume(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Na
     }
 }
 @Composable
-fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel){
+fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card (
             modifier = Modifier
@@ -536,11 +562,59 @@ fun Dialog_avis(distanciaRuta: Double, tempsRuta: Int, navigationViewModel: Navi
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row (     modifier = Modifier
-                    .fillMaxWidth().weight(1f),
+                    .fillMaxWidth()
+                    .weight(1f),
                     horizontalArrangement = Arrangement.Center,){
-                    TextButton(onClick = { navigationViewModel.stopNavigation(false)
-                        mainViewModel.showBottomBar() }) {
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(false,mascotesViewModel, userViewModel)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
                         Text("Finalitzar")
+                    }
+                    TextButton(onClick = { navigationViewModel.continuar() }) {
+                        Text("Continuar ruta")
+                    }
+
+                }
+            }
+        }
+    }
+}
+@Composable
+fun Dialog_desvio(navigationViewModel: NavigationViewModel,  mainViewModel: MainViewModel, mascotesViewModel: MascotesViewModel, userViewModel: UserViewModel){
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card (
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(16.dp)
+        ){
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ){
+                Row(     modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,) {
+                    Text("'No estas seguint la ruta, si us plau torna a la ruta marcada'",
+                        fontSize = 20.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row (     modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                    horizontalArrangement = Arrangement.Center,){
+                    TextButton(onClick = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navigationViewModel.stopNavigation(false,mascotesViewModel, userViewModel)
+                            mainViewModel.showBottomBar()
+                        }
+                    }) {
+                        Text("Finalitzar ruta")
                     }
                     TextButton(onClick = { navigationViewModel.continuar() }) {
                         Text("Continuar ruta")

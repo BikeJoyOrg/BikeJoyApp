@@ -18,9 +18,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Response
 import retrofit2.Retrofit
 
-private val json = Json {
-    ignoreUnknownKeys = true
-}
+
 
 class MascotesViewModel: ViewModel() {
     private val _pets = MutableLiveData<List<Mascota>>(emptyList())
@@ -28,6 +26,9 @@ class MascotesViewModel: ViewModel() {
     private val _petsAconseguides = MutableLiveData<List<MascotaAconseguida>>(emptyList())
     val petsAconseguides: MutableLiveData<List<MascotaAconseguida>> = _petsAconseguides
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
 
     @OptIn(ExperimentalSerializationApi::class)
     private val apiService = Retrofit.Builder()
@@ -41,7 +42,7 @@ class MascotesViewModel: ViewModel() {
         getMascotesAconseguidesUser()
     }
 
-    private fun getStoreData() {
+    fun getStoreData() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
@@ -129,5 +130,25 @@ class MascotesViewModel: ViewModel() {
                 }
             }
         }
+    }
+
+    fun getBonusMascota(): FloatArray {
+        val pet = _petsAconseguides.value?.find { it.equipada }
+        val mult =  pet?.nivell?.toFloat() ?: 0f
+        val bonus1 = pet?.let { getPetByName(it.nomMascota)?.bonus1 } ?: 0f
+        val bonus2 = pet?.let { getPetByName(it.nomMascota)?.bonus2 } ?: 0f
+        val bonus3 = pet?.let { getPetByName(it.nomMascota)?.bonus3 } ?: 0f
+
+        return floatArrayOf(bonus1*mult+1f, bonus2*mult+1f, bonus3*mult+1f)
+    }
+
+    fun getBonusMascotaByName(name: String): FloatArray {
+        val pet = _petsAconseguides.value?.find { it.nomMascota == name}
+        val mult =  pet?.nivell?.toFloat() ?: 0f
+        val bonus1 = pet?.let { getPetByName(it.nomMascota)?.bonus1 } ?: 0f
+        val bonus2 = pet?.let { getPetByName(it.nomMascota)?.bonus2 } ?: 0f
+        val bonus3 = pet?.let { getPetByName(it.nomMascota)?.bonus3 } ?: 0f
+
+        return floatArrayOf(bonus1*mult+1f, bonus2*mult+1f, bonus3*mult+1f)
     }
 }
