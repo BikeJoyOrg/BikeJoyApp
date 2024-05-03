@@ -269,19 +269,19 @@ class RoutesViewModel : ViewModel() {
         ): Response<List<RutaUsuari>>
 
 
-        @GET("puntos-intermedios/{ruteId}/")
+        @GET("routes/{ruteId}/puntos-intermedios/")
         suspend fun getPuntosIntermedios(
             @Path("ruteId") ruteId: Int
         ): Response<List<PuntoIntermedio>>
 
-        @POST("routes/rank/{ruteId}/")
+        @POST("routes/{ruteId}/rank/")
         suspend fun submitRating(
             @Header("Authorization") token: String,
             @Path("ruteId") ruteId: Int,
             @Body ratingData: RatingRequest
         ): Response<Void>
 
-        @POST("routes/comment/{ruteId}/")
+        @POST("routes/{ruteId}/comment/")
         suspend fun addComment(
             @Header("Authorization") token: String,
             @Path("ruteId") ruteId: Int,

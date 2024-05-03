@@ -163,8 +163,14 @@ fun RegisterScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
-                        coroutineScope.launch {
-                            status = userViewModel.register(username, password1, password2, email)
+                        if(username != "" && email != "" && password1 != "" && password2 != "") {
+                            coroutineScope.launch {
+                                status =
+                                    userViewModel.register(username, password1, password2, email)
+                            }
+                        }
+                        else {
+                            status = "Please fill all fields"
                         }
                     }),
                     visualTransformation = if(passwordVisibility2) VisualTransformation.None else PasswordVisualTransformation(),
@@ -192,13 +198,18 @@ fun RegisterScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
                 modifier = Modifier
                     .padding(10.dp),
                 onClick = {
-                coroutineScope.launch {
-                    status = userViewModel.register(
-                        username,
-                        email,
-                        password1,
-                        password2
-                    )
+                if(username != "" && email != "" && password1 != "" && password2 != "") {
+                    coroutineScope.launch {
+                        status = userViewModel.register(
+                            username,
+                            email,
+                            password1,
+                            password2
+                        )
+                    }
+                }
+                    else {
+                    status = "Please fill all fields"
                 }
             }) {
                 Text("Register")
@@ -210,7 +221,7 @@ fun RegisterScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            Text(status)
+            Text(status, color= Color.Red)
 
         }
 

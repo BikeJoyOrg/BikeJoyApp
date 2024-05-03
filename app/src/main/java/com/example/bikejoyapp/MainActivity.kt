@@ -294,7 +294,7 @@ fun MyAppContent(
                 navController = navController, startDestination = startDestination
             ) {
                 composable(MyAppRoute.Map.route) {
-                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel)
+                    MapScreen(stationViewModel, mainViewModel, navigationViewModel, bikeLanesViewModel,mascotesViewModel, userViewModel)
                 }
                 composable(MyAppRoute.Routes.route) {
                     RoutesScreen(RoutesViewModel(), mainViewModel)
