@@ -1,4 +1,4 @@
-package com.example.bikejoyapp.viewmodel
+package com.example.bikejoyapp.ranking
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
