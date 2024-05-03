@@ -42,6 +42,7 @@ import com.example.bikejoyapp.ui.HomeScreen
 import com.example.bikejoyapp.ui.MapScreen
 import com.example.bikejoyapp.ui.RoutesScreen
 import com.example.bikejoyapp.ui.ShopScreen
+import com.example.bikejoyapp.ui.LoginRequiredScreen
 import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
 import com.example.bikejoyapp.viewmodel.EstacionsViewModel
 import android.Manifest
@@ -319,21 +320,26 @@ fun MyAppContent(
                 }
                 composable(MyAppRoute.Home.route) {
                     //HomeScreen(userViewModel, mainViewModel, perfilViewModel)
-                    RankingScreen()
+                    if(SharedPrefUtils.getToken() != null) RankingScreen()
+                    else LoginRequiredScreen(mainViewModel)
                 }
                 composable(MyAppRoute.PurchaseHistory.route) {
                     HomeScreen(userViewModel, mainViewModel, perfilViewModel)
                 }
                 composable(MyAppRoute.Social.route) {
-                    achievementViewModel.getAchievementsProgressData()
-                    AchievementScreen(achievementViewModel, mainViewModel)
+                    if(SharedPrefUtils.getToken() != null) {
+                        achievementViewModel.getAchievementsProgressData()
+                        AchievementScreen(achievementViewModel, mainViewModel)
+                    }
+                    else LoginRequiredScreen(mainViewModel)
                     //RankingScreen()
                 }
                 composable(MyAppRoute.Shop.route) {
-                    ShopScreen(shopViewModel)
+                    ShopScreen(shopViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Account.route) {
-                    ProfileScreen(mainViewModel)
+                    if(SharedPrefUtils.getToken() != null) ProfileScreen(mainViewModel)
+                    else LoginRequiredScreen(mainViewModel)
                 }
                 composable(MyAppRoute.Pet.route) {
                     PetScreen(mascotesViewModel, mainViewModel)
@@ -373,6 +379,9 @@ fun MyAppContent(
                         mainViewModel = mainViewModel,
                         achievementViewModel = achievementViewModel
                     )
+                }
+                composable(MyAppRoute.LoginRequired.route) {
+                    LoginRequiredScreen(mainViewModel)
                 }
             }
         }

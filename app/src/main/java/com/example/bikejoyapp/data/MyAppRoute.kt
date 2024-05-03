@@ -26,4 +26,5 @@ sealed class MyAppRoute(val route: String) {
     data object Pet : MyAppRoute("pet") {
         fun createRoute() = "pet"
     }
+    data object LoginRequired : MyAppRoute("LoginRequired")
 }

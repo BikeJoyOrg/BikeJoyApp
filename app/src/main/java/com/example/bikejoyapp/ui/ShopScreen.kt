@@ -65,6 +65,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Item
+import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.data.SharedPrefUtils
+import com.example.bikejoyapp.viewmodel.MainViewModel
 import com.example.bikejoyapp.viewmodel.ShopViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -85,7 +88,7 @@ suspend fun getPaletteFromURL(context: Context, url: String): Palette {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShopScreen(shopViewModel: ShopViewModel) {
+fun ShopScreen(shopViewModel: ShopViewModel, mainViewModel: MainViewModel) {
     LaunchedEffect(Unit) {
         shopViewModel.getStoreData()
     }
@@ -144,14 +147,17 @@ fun ShopScreen(shopViewModel: ShopViewModel) {
                 item = it,
                 onDismiss = { showDialog.value = false },
                 onBuy = {
-                    coroutineScope.launch {
-                        snackbarMessage = shopViewModel.buyItem(it.id)
-                        showSnackbar = true
-                        delay(2000)
-                        showSnackbar = false
+                    if (SharedPrefUtils.getToken() != null) {
+                        coroutineScope.launch {
+                            snackbarMessage = shopViewModel.buyItem(it.id)
+                            showSnackbar = true
+                            delay(2000)
+                            showSnackbar = false
 
+                        }
+                        showDialog.value = false
                     }
-                    showDialog.value = false
+                    else mainViewModel.navigateTo(MyAppRoute.LoginRequired)
                 }
             )
         }

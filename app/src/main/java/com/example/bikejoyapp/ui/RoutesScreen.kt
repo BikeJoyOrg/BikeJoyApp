@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.bikejoyapp.data.RutaUsuari
+import com.example.bikejoyapp.data.SharedPrefUtils
 
 
 @Composable
@@ -252,7 +253,15 @@ fun AddRouteForm(rutesviewModel: RoutesViewModel, mainViewModel: MainViewModel){
             .padding(16.dp)
     ) {
         Button(
-            onClick = { mainViewModel.navigateTo(MyAppRoute.GravarRuta)},
+            onClick = {
+                if(SharedPrefUtils.getToken() != null) {
+                    mainViewModel.navigateTo(MyAppRoute.GravarRuta)
+                }
+                else {
+                    mainViewModel.navigateTo(MyAppRoute.LoginRequired)
+
+                }
+                      },
             modifier = Modifier
                 .wrapContentWidth()
                 .align(Alignment.CenterVertically)
