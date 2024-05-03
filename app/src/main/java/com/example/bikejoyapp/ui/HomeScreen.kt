@@ -105,20 +105,17 @@ fun HomeScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel, perfi
     ) {
         Text(text = "Home")
 
-        if(token != null) {
-            Button(
-                modifier = Modifier.padding(20.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        val status = userViewModel.logout(SharedPrefUtils.getToken())
-                        println("Status: $status")
-                    }
+        Button(
+            modifier = Modifier.padding(20.dp),
+            onClick = {
+                coroutineScope.launch {
+                    val status = userViewModel.logout(SharedPrefUtils.getToken())
+                    println("Status: $status")
                 }
-            ) {
-                Text("Logout")
             }
+        ) {
+            Text("Logout")
         }
-
         // Botón para abrir el popup
         Button(
             modifier = Modifier.padding(20.dp),
