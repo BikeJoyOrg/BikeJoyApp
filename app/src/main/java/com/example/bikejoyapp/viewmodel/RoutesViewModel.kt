@@ -260,7 +260,7 @@ class RoutesViewModel : ViewModel() {
     }
 
     interface ApiService {
-        @GET("routes/")
+        @GET("rutes/")
         suspend fun searchRoutes(
             @Query("query") query: String?,
             @Query("distance") distance: Float?,
