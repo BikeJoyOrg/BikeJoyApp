@@ -2,12 +2,14 @@ package com.example.bikejoyapp.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,6 +36,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Snackbar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -43,6 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.viewmodel.UserViewModel
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -52,6 +56,7 @@ fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
     var status by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var focusRequester = remember { FocusRequester() }
+    var showSnackbar by remember { mutableStateOf(false) }
     mainViewModel.hideBottomBar()
     mainViewModel.hideTopBar()
     var passwordVisibility by remember { mutableStateOf(false) }
@@ -61,140 +66,170 @@ fun LoginScreen(userViewModel: UserViewModel, mainViewModel: MainViewModel) {
         painterResource(com.example.bikejoyapp.R.drawable.visibility_on)
     }
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-
-        Image(
-            painter = painterResource(id = com.example.bikejoyapp.R.drawable.logo_fondo_invisible),
-            contentDescription = "App Icon",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            OutlinedTextField(
+    Box {
+        if (showSnackbar) {
+            Snackbar(
                 modifier = Modifier
-                    .width(280.dp),
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
-            )
+                    .align(Alignment.TopCenter)
+                    .padding(10.dp, top=30.dp),
+                containerColor = Color.Transparent,
+                contentColor = Color.Red.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Text(status)
+            }
         }
-
-        Row(
+        Column(
+            verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxSize()
         ) {
-            OutlinedTextField(
+
+            Image(
+                painter = painterResource(id = com.example.bikejoyapp.R.drawable.logo_fondo_invisible),
+                contentDescription = "App Icon",
                 modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .width(280.dp),
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    coroutineScope.launch {
-                        status = userViewModel.login(username, password)
-                    }
-                }),
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            passwordVisibility = !passwordVisibility
-                        }) {
-                        Icon(
-                            painter = icon,
-                            contentDescription = "Password visibility"
-                        )
-                    }
-                }
+                    .align(Alignment.CenterHorizontally)
             )
 
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Button(
+            Row(
                 modifier = Modifier
-                    .padding(10.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        status = userViewModel.login(username, password)
-                        userViewModel.getCompletedRoutes()
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .width(280.dp),
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .width(280.dp),
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        coroutineScope.launch {
+                            if (username != "" && password != "") {
+
+                                status = userViewModel.login(username, password)
+                                userViewModel.getCompletedRoutes()
+                            } else {
+                                status = "Please fill in all fields"
+                                showSnackbar = true
+                                delay(2000)
+                                showSnackbar = false
+                            }
+                        }
+                    }),
+                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                passwordVisibility = !passwordVisibility
+                            }) {
+                            Icon(
+                                painter = icon,
+                                contentDescription = "Password visibility"
+                            )
+                        }
                     }
+                )
+
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Button(
+                    modifier = Modifier
+                        .padding(10.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            if (username != "" && password != "") {
+                                status = userViewModel.login(username, password)
+                                userViewModel.getCompletedRoutes()
+                            } else {
+                                status = "Please fill in all fields"
+                                showSnackbar = true
+                                delay(2000)
+                                showSnackbar = false
+                            }
+                        }
+                    }
+                ) {
+                    Text("Login")
                 }
-            ) {
-                Text("Login")
             }
-        }
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text(status)
-        }
+            /*Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(status, color= Color.Red)
+            }*/
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text("Don't have an account?")
-            ClickableText(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.Blue, fontStyle = FontStyle.Italic)) {
-                        append("Register")
-                    }
-                },
+            Row(
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .padding(start = 5.dp)
-                    .align(Alignment.CenterVertically)
+                    .fillMaxWidth()
             ) {
-                mainViewModel.navigateTo(MyAppRoute.Register)
+                Text("Don't have an account?")
+                ClickableText(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color.Blue, fontStyle = FontStyle.Italic)) {
+                            append("Register")
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .align(Alignment.CenterVertically)
+                ) {
+                    mainViewModel.navigateTo(MyAppRoute.Register)
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
+                ClickableText(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color.Blue, fontStyle = FontStyle.Italic)) {
+                            append("Entrar como invitado")
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .align(Alignment.CenterVertically)
+                ) {
+                    status = "invitado"
+                }
             }
         }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        ) {
-            ClickableText(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.Blue, fontStyle = FontStyle.Italic)) {
-                        append("Entrar como invitado")
-                    }
-                },
-                modifier = Modifier
-                    .padding(start = 5.dp)
-                    .align(Alignment.CenterVertically)
-            ) {
-                status = "invitado"
-            }
+        if (status == "Success" || status == "invitado") {
+            mainViewModel.navigateTo(MyAppRoute.Map)
+            mainViewModel.showBottomBar()
+            mainViewModel.showTopBar()
         }
-    }
-    if (status == "Success" || status == "invitado") {
-        mainViewModel.navigateTo(MyAppRoute.Map)
-        mainViewModel.showBottomBar()
-        mainViewModel.showTopBar()
     }
 }
