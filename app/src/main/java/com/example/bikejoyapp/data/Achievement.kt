@@ -1,18 +1,20 @@
 package com.example.bikejoyapp.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Level(
     val level: Int,
     val description: String,
     val valueRequired: Int,
     val coinReward: Int,
-    val petReward: String? = null,
-    var isAchieved: Boolean = false,
-    var isRedeemed: Boolean = false
+    val xpReward: Int,
+    val petReward: String? = null
 )
 
+@Serializable
 data class Achievement (
     val name: String,
-    var currentValue: Int,
     val levels: Array<Level>
 ) {
     override fun equals(other: Any?): Boolean {
@@ -22,7 +24,6 @@ data class Achievement (
         other as Achievement
 
         if (name != other.name) return false
-        if (currentValue != other.currentValue) return false
         if (!levels.contentEquals(other.levels)) return false
 
         return true
@@ -30,8 +31,27 @@ data class Achievement (
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + currentValue
         result = 31 * result + levels.contentHashCode()
         return result
     }
 }
+
+@Serializable
+data class AchievementProgress(
+    val achievement: String,
+    val lastAchievedLevel: Int,
+    val currentValue: Int,
+    val isAchieved: Boolean,
+    val isRedeemed: Boolean
+)
+
+@Serializable
+data class AchievementResponse(
+    val achievements: List<Achievement>
+)
+
+
+@Serializable
+data class AchievementProgressResponse(
+    val achievementsProgress: List<AchievementProgress>
+)

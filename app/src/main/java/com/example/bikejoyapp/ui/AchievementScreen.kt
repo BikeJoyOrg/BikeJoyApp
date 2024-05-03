@@ -44,39 +44,63 @@ import com.example.bikejoyapp.R
 import com.example.bikejoyapp.data.Achievement
 import com.example.bikejoyapp.data.AchievementsIcons.achievementsIcons
 import android.media.MediaPlayer
-
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.Dp
+import com.example.bikejoyapp.data.AchievementProgress
+import com.example.bikejoyapp.data.MyAppRoute
+import com.example.bikejoyapp.ui.theme.Bronze
+import com.example.bikejoyapp.ui.theme.Gold
+import com.example.bikejoyapp.ui.theme.Silver
+import com.example.bikejoyapp.viewmodel.MainViewModel
 
 @Composable
-fun AchievementScreen(achievementViewModel: AchievementViewModel) {
-    val achievements by achievementViewModel.achievements.observeAsState(initial = emptyMap())
+fun AchievementScreen(achievementViewModel: AchievementViewModel, mainViewModel: MainViewModel) {
+    val achievements by achievementViewModel.achievements.observeAsState(emptyList())
+    val achievementsProgress by achievementViewModel.achievementsProgress.observeAsState(emptyMap())
     AchievementList(
-        achievements = achievements.values.toList(),
+        achievements = achievements,
+        achievementsProgress = achievementsProgress,
         onRewardClaimed = { name, levelIndex ->
             achievementViewModel.claimReward(name, levelIndex)
+        },
+        onAchievementClicked = { name ->
+            val route = MyAppRoute.Achievement.createRoute(name)
+            mainViewModel.navigateToDynamic(route)
         })
 }
 
 @Composable
-fun AchievementList(achievements: List<Achievement>, onRewardClaimed: (String, Int) -> Unit) {
+fun AchievementList(
+    achievements: List<Achievement>,
+    achievementsProgress: Map<String, AchievementProgress>,
+    onRewardClaimed: (String, Int) -> Unit,
+    onAchievementClicked: (String) -> Unit
+) {
     LazyColumn {
         itemsIndexed(achievements) { _, achievement ->
-            AchievementItem(achievement) { levelIndex ->
-                onRewardClaimed(achievement.name, levelIndex)
+            achievementsProgress[achievement.name]?.let {
+                AchievementItem(achievement,
+                    it,onRewardClaimed, onAchievementClicked)
             }
         }
     }
 }
 
-
-val Bronze = Color(205, 127, 50)
-val Silver = Color(192, 192, 192)
-val Gold = Color(255, 223, 0)
-
 @Composable
-fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
+fun AchievementItem(
+    achievement: Achievement,
+    achievementProgress: AchievementProgress,
+    onRewardClaimed: (String, Int) -> Unit,
+    onAchievementClicked: (String) -> Unit
+) {
     val achievementState = remember { mutableStateOf(achievement) }
-    var lastAchievedLevel =
-        achievement.levels.lastOrNull { it.isAchieved && it.isRedeemed }?.level ?: 0
+    var lastAchievedLevel = achievementProgress.lastAchievedLevel
     val cardColor = when (lastAchievedLevel) {
         1 -> Bronze
         2 -> Silver
@@ -95,7 +119,10 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .size(width = 240.dp, height = 130.dp)
-            .padding(bottom = 2.dp, start = 2.dp, end = 2.dp, top = 2.dp),
+            .padding(bottom = 2.dp, start = 2.dp, end = 2.dp, top = 2.dp)
+            .clickable {
+                onAchievementClicked(achievement.name)
+            },
     ) {
         Row() {
             Column(
@@ -109,13 +136,13 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                     painter = painterResource(
                         id = achievementsIcons[achievement.name] ?: R.drawable.coins
                     ),
-                    contentDescription = "coins",
+                    contentDescription = "achievementIcon",
                     modifier = Modifier.size(70.dp)
                 )
             }
             Column() {
                 var textName: String = achievement.name
-                for (i in 0..<lastAchievedLevel) {
+                for (i in 0..<achievementProgress.lastAchievedLevel) {
                     textName += " ★"
                 }
                 if (lastAchievedLevel == 3) {
@@ -149,7 +176,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             .padding(top = 8.dp, bottom = 0.dp, start = 12.dp, end = 12.dp)
                     ) {
                         val progress =
-                            achievement.currentValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
+                            achievementProgress.currentValue.toFloat() / achievement.levels[lastAchievedLevel].valueRequired.toFloat()
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier
@@ -160,7 +187,7 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             color = Color(2, 160, 235),
                         )
                         Text(
-                            text = "${achievement.currentValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
+                            text = "${achievementProgress.currentValue}/${achievement.levels[lastAchievedLevel].valueRequired}",
                             fontSize = 10.sp,
                             modifier = Modifier
                                 .align(Alignment.Center)
@@ -168,11 +195,13 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                     }
                 }
             }
-            Column(Modifier.fillMaxSize()) {
+            Column(
+                Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 if (!completed) {
                     Row(
                         modifier = Modifier
-                            .padding(top = 12.dp, start = 6.dp)
+                            .padding(top = 8.dp, start = 6.dp)
                             .height(40.dp)
                             .width(200.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -182,41 +211,80 @@ fun AchievementItem(achievement: Achievement, onRewardClaimed: (Int) -> Unit) {
                             painterResource(id = R.drawable.coins),
                             contentDescription = "coins",
                             modifier = Modifier
-                                .size(40.dp),
+                                .size(30.dp),
 
                             )
-                        Text(achievement.levels[lastAchievedLevel].coinReward.toString())
-
-
+                        Text(
+                            achievement.levels[lastAchievedLevel].coinReward.toString(),
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
                     }
-                    if (achievement.levels[lastAchievedLevel].isAchieved && !achievement.levels[lastAchievedLevel].isRedeemed) {
-                        val context = LocalContext.current
-                        Button(
-                            onClick = {
-                                onRewardClaimed(lastAchievedLevel)
-                                //Irrellevant
-                                achievementState.value = achievementState.value.copy()
-                                reloadTrigger.intValue += 1
-                                val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
-                                mediaPlayer.start()
-                            },
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .height(40.dp)
+                            .width(200.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Image(
+                            painterResource(id = R.drawable.level),
+                            contentDescription = "xp",
                             modifier = Modifier
-                                .padding(top = 24.dp)
-                                .size(
-                                    80.dp,
-                                    30.dp
-                                ),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                Color(
-                                    40,
-                                    210,
-                                    10
+                                .size(30.dp),
+                        )
+                        Text(
+                            achievement.levels[lastAchievedLevel].xpReward.toString(),
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
+                    }
+                    if (achievementProgress.isAchieved && !achievementProgress.isRedeemed) {
+                        val context = LocalContext.current
+                        val transition = rememberInfiniteTransition(label = "")
+                        val widthAnimated by transition.animateValue(
+                            initialValue = 70.dp,
+                            targetValue = 80.dp,
+                            typeConverter = Dp.VectorConverter,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(500), repeatMode = RepeatMode.Reverse
+                            ), label = ""
+                        )
+                        val heightAnimated by transition.animateValue(
+                            initialValue = 25.dp,
+                            targetValue = 30.dp,
+                            typeConverter = Dp.VectorConverter,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(500), repeatMode = RepeatMode.Reverse
+                            ), label = ""
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Button(
+                                onClick = {
+                                    onRewardClaimed(achievement.name, lastAchievedLevel)
+                                    //Irrellevanta
+                                    achievementState.value = achievementState.value.copy()
+                                    reloadTrigger.intValue += 1
+                                    val mediaPlayer = MediaPlayer.create(context, R.raw.game_reward)
+                                    mediaPlayer.start()
+                                },
+                                modifier = Modifier
+
+                                    .size(
+                                        widthAnimated,
+                                        heightAnimated
+                                    ),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    Color(
+                                        40,
+                                        210,
+                                        10
+                                    )
                                 )
-                            )
-                        ) {
-                            Text("Reclamar")
+                            ) {
+                                Text("Reclamar")
+                            }
                         }
 
                     }

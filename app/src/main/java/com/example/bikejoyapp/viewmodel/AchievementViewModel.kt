@@ -1,133 +1,160 @@
 package com.example.bikejoyapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.bikejoyapp.data.Achievement
+import com.example.bikejoyapp.data.AchievementProgress
+import com.example.bikejoyapp.data.AchievementProgressResponse
+import com.example.bikejoyapp.data.AchievementResponse
+import com.example.bikejoyapp.data.BikeLane
+import com.example.bikejoyapp.data.BikeLaneResponse
+import com.example.bikejoyapp.data.Item
 import com.example.bikejoyapp.data.Level
+import com.example.bikejoyapp.data.SharedPrefUtils
+import com.google.android.gms.maps.model.LatLng
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 class AchievementViewModel : ViewModel() {
-    private val _achievements = MutableLiveData<Map<String, Achievement>>()
-    val achievements: LiveData<Map<String, Achievement>> = _achievements
+    private val _achievements = MutableLiveData<List<Achievement>>()
+    val achievements: LiveData<List<Achievement>> = _achievements
+    private val _achievementsProgress = MutableLiveData<Map<String, AchievementProgress>>()
+    val achievementsProgress: LiveData<Map<String, AchievementProgress>> = _achievementsProgress
+
+    interface ApiService {
+        @GET("achievements")
+        suspend fun getAchievements(): Response<AchievementResponse>
+
+        @GET("achievementsProgress")
+        suspend fun getAchievementsProgress(
+            @Header("Authorization") token: String
+        ): Response<AchievementProgressResponse>
+
+
+        @PATCH("achievements/{achievementName}/update_value/")
+        suspend fun updateAchievementValueStatus(
+            @Path("achievementName") achievementName: String,
+            @Body current_value: Int
+            //@Body body: RedeemBody
+        ): Response<Unit>
+
+        @PATCH("achievements/{achievementName}/levels/{levelIndex}/update_achieved/")
+        suspend fun updateAchievementAchievedStatus(
+            @Path("achievementName") achievementName: String,
+            @Path("levelIndex") levelIndex: Int,
+            @Body is_achieved: Boolean
+            //@Body body: RedeemBody
+        ): Response<Unit>
+
+        @PATCH("achievements/{achievementName}/levels/{levelIndex}/update_redeemed/")
+        suspend fun updateAchievementRedeemedStatus(
+            @Path("achievementName") achievementName: String,
+            @Path("levelIndex") levelIndex: Int,
+            @Body is_redeemed: RequestBody
+            //@Body body: HashMap<String, Boolean>
+        ): Response<Unit>
+    }
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private val apiService = Retrofit.Builder()
+        .baseUrl("http://nattech.fib.upc.edu:40360/")
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .build()
+        .create(ApiService::class.java)
 
     init {
         getAchievementsData()
+        getAchievementsProgressData()
     }
 
     private fun getAchievementsData() {
-        _achievements.value = mapOf(
-            "Aventurero" to Achievement(
-                name = "Aventurero",
-                currentValue = 15,
-                levels = arrayOf(
-                    Level(1, "Viaja un total de 20 km", 20, 50, isAchieved = false, isRedeemed = false),
-                    Level(2, "Viaja un total de 60 km", 60, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Viaja un total de 150 km", 150, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Creador" to Achievement(
-                name = "Creador",
-                currentValue = 10,
-                levels = arrayOf(
-                    Level(1, "Crea un total de 10 rutas", 10, 50, isAchieved = true, isRedeemed = false),
-                    Level(2, "Crea un total de 25 rutas", 25, 100, isAchieved = false, isRedeemed = false),
-                    Level(3, "Crea un total de 50 rutas", 50, 150, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Explorador" to Achievement(
-                name = "Explorador",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Explora un total del 15% del mapa", 15, 200, isAchieved = true, isRedeemed = true),
-                    Level(2, "Explora un total del 50% del mapa", 50, 200, isAchieved = true, isRedeemed = true),
-                    Level(3, "Explora un total del 100% del mapa", 100, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Entusiasta" to Achievement(
-                name = "Entusiasta",
-                currentValue = 50,
-                levels = arrayOf(
-                    Level(1, "Completa un total de 10 rutas", 10, 200, isAchieved = true, isRedeemed = true),
-                    Level(2, "Completa un total de 25 rutas", 25, 200, isAchieved = true, isRedeemed = true),
-                    Level(3, "Completa un total de 50 rutas", 50, 200, isAchieved = true, isRedeemed = true)
-                )
-            ),
-            "Apasionado" to Achievement(
-                name = "Apasionado",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Visita un total de 10 estaciones", 10, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Visita un total de 25 estaciones", 25, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Visita un total de 50 estaciones", 50, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Sociable" to Achievement(
-                name = "Sociable",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Haz 10 amigos", 10, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Haz 25 amigos", 25, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Haz 50 amigos", 50, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Crítico" to Achievement(
-                name = "Crítico",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Comenta en 5 rutas que hayas completado", 5, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Comenta en 15 rutas que hayas completado", 15, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Comenta en 30 rutas que hayas completado", 30, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Navegante" to Achievement(
-                name = "Navegante",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Completa una navegación 20 veces", 20, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Completa una navegación 40 veces", 40, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Completa una navegación 70 veces", 70, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Derrochador" to Achievement(
-                name = "Derrochador",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Gasta 100 monedas en la tienda", 100, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Gasta 400 monedas en la tienda", 400, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Gasta 1000 monedas en la tienda", 1000, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Criador" to Achievement(
-                name = "Criador",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Sube 1 mascota a su nivel máximo", 1, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Sube 4 mascotas a su nivel máximo", 4, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Sube 9 mascotas a su nivel máximo", 9, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-            "Ecologista" to Achievement(
-                name = "Ecologista",
-                currentValue = 0,
-                levels = arrayOf(
-                    Level(1, "Estalvia un total de 50 de c02", 50, 200, isAchieved = false, isRedeemed = false),
-                    Level(2, "Estalvia un total de 100 de c02", 100, 200, isAchieved = false, isRedeemed = false),
-                    Level(3, "Estalvia un total de 200 de c02", 200, 200, isAchieved = false, isRedeemed = false)
-                )
-            ),
-        )
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val response: Response<AchievementResponse> = apiService.getAchievements()
+                    if (response.isSuccessful) {
+                        val achievements = response.body()?.achievements ?: emptyList()
+                        _achievements.postValue(achievements)
+                        println("Correct loading data: Achievements")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        println("Error fetching data: $errorBody")
+                    }
+                } catch (e: Exception) {
+                    println("Error fetching data: $e")
+                }
+            }
+        }
     }
 
+    fun getAchievementsProgressData() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val token = SharedPrefUtils.getToken()
+                    val response: Response<AchievementProgressResponse> =
+                        apiService.getAchievementsProgress("Token $token")
+                    if (response.isSuccessful) {
+                        val achievementsProgressList =
+                            response.body()?.achievementsProgress ?: emptyList()
+                        val achievementsProgressMap: Map<String, AchievementProgress> =
+                            achievementsProgressList.associateBy { it.achievement }
+                        _achievementsProgress.postValue(achievementsProgressMap)
+                        println("Correct loading data: AchievementsProgress")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        println("Error fetching data: $errorBody")
+                    }
+                } catch (e: Exception) {
+                    println("Error fetching data: $e")
+                }
+            }
+        }
+    }
+
+
+    fun getAchievementByName(achievementName: String): Achievement? {
+        return _achievements.value?.find { it.name == achievementName }
+    }
+
+    /*
     fun updateAchievement(achievementName: String, value: Int) {
-        _achievements.value?.get(achievementName)?.let { achievement ->
+        val achievement = _achievements.value?.find { it.name == achievementName }
+       achievement?.let {
             // Si ya ha alcanzado el nivel 3, no hace nada
-            if (!achievement.levels[2].isAchieved) {
-                achievement.currentValue = value
-                achievement.levels.forEach { level ->
+            if (!it.levels[2].isAchieved) {
+                it.currentValue = value
+                patchAchievementValue(achievementName, value)
+                it.levels.forEach { level ->
                     if (!level.isAchieved && value >= level.valueRequired) {
                         if (level.level == 3) {
                             // Si ya ha alcanzado el nivel 3, el valor se queda en el limite
-                            achievement.currentValue = level.valueRequired
+                            it.currentValue = level.valueRequired
                         }
                         level.isAchieved = true
                     }
@@ -137,10 +164,62 @@ class AchievementViewModel : ViewModel() {
         }
     }
 
+     */
+
     fun claimReward(achievementName: String, levelIndex: Int) {
-        val currentAchievements = _achievements.value.orEmpty().toMutableMap()
-        val achievement = currentAchievements[achievementName]
-        achievement?.levels?.get(levelIndex)?.isRedeemed = true
-        _achievements.value = currentAchievements
+        val achievement = _achievements.value?.find { it.name == achievementName }
+        achievement?.let { achievement1 ->
+            //achievement1.levels[levelIndex].isRedeemed = true
+            patchAchievementRedeemed(achievementName, levelIndex)
+            _achievements.value = _achievements.value // Trigger LiveData update
+        }
+    }
+
+
+    private fun patchAchievementValue(achievementName: String, value: Int) {
+        viewModelScope.launch {
+            val response = apiService.updateAchievementValueStatus(achievementName, value)
+            if (response.isSuccessful) {
+                println("Achievement value update was successful")
+            } else {
+                println("Achievement value update failed with status code: ${response.code()}")
+                response.errorBody()?.let {
+                    println("Error body: ${it.string()}")
+                }
+            }
+        }
+    }
+
+    private fun patchAchievementRedeemed(achievementName: String, levelIndex: Int) {
+        viewModelScope.launch {
+            try {
+                //opcio 1 new_value = request.data.get('is_redeemed')
+                //val body = hashMapOf("is_redeemed" to true)
+                //opcio 2
+                val jsonObject = JSONObject()
+                jsonObject.put("is_redeemed", true)
+                val requestBody =
+                    jsonObject.toString().toRequestBody("application/json".toMediaTypeOrNull())
+                //opcio 3 new_value = request.data
+                //val is_redeemed = true
+                val response = apiService.updateAchievementRedeemedStatus(
+                    achievementName,
+                    levelIndex + 1,
+                    requestBody
+                )
+                if (response.isSuccessful) {
+                    println("Reward claim was successful")
+                } else {
+                    println("Reward claim failed with status code: ${response.code()}")
+                    response.errorBody()?.let {
+                        println("Error body: ${it.string()}")
+                    }
+                }
+            } catch (e: java.net.ProtocolException) {
+                println("Error: unexpected end of stream: $e")
+            } catch (e: Exception) {
+                println("Error updating achievement: $e")
+            }
+        }
     }
 }
