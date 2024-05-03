@@ -1,7 +1,7 @@
 package com.example.bikejoyapp
 
-import com.example.bikejoyapp.viewmodel.AchievementViewModel
-import com.example.bikejoyapp.viewmodel.GravarRutaViewModel
+import com.example.bikejoyapp.profile.viewmodel.AchievementViewModel
+import com.example.bikejoyapp.routes.viewmodel.GravarRutaViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,17 +37,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bikejoyapp.data.MyAppRoute
-import com.example.bikejoyapp.ui.HomeScreen
-import com.example.bikejoyapp.ui.MapScreen
-import com.example.bikejoyapp.ui.RoutesScreen
-import com.example.bikejoyapp.ui.ShopScreen
-import com.example.bikejoyapp.ui.LoginRequiredScreen
-import com.example.bikejoyapp.ui.theme.BikeJoyAppTheme
-import com.example.bikejoyapp.viewmodel.EstacionsViewModel
+import com.example.bikejoyapp.profile.ui.HomeScreen
+import com.example.bikejoyapp.map.ui.MapScreen
+import com.example.bikejoyapp.routes.data.RoutesScreen
+import com.example.bikejoyapp.shop.ui.ShopScreen
+import com.example.bikejoyapp.users.ui.LoginRequiredScreen
+import com.example.bikejoyapp.theme.BikeJoyAppTheme
+import com.example.bikejoyapp.map.viewmodel.EstacionsViewModel
 import android.Manifest
 import android.content.pm.PackageManager
-import com.example.bikejoyapp.ui.AchievementScreen
+import com.example.bikejoyapp.profile.ui.AchievementScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
@@ -62,35 +61,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
-import com.example.bikejoyapp.ui.GravarRutaScreen
-import com.example.bikejoyapp.ui.LoginScreen
-import com.example.bikejoyapp.ui.PetScreen
-import com.example.bikejoyapp.ui.RegisterScreen
-import com.example.bikejoyapp.viewmodel.BikeLanesViewModel
-import com.example.bikejoyapp.ui.RouteDetailScreen
-import com.example.bikejoyapp.viewmodel.MainViewModel
-import com.example.bikejoyapp.viewmodel.NavigationCommand
-import com.example.bikejoyapp.viewmodel.NavigationViewModel
+import com.example.bikejoyapp.routes.ui.GravarRutaScreen
+import com.example.bikejoyapp.users.ui.LoginScreen
+import com.example.bikejoyapp.profile.ui.PetScreen
+import com.example.bikejoyapp.users.ui.RegisterScreen
+import com.example.bikejoyapp.map.viewmodel.BikeLanesViewModel
+import com.example.bikejoyapp.routes.ui.RouteDetailScreen
+import com.example.bikejoyapp.map.viewmodel.NavigationViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.example.bikejoyapp.viewmodel.RoutesViewModel
-import com.example.bikejoyapp.viewmodel.UserViewModel
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import com.example.bikejoyapp.viewmodel.ShopViewModel
+import com.example.bikejoyapp.routes.viewmodel.RoutesViewModel
+import com.example.bikejoyapp.users.viewmodel.UserViewModel
+import com.example.bikejoyapp.shop.viewmodel.ShopViewModel
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.bikejoyapp.data.SharedPrefUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
-import com.example.bikejoyapp.data.LoggedUser
-import com.example.bikejoyapp.ui.ProfileScreen
-import com.example.bikejoyapp.ui.RankingScreen
-import com.example.bikejoyapp.ui.components.EstacioBicingWidget
-import com.example.bikejoyapp.ui.components.SpecificAchievementWidget
-import com.example.bikejoyapp.viewmodel.PerfilViewModel
-import com.example.bikejoyapp.viewmodel.MascotesViewModel
+import com.example.bikejoyapp.users.data.LoggedUser
+import com.example.bikejoyapp.profile.ui.ProfileScreen
+import com.example.bikejoyapp.ranking.RankingScreen
+import com.example.bikejoyapp.map.ui.EstacioBicingWidget
+import com.example.bikejoyapp.profile.ui.SpecificAchievementWidget
+import com.example.bikejoyapp.profile.viewmodel.PerfilViewModel
+import com.example.bikejoyapp.profile.viewmodel.MascotesViewModel
+import com.example.bikejoyapp.utils.MainViewModel
+import com.example.bikejoyapp.utils.MyAppRoute
+import com.example.bikejoyapp.utils.NavigationCommand
+import com.example.bikejoyapp.utils.SharedPrefUtils
+import com.example.bikejoyapp.utils.TOP_LEVEL_DESTINATIONS
 
 
 class MainActivity : ComponentActivity() {
@@ -127,15 +126,8 @@ class MainActivity : ComponentActivity() {
         val bikeLanesViewModel: BikeLanesViewModel by viewModels()
         val shopViewModel: ShopViewModel by viewModels()
         val mascotesViewModel: MascotesViewModel by viewModels()
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://mi-url-base.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
         val userViewModel: UserViewModel by viewModels()
-
         val perfilViewModel: PerfilViewModel by viewModels()
-
         val achievementViewModel: AchievementViewModel by viewModels()
 
         if (!Places.isInitialized()) {
