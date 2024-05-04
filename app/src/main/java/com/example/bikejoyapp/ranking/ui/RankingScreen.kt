@@ -33,13 +33,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.ranking.viewmodel.RankingViewModel
+import com.example.bikejoyapp.users.data.LoggedUser
 import com.example.bikejoyapp.users.data.User
-
 
 @Composable
 fun RankingScreen(rankingViewModel: RankingViewModel) {
     val users by rankingViewModel.users.observeAsState(emptyList())
-    val currentUser = users.first()
+    val currentUser = LoggedUser.getLoggedUser()
 
     //currentUser.friends = listOf("Usuario2", "Usuario3", "Usuario4")
 
@@ -77,6 +77,7 @@ fun RankingScreen(rankingViewModel: RankingViewModel) {
                     showOptions.forEach { option ->
                         DropdownMenuItem(onClick = {
                             selectedShowOption = option
+                            showKilometers = option == "Kilómetros"
                             expanded = false
                         }, text = { Text(text = option) })
                     }
@@ -129,24 +130,24 @@ fun RankingScreen(rankingViewModel: RankingViewModel) {
 }
 
 @Composable
-fun RankingList(users: List<User>, currentUser: User, selectedOption: String, showKilometers: Boolean) {
+fun RankingList(users: List<User>, currentUser: User?, selectedOption: String, showKilometers: Boolean) {
     val sortedUsers = when (selectedOption) {
         "Diario" -> if (showKilometers) users.sortedByDescending { it.dailyDistance } else users.sortedByDescending { it.dailyCompletedRoutes }
         "Semanal" -> if (showKilometers) users.sortedByDescending { it.weeklyDistance } else users.sortedByDescending { it.weeklyCompletedRoutes }
         "Mensual" -> if (showKilometers) users.sortedByDescending { it.monthlyDistance } else users.sortedByDescending { it.monthlyCompletedRoutes }
         else -> if (showKilometers) users.sortedByDescending { it.distance } else users.sortedByDescending { it.completed_routes }
     }
+    val currentUserPosition = sortedUsers.indexOfFirst { it.username == currentUser?.username } + 1
     val topUsers = sortedUsers.take(100).toMutableList()
-    val currentUserPosition = sortedUsers.indexOf(currentUser) + 1
 
-    if (!topUsers.contains(currentUser)) {
+    if (currentUserPosition > 100 && currentUser != null) {
         topUsers.add(currentUser)
     }
 
     Column(modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.weight(1f)) {
             itemsIndexed(topUsers) { index, user ->
-                val position = if (user.username == currentUser.username) currentUserPosition else index + 1
+                val position = if (user.username == currentUser?.username) currentUserPosition else index + 1
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -156,7 +157,7 @@ fun RankingList(users: List<User>, currentUser: User, selectedOption: String, sh
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(if (user.username == currentUser.username) Color.Gray else Color.White)
+                            .background(if (user.username == currentUser?.username) Color.Gray else Color.White)
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -185,12 +186,12 @@ fun RankingList(users: List<User>, currentUser: User, selectedOption: String, sh
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "$currentUserPosition. ${user.username}")
+                Text(text = "$currentUserPosition. ${user?.username}")
                 Text(text = "${when (selectedOption) {
-                    "Diario" -> if (showKilometers) user.dailyDistance else user.dailyCompletedRoutes
-                    "Semanal" -> if (showKilometers) user.weeklyDistance else user.weeklyCompletedRoutes
-                    "Mensual" -> if (showKilometers) user.monthlyDistance else user.monthlyCompletedRoutes
-                    else -> if (showKilometers) user.distance else user.completed_routes
+                    "Diario" -> if (showKilometers) user?.dailyDistance else user?.dailyCompletedRoutes
+                    "Semanal" -> if (showKilometers) user?.weeklyDistance else user?.weeklyCompletedRoutes
+                    "Mensual" -> if (showKilometers) user?.monthlyDistance else user?.monthlyCompletedRoutes
+                    else -> if (showKilometers) user?.distance else user?.completed_routes
                 }} ${if (showKilometers) "km" else "rutas"}")
             }
         }
