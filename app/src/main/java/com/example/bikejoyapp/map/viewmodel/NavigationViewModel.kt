@@ -403,7 +403,7 @@
                     val coins = bonus*(_navigationM.value.toInt()/10)
                     val distance = _navigationM.value.toInt()
                     val xp = _navigationM.value.toInt()
-                    val stats = User(user.username, coins.toInt(),distance,xp,distance,distance,distance)
+                    val stats = User(user.username, coins.toInt(),distance,xp,distance,distance,distance,0,0,0,0)
                     val response = ApiServiceFactory.apiServiceSerializer.updateStats("Token $token", stats)
                     if (response.isSuccessful) {
                         Log.d("aris", "stats actualitzades")

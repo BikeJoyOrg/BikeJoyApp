@@ -80,11 +80,12 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
 import com.example.bikejoyapp.users.data.LoggedUser
 import com.example.bikejoyapp.profile.ui.ProfileScreen
-import com.example.bikejoyapp.ranking.RankingScreen
+import com.example.bikejoyapp.ranking.ui.RankingScreen
 import com.example.bikejoyapp.map.ui.EstacioBicingWidget
 import com.example.bikejoyapp.profile.ui.SpecificAchievementWidget
 import com.example.bikejoyapp.profile.viewmodel.PerfilViewModel
 import com.example.bikejoyapp.profile.viewmodel.MascotesViewModel
+import com.example.bikejoyapp.ranking.viewmodel.RankingViewModel
 import com.example.bikejoyapp.utils.MainViewModel
 import com.example.bikejoyapp.utils.MyAppRoute
 import com.example.bikejoyapp.utils.NavigationCommand
@@ -129,6 +130,7 @@ class MainActivity : ComponentActivity() {
         val userViewModel: UserViewModel by viewModels()
         val perfilViewModel: PerfilViewModel by viewModels()
         val achievementViewModel: AchievementViewModel by viewModels()
+        val rankingViewModel: RankingViewModel by viewModels()
 
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
@@ -167,7 +169,8 @@ class MainActivity : ComponentActivity() {
                     achievementViewModel = achievementViewModel,
                     userViewModel = userViewModel,
                     mascotesViewModel = mascotesViewModel,
-                    perfilViewModel = perfilViewModel
+                    perfilViewModel = perfilViewModel,
+                    rankingViewModel = rankingViewModel
                 )
             }
         }
@@ -189,7 +192,8 @@ fun MyAppContent(
     bikeLanesViewModel: BikeLanesViewModel,
     achievementViewModel: AchievementViewModel,
     perfilViewModel: PerfilViewModel,
-    mascotesViewModel: MascotesViewModel
+    mascotesViewModel: MascotesViewModel,
+    rankingViewModel: RankingViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -312,7 +316,7 @@ fun MyAppContent(
                 }
                 composable(MyAppRoute.Home.route) {
                     //HomeScreen(userViewModel, mainViewModel, perfilViewModel)
-                    if(SharedPrefUtils.getToken() != null) RankingScreen()
+                    if(SharedPrefUtils.getToken() != null) RankingScreen(rankingViewModel)
                     else LoginRequiredScreen(mainViewModel)
                 }
                 composable(MyAppRoute.PurchaseHistory.route) {
@@ -324,7 +328,7 @@ fun MyAppContent(
                         AchievementScreen(achievementViewModel, mainViewModel)
                     }
                     else LoginRequiredScreen(mainViewModel)
-                    //RankingScreen()
+                    //RankingScreen(rankingViewModel)
                 }
                 composable(MyAppRoute.Shop.route) {
                     ShopScreen(shopViewModel, mainViewModel)

@@ -11,6 +11,10 @@ class User(
     var monthlyDistance: Int,
     var weeklyDistance: Int,
     var dailyDistance: Int,
+    var completed_routes: Int,
+    var monthlyCompletedRoutes: Int,
+    var weeklyCompletedRoutes: Int,
+    var dailyCompletedRoutes: Int,
 )
 
 @Serializable
