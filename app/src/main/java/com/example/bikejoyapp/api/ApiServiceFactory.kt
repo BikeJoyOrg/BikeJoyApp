@@ -36,4 +36,12 @@ object ApiServiceFactory {
             .build()
             .create(ApiService::class.java)
     }
+
+    val apiServiceWeather: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.openweathermap.org/data/2.5/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
 }

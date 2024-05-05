@@ -78,6 +78,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.livedata.observeAsState
+import com.example.bikejoyapp.calendar.ui.CalendarScreen
+import com.example.bikejoyapp.calendar.viewmodel.CalendarViewModel
 import com.example.bikejoyapp.users.data.LoggedUser
 import com.example.bikejoyapp.profile.ui.ProfileScreen
 import com.example.bikejoyapp.ranking.ui.RankingScreen
@@ -131,7 +133,7 @@ class MainActivity : ComponentActivity() {
         val perfilViewModel: PerfilViewModel by viewModels()
         val achievementViewModel: AchievementViewModel by viewModels()
         val rankingViewModel: RankingViewModel by viewModels()
-
+        val calendarViewModel: CalendarViewModel by viewModels()
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
         }
@@ -170,7 +172,8 @@ class MainActivity : ComponentActivity() {
                     userViewModel = userViewModel,
                     mascotesViewModel = mascotesViewModel,
                     perfilViewModel = perfilViewModel,
-                    rankingViewModel = rankingViewModel
+                    rankingViewModel = rankingViewModel,
+                    calendarViewModel = calendarViewModel
                 )
             }
         }
@@ -193,7 +196,8 @@ fun MyAppContent(
     achievementViewModel: AchievementViewModel,
     perfilViewModel: PerfilViewModel,
     mascotesViewModel: MascotesViewModel,
-    rankingViewModel: RankingViewModel
+    rankingViewModel: RankingViewModel,
+    calendarViewModel: CalendarViewModel
 ) {
     val isBottomBarVisible by mainViewModel.isBottomBarVisible.collectAsState()
     val isTopBarVisible by mainViewModel.isTopBarVisible.collectAsState()
@@ -236,20 +240,44 @@ fun MyAppContent(
                                     )
                                 }
                             } else {
-                                IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
-                                    val iconBackground =
-                                        if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
-                                    Box(
-                                        modifier = Modifier
-                                            .background(color = iconBackground, shape = CircleShape)
-                                            .padding(8.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.cyclist_boy_icon),
-                                            contentDescription = "Account",
-                                            Modifier.size(32.dp),
-                                            tint = Color.Unspecified
-                                        )
+                                Row {
+                                    IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Account) }) {
+                                        val iconBackground =
+                                            if (currentRoute == MyAppRoute.Account.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    color = iconBackground,
+                                                    shape = CircleShape
+                                                )
+                                                .padding(8.dp)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.cyclist_boy_icon),
+                                                contentDescription = "Account",
+                                                Modifier.size(32.dp),
+                                                tint = Color.Unspecified
+                                            )
+                                        }
+                                    }
+                                    IconButton(onClick = { mainViewModel.navigateTo(MyAppRoute.Calendar) }) {
+                                        val iconBackground =
+                                            if (currentRoute == MyAppRoute.Calendar.route) MaterialTheme.colorScheme.secondary else Color.Transparent
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    color = iconBackground,
+                                                    shape = CircleShape
+                                                )
+                                                .padding(8.dp)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.home_icon_color),
+                                                contentDescription = "Shop",
+                                                Modifier.size(32.dp),
+                                                tint = Color.Unspecified
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -351,6 +379,9 @@ fun MyAppContent(
                 }
                 composable(MyAppRoute.Login.route) {
                     LoginScreen(userViewModel, mainViewModel)
+                }
+                composable(MyAppRoute.Calendar.route) {
+                    CalendarScreen(calendarViewModel, mainViewModel)
                 }
                 composable(MyAppRoute.Register.route) {
                     RegisterScreen(userViewModel, mainViewModel)

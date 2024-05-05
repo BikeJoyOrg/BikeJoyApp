@@ -1,5 +1,6 @@
 package com.example.bikejoyapp.api
 
+import com.example.bikejoyapp.calendar.data.ForecastResponse
 import com.example.bikejoyapp.profile.data.AchievementProgressResponse
 import com.example.bikejoyapp.profile.data.AchievementResponse
 import com.example.bikejoyapp.map.data.BikeLaneResponse
@@ -225,4 +226,12 @@ interface ApiService {
 
     @GET("users/getUsers/")
     suspend fun getUsers(): Response<List<User>>
+
+    @GET("forecast")
+    suspend fun getFiveDayForecast(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+        @Query("appid") apiKey: String,
+        @Query("units") units: String = "metric" // Temperaturas en Celsius
+    ): Response<ForecastResponse>
 }

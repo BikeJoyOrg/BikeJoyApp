@@ -38,6 +38,14 @@ android {
                 "google_maps_key",
                 gradleLocalProperties(rootDir).getProperty("apiKey")
             )
+            /*
+            resValue(
+                "string",
+                "open_weather_map_key",
+                gradleLocalProperties(rootDir).getProperty("openWeatherMapApiKey")
+            )
+
+             */
         }
     }
     kotlinOptions {
