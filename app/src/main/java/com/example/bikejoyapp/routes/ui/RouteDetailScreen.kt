@@ -42,6 +42,7 @@ import com.example.bikejoyapp.map.viewmodel.NavigationViewModel
 import com.example.bikejoyapp.routes.data.CompletedRoute
 import com.example.bikejoyapp.routes.data.RutaUsuari
 import com.example.bikejoyapp.routes.viewmodel.RoutesViewModel
+import com.example.bikejoyapp.utils.SharedPrefUtils
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 /*
@@ -168,10 +169,17 @@ fun RouteHeader(route: RutaUsuari, userHasCompletedRoute: Boolean, mainViewModel
         ) {
             Button(
                 onClick = {
-                    navegationviewmodel.mostrarRuta(puntos, route.RuteId ?: 0)
+                    val token = SharedPrefUtils.getToken()
+                    if (token == null) {
+                        mainViewModel.navigateTo(MyAppRoute.Login)
+                        mainViewModel.hideBottomBar()
+                    }
+                    else{
+                        navegationviewmodel.mostrarRuta(puntos, route.RuteId ?: 0)
 
-                    mainViewModel.navigateTo(MyAppRoute.Map)
-                    mainViewModel.showBottomBar()
+                        mainViewModel.navigateTo(MyAppRoute.Map)
+                        mainViewModel.showBottomBar()
+                    }
                 },
                 modifier = Modifier
                     .padding(16.dp)

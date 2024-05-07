@@ -16,8 +16,8 @@ import com.example.bikejoyapp.users.data.LoginResponse
 import com.example.bikejoyapp.users.data.UserResponse
 
 class UserViewModel : ViewModel() {
-    private val _completedRoutes = MutableLiveData<List<CompletedRoute>>()
-    val completedRoutes: LiveData<List<CompletedRoute>> = _completedRoutes
+    private val _completedRoutes = MutableLiveData<MutableList<CompletedRoute>>()
+    val completedRoutes: LiveData<MutableList<CompletedRoute>> = _completedRoutes
 
     init {
         val token = SharedPrefUtils.getToken()
@@ -121,7 +121,7 @@ class UserViewModel : ViewModel() {
                 if (token != null) {
                     val response = ApiServiceFactory.apiServiceSerializer.getCompletedRoutes("Token $token")
                     if (response.isSuccessful && response.body() != null) {
-                        _completedRoutes.postValue(response.body())
+                        _completedRoutes.postValue(response.body() as MutableList<CompletedRoute>?)
                     } else {
                         Log.e("API Error", "Failed with response: ${response.errorBody()?.string()}")
                     }
@@ -130,5 +130,8 @@ class UserViewModel : ViewModel() {
                 Log.e("API Exception", "Error occurred: ${e.message}")
             }
         }
+    }
+    fun addCompletedRoute(ruteid: Int) {
+        _completedRoutes.value?.add(CompletedRoute(ruteid, false))
     }
 }

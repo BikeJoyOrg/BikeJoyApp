@@ -306,6 +306,7 @@
                 _showRouteResume.value = false
                 usuariRutaCompletada(true)
                 coordfinish = null
+                userViewModel.addCompletedRoute(ruta_id!!)
             }
             else{
                 _avis.value = false

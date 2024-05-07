@@ -67,6 +67,7 @@ import com.example.bikejoyapp.profile.viewmodel.MascotesViewModel
 import com.example.bikejoyapp.map.viewmodel.NavigationViewModel
 import com.example.bikejoyapp.routes.ui.TempsDistancia_vertical
 import com.example.bikejoyapp.users.viewmodel.UserViewModel
+import com.example.bikejoyapp.utils.SharedPrefUtils
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -352,8 +353,15 @@ fun MapScreen(
                 ) {
                     Button(
                         onClick = {
-                            navigationViewModel.startNavigation()
-                            mainViewModel.hideBottomBar()
+                            val token = SharedPrefUtils.getToken()
+                            if (token == null) {
+                                mainViewModel.navigateTo(MyAppRoute.Login)
+                                mainViewModel.hideBottomBar()
+                            }
+                            else{
+                                navigationViewModel.startNavigation()
+                                mainViewModel.hideBottomBar()
+                            }
                         },
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
